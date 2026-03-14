@@ -4,14 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Wrestler Market</title>
-
-<!-- Tailwind für Styling -->
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet"/>
-
 <style>
 body{
-  background:#0f1115;
+  background:linear-gradient(135deg,#0f1115,#1a1d23);
   color:#e4e6eb;
   font-family:system-ui;
   min-height:100vh;
@@ -20,191 +17,80 @@ body{
   justify-content:center;
   padding:30px 10px;
 }
-
-.title{
-  text-align:center;
-  color:#9aa4b2;
-  margin-bottom:20px;
-}
-
-#ranking{
-  position:relative;
-  list-style:none;
-  padding:0;
-  margin:0;
-  width:360px;
-  max-width:95vw;
-}
-
+.title{text-align:center;color:#9aa4b2;margin-bottom:20px;}
+#ranking{position:relative;list-style:none;padding:0;margin:0;width:360px;max-width:95vw;}
 .rank-item{
-  position:absolute;
-  width:100%;
-  height:64px;
-  background:#1a1d23;
-  border:1px solid #2a2f37;
-  border-radius:8px;
-  display:flex;
-  align-items:center;
-  padding:0 16px;
-  gap:10px;
-  transition:top .7s ease;
-  overflow:hidden;
+  position:absolute;width:100%;height:64px;background:#1a1d23;border:1px solid #2a2f37;
+  border-radius:8px;display:flex;align-items:center;padding:0 16px;gap:10px;transition:top .7s ease;overflow:hidden;
 }
-
-/* Gradient Background Top 3 */
 .gold-bg{background:linear-gradient(90deg,#1a1d23 0%,rgba(255,215,0,0.15) 100%);}
 .silver-bg{background:linear-gradient(90deg,#1a1d23 0%,rgba(192,192,192,0.15) 100%);}
 .bronze-bg{background:linear-gradient(90deg,#1a1d23 0%,rgba(205,127,50,0.15) 100%);}
-
-.place{
-  min-width:34px;
-  font-weight:600;
-  color:#7d8596;
-}
+.place{min-width:34px;font-weight:600;color:#7d8596;}
 .place.gold{color:#ffd700;}
 .place.silver{color:#c0c0c0;}
 .place.bronze{color:#cd7f32;}
-
-.code{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  font-weight:500;
-}
-
-/* Hot Pill mit orange Flamme */
-.hot-pill{
-  width:22px;
-  height:22px;
-  background:rgba(255,106,0,0.15);
-  border-radius:999px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:#ff6a00;
-  font-size:12px;
-  animation:flamePulse 1s infinite alternate;
-}
-
-@keyframes flamePulse{
-  0%{transform:scale(1);}
-  50%{transform:scale(1.2);}
-  100%{transform:scale(1);}
-}
-
-.score{
-  margin-left:auto;
-  min-width:60px;
-  text-align:right;
-}
-
-.trend{
-  width:24px;
-  text-align:center;
-  font-size:18px;
-}
+.code{display:flex;align-items:center;gap:6px;font-weight:500;}
+.hot-pill{width:28px;height:28px;background:rgba(255,106,0,0.15);border-radius:999px;display:flex;align-items:center;justify-content:center;color:#ff6a00;font-size:14px;animation:flamePulse 1s infinite alternate;}
+@keyframes flamePulse{0%{transform:scale(1);}50%{transform:scale(1.3);}100%{transform:scale(1);}}
+.score{margin-left:auto;min-width:60px;text-align:right;}
+.trend{width:24px;text-align:center;font-size:18px;}
 .arrow-up{color:#22c55e;}
 .arrow-down{color:#ef4444;}
 .arrow-flat{color:#9aa4b2;}
-
-.flash-up::before,
-.flash-down::before{
-  content:"";
-  position:absolute;
-  left:-140%;
-  top:0;
-  width:140%;
-  height:100%;
-}
-.flash-up::before{
-  background:linear-gradient(90deg,transparent,rgba(34,197,94,.35),transparent);
-  animation:flashMove 2s ease;
-}
-.flash-down::before{
-  background:linear-gradient(90deg,transparent,rgba(255,60,60,.45),transparent);
-  animation:flashMove 2s ease;
-}
-@keyframes flashMove{
-  from{left:-140%;}
-  to{left:140%;}
-}
-
-@media(max-width:600px){
-  .rank-item{height:56px;font-size:14px;}
-  .place{min-width:30px;}
-  .trend{width:20px;font-size:16px;}
-}
+.flash-up::before,.flash-down::before{content:"";position:absolute;left:-140%;top:0;width:140%;height:100%;}
+.flash-up::before{background:linear-gradient(90deg,transparent,rgba(34,197,94,.35),transparent);animation:flashMove 2s ease;}
+.flash-down::before{background:linear-gradient(90deg,transparent,rgba(255,60,60,.45),transparent);animation:flashMove 2s ease;}
+@keyframes flashMove{from{left:-140%;}to{left:140%;}}
+@media(max-width:600px){.rank-item{height:56px;font-size:14px;}.place{min-width:30px;}.trend{width:20px;font-size:16px;}}
 </style>
 </head>
 <body>
-
 <div>
 <h2 class="title">Wrestler Market</h2>
 <ul id="ranking"></ul>
 </div>
-
 <script>
 const GAP=5;
 let ITEM_HEIGHT=window.innerWidth<600?56:64;
 const ROW_HEIGHT=ITEM_HEIGHT+GAP;
 const TOP_VISIBLE=10;
-
-let wrestlers=[
-  {code:'ROMN',score:0,hot:0},
-  {code:'SETH',score:0,hot:0},
-  {code:'PUNK',score:0,hot:0},
-  {code:'BRWN',score:0,hot:0},
-  {code:'AJST',score:0,hot:0},
-  {code:'REY',score:0,hot:0},
-  {code:'KANE',score:0,hot:0},
-  {code:'MIZA',score:0,hot:0},
-  {code:'TRPL',score:0,hot:0},
-  {code:'CODY',score:0,hot:0},
-  {code:'LASH',score:0,hot:0},
-  {code:'DREW',score:0,hot:0}
-];
+const JSON_URL="https://grumpyoleg.github.io/coinhausen/wrestlers.json"; // <- Pfad zu deiner GitHub JSON
 
 const list=document.getElementById("ranking");
-list.style.height=wrestlers.length*ROW_HEIGHT+"px";
 
-/* CREATE ROWS */
-wrestlers.forEach((w,i)=>{
-  const li=document.createElement("li");
-  li.className="rank-item";
-  li.style.top=i*ROW_HEIGHT+"px";
-  li.id=w.code;
-  li.innerHTML=`
-    <span class="place">#${i+1}</span>
-    <span class="code">
-      $${w.code}
-      <span class="hot"></span>
-    </span>
-    <span class="score">0.00</span>
-    <span class="trend"></span>
-  `;
-  list.appendChild(li);
-});
+// JSON laden
+async function loadWrestlers(){
+  const res = await fetch(JSON_URL);
+  const wrestlers = await res.json();
+  list.style.height=wrestlers.length*ROW_HEIGHT+"px";
 
-/* FLASH */
-function triggerFlash(el,type){
-  el.classList.remove("flash-up","flash-down");
-  void el.offsetWidth;
-  el.classList.add(type);
-  setTimeout(()=>{el.classList.remove(type)},2000);
+  wrestlers.forEach((w,i)=>{
+    const li=document.createElement("li");
+    li.className="rank-item";
+    li.style.top=i*ROW_HEIGHT+"px";
+    li.id=w.code;
+    li.innerHTML=`
+      <span class="place">#${i+1}</span>
+      <span class="code">
+        $${w.code}<span class="hot"></span>
+      </span>
+      <span class="score">${w.score.toFixed(2)}</span>
+      <span class="trend"></span>
+    `;
+    list.appendChild(li);
+  });
+
+  updateRanking(wrestlers);
 }
 
-/* UPDATE RANKING */
-function updateRanking(newScores){
-  const oldScores={};
-  wrestlers.forEach(w=>oldScores[w.code]=w.score);
-  wrestlers.forEach(w=>{if(newScores[w.code]!=undefined) w.score=newScores[w.code]});
+// Ranking rendern
+function updateRanking(wrestlers){
   wrestlers.sort((a,b)=>b.score-a.score);
-
   wrestlers.forEach((w,index)=>{
     const li=document.getElementById(w.code);
     li.style.top=index*ROW_HEIGHT+"px";
     li.classList.remove("gold-bg","silver-bg","bronze-bg");
-
     const placeEl=li.querySelector(".place");
     const scoreEl=li.querySelector(".score");
     const trendEl=li.querySelector(".trend");
@@ -212,46 +98,30 @@ function updateRanking(newScores){
 
     placeEl.textContent="#"+(index+1);
     placeEl.classList.remove("gold","silver","bronze");
-
     if(index===0){placeEl.classList.add("gold");li.classList.add("gold-bg");}
     else if(index===1){placeEl.classList.add("silver");li.classList.add("silver-bg");}
     else if(index===2){placeEl.classList.add("bronze");li.classList.add("bronze-bg");}
 
     scoreEl.textContent=w.score.toFixed(2);
 
-    /* TREND */
-    let trend=0;
-    if(w.score>oldScores[w.code])trend=1;
-    if(w.score<oldScores[w.code])trend=-1;
-    if(trend===1)w.hot++; else w.hot=0;
+    // Trend
+    if(w.lastScore!==undefined){
+      let trend=0;
+      if(w.score>w.lastScore)trend=1;
+      if(w.score<w.lastScore)trend=-1;
+      if(trend===1){trendEl.innerHTML='<span class="arrow-up">▲</span>'; w.hot++; }
+      else if(trend===-1){trendEl.innerHTML='<span class="arrow-down">▼</span>'; w.hot=0; }
+      else{trendEl.innerHTML='<span class="arrow-flat">=</span>';}
+    }
 
-    if(trend===1){trendEl.innerHTML='<span class="arrow-up">▲</span>'; triggerFlash(li,"flash-up");}
-    else if(trend===-1){trendEl.innerHTML='<span class="arrow-down">▼</span>'; triggerFlash(li,"flash-down");}
-    else{trendEl.innerHTML='<span class="arrow-flat">=</span>';}
+    hotEl.innerHTML = w.hot>0 ? `<span class="hot-pill"><i class="fa-solid fa-fire"></i></span>` : "";
 
-    /* HOT PILL ORANGE FLAME */
-    if(w.hot>0){hotEl.innerHTML=`<span class="hot-pill"><i class="fa-solid fa-fire"></i></span>`;}
-    else{hotEl.innerHTML="";}
-
-    li.style.opacity=index<TOP_VISIBLE?1:0;
+    w.lastScore=w.score;
   });
 }
 
-/* RANDOM MARKET SIMULATION */
-function randomUpdate(){
-  const newScores={};
-  wrestlers.forEach(w=>{
-    const delta=(Math.random()*0.5-0.25);
-    const passive=w.score<2?0.05:0;
-    let score=w.score+delta+passive;
-    score=Math.max(0,score);
-    newScores[w.code]=Math.round(score*100)/100;
-  });
-  updateRanking(newScores);
-}
-
-setInterval(randomUpdate,10000);
+// Initial
+loadWrestlers();
 </script>
-
 </body>
 </html>
