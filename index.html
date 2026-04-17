@@ -1,381 +1,231 @@
-
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Wrestler Index</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AURA: RESURGENCE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;800&display=swap');
+        body { background: #020617; font-family: 'JetBrains Mono', monospace; margin: 0; overflow: hidden; touch-action: manipulation; color: #f1f5f9; }
+        
+        #game-viewport { position: relative; width: 92vw; height: 92vw; max-width: 480px; max-height: 480px; background: #0f172a; border-radius: 20px; border: 2px solid #334155; overflow: hidden; }
+        #grid-container { display: grid; grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(5, 1fr); width: 100%; height: 100%; gap: 8px; padding: 12px; z-index: 10; position: relative; }
+        
+        .tile { background: rgba(30, 41, 59, 0.5); border-radius: 12px; position: relative; overflow: hidden; border: 1px solid #1e293b; transition: all 0.1s; }
+        .tile:active { transform: scale(0.95); background: rgba(51, 65, 85, 0.8); }
+        
+        /* Danger state for Energy */
+        .energy-danger { color: #ef4444; animation: pulse-red 0.8s infinite; }
+        @keyframes pulse-red { 0%, 100% { opacity: 1; text-shadow: 0 0 0px red; } 50% { opacity: 0.5; text-shadow: 0 0 10px red; } }
 
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet"/>
-
-<style>
-
-body{
-background:#0f1115;
-color:#e4e6eb;
-font-family:system-ui;
-display:flex;
-justify-content:center;
-padding:30px 10px;
-}
-
-.container{
-width:460px;
-max-width:95vw;
-}
-
-/* HEADER */
-
-.header-row{
-display:grid;
-grid-template-columns:70px 1fr 120px 100px;
-font-size:12px;
-color:#7d8596;
-margin-bottom:8px;
-padding:0 10px;
-}
-
-/* LIST */
-
-#ranking{
-position:relative;
-list-style:none;
-padding:0;
-margin:0;
-}
-
-.rank-item{
-position:absolute;
-width:100%;
-height:72px;
-background:#1a1d23;
-border:1px solid #2a2f37;
-border-radius:10px;
-display:grid;
-grid-template-columns:70px 1fr 120px 100px;
-align-items:center;
-padding:0 10px;
-transition:top .7s ease;
-overflow:hidden;
-}
-
-/* TOP 3 */
-
-.gold-bg{background:linear-gradient(90deg,#1a1d23 0%,rgba(255,215,0,0.15) 100%);}
-.silver-bg{background:linear-gradient(90deg,#1a1d23 0%,rgba(192,192,192,0.15) 100%);}
-.bronze-bg{background:linear-gradient(90deg,#1a1d23 0%,rgba(205,127,50,0.15) 100%);}
-
-.place{
-font-weight:700;
-color:#7d8596;
-}
-
-.place.gold{color:#ffd700;}
-.place.silver{color:#c0c0c0;}
-.place.bronze{color:#cd7f32;}
-
-/* SUPERSTAR */
-
-.coin{
-font-size:18px;
-font-weight:700;
-background:#20242d;
-padding:4px 8px;
-border-radius:6px;
-display:inline-block;
-}
-
-/* HOT */
-
-.hot-pill{
-background:rgba(255,106,0,0.15);
-border-radius:6px;
-padding:2px 6px;
-color:#ff6a00;
-font-size:11px;
-margin-left:8px;
-display:inline-flex;
-align-items:center;
-gap:4px;
-animation:flamePulse 1s infinite alternate;
-}
-
-@keyframes flamePulse{
-0%{transform:scale(1);}
-100%{transform:scale(1.1);}
-}
-
-/* TREND */
-
-.trend-box{
-display:flex;
-align-items:center;
-gap:6px;
-}
-
-.spark{
-width:70px;
-height:24px;
-}
-
-.trend{
-font-size:18px;
-}
-
-.up{color:#22c55e;}
-.down{color:#ef4444;}
-.flat{color:#9aa4b2;}
-
-/* SCORE */
-
-.score{
-font-size:20px;
-font-weight:700;
-text-align:right;
-}
-
-/* FLASH */
-
-.flash-up::before,
-.flash-down::before{
-content:"";
-position:absolute;
-left:-140%;
-top:0;
-width:140%;
-height:100%;
-}
-
-.flash-up::before{
-background:linear-gradient(90deg,transparent,rgba(34,197,94,.35),transparent);
-animation:flashMove 2s ease;
-}
-
-.flash-down::before{
-background:linear-gradient(90deg,transparent,rgba(255,60,60,.45),transparent);
-animation:flashMove 2s ease;
-}
-
-@keyframes flashMove{
-from{left:-140%;}
-to{left:140%;}
-}
-
-</style>
+        .growth-inner { position: absolute; bottom: 0; width: 100%; background: linear-gradient(to top, #064e3b, #10b981); transition: height 0.3s ease; z-index: 2; }
+        .health-bar { position: absolute; top: 0; left: 0; height: 4px; background: #ef4444; z-index: 5; opacity: 0; width: 100%; }
+        .tile.planted .health-bar { opacity: 1; }
+        .plant-icon { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; opacity: 0; transition: 0.3s; z-index: 3; }
+        .tile.planted .plant-icon, .matured .plant-icon, .dead .plant-icon { opacity: 1; }
+        
+        .weather-unit { position: absolute; border-radius: 50%; filter: blur(40px); opacity: 0.4; pointer-events: none; z-index: 20; transform: translate(-50%, -50%); }
+        #xp-bar { height: 100%; width: 0%; background: #6366f1; transition: width 0.3s; }
+        .overlay { position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; backdrop-blur: md; }
+    </style>
 </head>
-
-<body>
-
-<div class="container">
-
-<div class="header-row">
-<div>RANK</div>
-<div>SUPERSTAR</div>
-<div>TREND</div>
-<div style="text-align:right">POP SCORE</div>
-</div>
-
-<ul id="ranking"></ul>
-
-</div>
-
-<script>
-
-const ITEM_HEIGHT=72
-const GAP=6
-const ROW_HEIGHT=ITEM_HEIGHT+GAP
-
-let wrestlers=[
-
-{code:'ROMN',score:0,hot:0,history:[]},
-{code:'SETH',score:0,hot:0,history:[]},
-{code:'PUNK',score:0,hot:0,history:[]},
-{code:'BRWN',score:0,hot:0,history:[]},
-{code:'AJST',score:0,hot:0,history:[]},
-{code:'REY',score:0,hot:0,history:[]},
-{code:'KANE',score:0,hot:0,history:[]},
-{code:'MIZA',score:0,hot:0,history:[]},
-{code:'TRPL',score:0,hot:0,history:[]},
-{code:'CODY',score:0,hot:0,history:[]},
-{code:'LASH',score:0,hot:0,history:[]},
-{code:'DREW',score:0,hot:0,history:[]}
-
-]
-
-const list=document.getElementById("ranking")
-list.style.height=wrestlers.length*ROW_HEIGHT+"px"
-
-/* CREATE ROWS */
-
-wrestlers.forEach((w,i)=>{
-
-const li=document.createElement("li")
-li.className="rank-item"
-li.style.top=i*ROW_HEIGHT+"px"
-li.id=w.code
-
-li.innerHTML=`
-
-<div class="place">#${i+1}</div>
-
-<div>
-<span class="coin">$${w.code}</span>
-<span class="hot"></span>
-</div>
-
-<div class="trend-box">
-<svg class="spark"></svg>
-<span class="trend"></span>
-</div>
-
-<div class="score">0.00</div>
-
-`
-
-list.appendChild(li)
-
-})
-
-/* SPARKLINE */
-
-function drawSparkline(svg,data){
-
-const w=70
-const h=24
-
-svg.setAttribute("viewBox","0 0 "+w+" "+h)
-
-if(data.length<2)return
-
-const max=Math.max(...data)
-const min=Math.min(...data)
-
-let points=""
-
-data.forEach((v,i)=>{
-
-let x=i*(w/(data.length-1))
-let y=h-((v-min)/(max-min||1))*h
-
-points+=x+","+y+" "
-
-})
-
-svg.innerHTML=`<polyline points="${points}" fill="none" stroke="#4ade80" stroke-width="2"/>`
-
-}
-
-/* FLASH */
-
-function triggerFlash(el,type){
-
-el.classList.remove("flash-up","flash-down")
-void el.offsetWidth
-el.classList.add(type)
-
-setTimeout(()=>{el.classList.remove(type)},2000)
-
-}
-
-/* UPDATE */
-
-function updateRanking(newScores){
-
-const oldScores={}
-wrestlers.forEach(w=>oldScores[w.code]=w.score)
-
-wrestlers.forEach(w=>{
-if(newScores[w.code]!=undefined){
-w.score=newScores[w.code]
-w.history.push(w.score)
-if(w.history.length>20)w.history.shift()
-}
-})
-
-wrestlers.sort((a,b)=>b.score-a.score)
-
-wrestlers.forEach((w,index)=>{
-
-const li=document.getElementById(w.code)
-
-li.style.top=index*ROW_HEIGHT+"px"
-li.classList.remove("gold-bg","silver-bg","bronze-bg")
-
-const placeEl=li.querySelector(".place")
-const scoreEl=li.querySelector(".score")
-const hotEl=li.querySelector(".hot")
-const spark=li.querySelector(".spark")
-const trendEl=li.querySelector(".trend")
-
-placeEl.textContent="#"+(index+1)
-placeEl.classList.remove("gold","silver","bronze")
-
-if(index===0){placeEl.classList.add("gold");li.classList.add("gold-bg")}
-else if(index===1){placeEl.classList.add("silver");li.classList.add("silver-bg")}
-else if(index===2){placeEl.classList.add("bronze");li.classList.add("bronze-bg")}
-
-scoreEl.textContent=w.score.toFixed(2)
-
-/* TREND */
-
-let trend=0
-if(w.score>oldScores[w.code])trend=1
-if(w.score<oldScores[w.code])trend=-1
-
-if(trend===1){
-trendEl.innerHTML='<span class="up">▲</span>'
-triggerFlash(li,"flash-up")
-w.hot++
-}
-else if(trend===-1){
-trendEl.innerHTML='<span class="down">▼</span>'
-triggerFlash(li,"flash-down")
-w.hot=0
-}
-else{
-trendEl.innerHTML='<span class="flat">=</span>'
-}
-
-/* HOT COUNTER */
-
-if(w.hot>1){
-hotEl.innerHTML=`<span class="hot-pill"><i class="fa-solid fa-fire"></i> HOT x${w.hot}</span>`
-}else{
-hotEl.innerHTML=""
-}
-
-/* SPARK */
-
-drawSparkline(spark,w.history)
-
-})
-
-}
-
-/* RANDOM TEST */
-
-function randomUpdate(){
-
-const scores={}
-
-wrestlers.forEach(w=>{
-
-const delta=(Math.random()*0.6-0.3)
-let score=w.score+delta
-
-score=Math.max(0,score)
-
-scores[w.code]=score
-
-})
-
-updateRanking(scores)
-
-}
-
-setInterval(randomUpdate,10000)
-
-</script>
-
+<body class="flex flex-col items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-[480px] flex justify-between items-end mb-4 px-2">
+        <div>
+            <h1 class="text-xl font-black italic text-white tracking-tighter">AURA_OS</h1>
+            <p id="lvl-txt" class="text-[9px] text-indigo-400 font-bold uppercase tracking-widest">System Active</p>
+        </div>
+        <div class="text-right">
+            <p class="text-[9px] font-bold text-slate-500 uppercase">Energy</p>
+            <p id="pts" class="text-3xl font-black transition-colors duration-300">80</p>
+        </div>
+    </div>
+
+    <div id="game-viewport">
+        <div id="grid-container"></div>
+        <div id="sun" class="weather-unit bg-yellow-400 w-32 h-32"></div>
+        <div id="cloud" class="weather-unit bg-blue-500 w-28 h-28"></div>
+    </div>
+
+    <div class="w-full max-w-[480px] h-1.5 bg-slate-800 rounded-full mt-6 overflow-hidden">
+        <div id="xp-bar"></div>
+    </div>
+
+    <div class="w-full max-w-[480px] mt-4 flex justify-between items-center px-2">
+        <p id="status-hint" class="text-[10px] uppercase font-bold text-slate-500 italic">Optimal conditions detected</p>
+        <p id="high-rank" class="text-[10px] uppercase font-bold text-emerald-500">Best: Rank 0</p>
+    </div>
+
+    <div id="lvl-overlay" class="hidden overlay bg-slate-950/98">
+        <h2 class="text-2xl font-black text-white italic mb-1 uppercase">Evolution protocol</h2>
+        <div id="card-wrap" class="flex flex-col gap-3 w-full max-w-xs mt-6"></div>
+    </div>
+
+    <div id="death-overlay" class="hidden overlay bg-red-950/95">
+        <h2 class="text-5xl font-black text-white italic mb-2">HALTED</h2>
+        <p class="text-red-300 text-[10px] mb-10 tracking-[0.3em] uppercase">Ecosystem Total Collapse</p>
+        <button onclick="location.reload()" class="bg-white text-red-950 px-8 py-3 rounded-full font-black uppercase text-sm font-bold">Restart Run</button>
+    </div>
+
+    <script>
+        const GRID_SIZE = 5;
+        const SEED_COST = 15;
+        const container = document.getElementById('grid-container');
+        const tiles = [];
+        
+        let points = 80, xp = 0, xpNext = 120, level = 1, isPaused = false;
+        let perks = { sun: 2.2, rain: 1.6, reward: 22, drainBase: 0.05, maxH: 100 };
+
+        let highRank = localStorage.getItem('aura-high-rank') || 0;
+        document.getElementById('high-rank').innerText = `Best: Rank ${highRank}`;
+
+        const UPGRADES = [
+            { id: 'S', n: 'HELIO-CELL', d: 'Sun efficiency +40%', i: '☀️' },
+            { id: 'R', n: 'AQUA-NODE', d: 'Rain efficiency +40%', i: '🌧️' },
+            { id: 'V', n: 'ENERGY-CAP', d: 'Harvest +10 Energy', i: '💎' },
+            { id: 'L', n: 'PLANT-DNA', d: 'Health +50 / Drain -10%', i: '🛡️' }
+        ];
+
+        for (let i = 0; i < GRID_SIZE * GRID_SIZE; i++) {
+            const el = document.createElement('div');
+            el.className = 'tile';
+            const inner = document.createElement('div'); inner.className = 'growth-inner';
+            const hBar = document.createElement('div'); hBar.className = 'health-bar';
+            const icon = document.createElement('div'); icon.className = 'plant-icon'; icon.innerHTML = '🌱';
+            el.append(hBar, inner, icon);
+            
+            const obj = { el, inner, hBar, icon, status: 'empty', growth: 0, health: 100 };
+            
+            el.addEventListener('pointerdown', () => {
+                if (isPaused) return;
+                
+                if (obj.status === 'empty') {
+                    if (points >= SEED_COST) {
+                        points -= SEED_COST; 
+                        obj.status = 'growing';
+                        el.classList.add('planted');
+                        obj.health = perks.maxH;
+                    } else {
+                        // SCAVENGE MECHANIC
+                        points += 1;
+                        document.getElementById('status-hint').innerText = "Scavenging +1 Energy...";
+                        setTimeout(() => updateHint(), 1000);
+                    }
+                    updateUI();
+                }
+            });
+            container.appendChild(el);
+            tiles.push(obj);
+        }
+
+        let weather = { sun: { x: 50, y: 50, vx: 1.6, vy: 1.3, r: 18 }, cloud: { x: 300, y: 300, vx: -1.4, vy: 1.8, r: 15 } };
+
+        function gameLoop() {
+            if (isPaused) return requestAnimationFrame(gameLoop);
+            moveWeather('sun'); moveWeather('cloud');
+
+            let activeCount = tiles.filter(t => t.status === 'growing' || t.status === 'matured').length;
+            let adaptiveDrain = (perks.drainBase + (level * 0.045)) * (1 + (activeCount * 0.12));
+
+            tiles.forEach(t => {
+                const sHit = isUnder(t, 'sun');
+                const cHit = isUnder(t, 'cloud');
+
+                if (t.status === 'growing') {
+                    if (!sHit && !cHit) t.health -= adaptiveDrain;
+                    else t.health = Math.min(perks.maxH, t.health + 0.7);
+
+                    let rate = 0.075;
+                    if (sHit) { rate *= perks.sun; t.el.classList.add('hit-sun'); } else t.el.classList.remove('hit-sun');
+                    if (cHit) { rate *= perks.rain; t.el.classList.add('hit-cloud'); } else t.el.classList.remove('hit-cloud');
+                    
+                    t.growth += rate;
+                    t.inner.style.height = t.growth + '%';
+                    t.hBar.style.width = (t.health / perks.maxH * 100) + '%';
+
+                    if (t.health <= 0) { t.status = 'dead'; t.regen = 100; t.el.className = 'tile dead'; t.icon.innerHTML = '💀'; }
+                    if (t.growth >= 100) {
+                        t.status = 'matured'; t.el.classList.add('matured'); t.icon.innerHTML = '✨';
+                        setTimeout(() => { if (t.status === 'matured') { points += perks.reward; xp += 40; updateXP(); reset(t); } }, 500);
+                    }
+                } else if (t.status === 'dead') {
+                    t.regen -= (0.35 * (sHit || cHit ? 4 : 1));
+                    t.inner.style.height = t.regen + '%';
+                    if (t.regen <= 0) reset(t);
+                }
+            });
+
+            checkEnergyState(activeCount);
+            requestAnimationFrame(gameLoop);
+        }
+
+        function checkEnergyState(activePlants) {
+            const ptsEl = document.getElementById('pts');
+            if (points < SEED_COST) {
+                ptsEl.classList.add('energy-danger');
+                if (activePlants === 0) {
+                    document.getElementById('status-hint').innerText = "BANKRUPT: TAP EMPTY TILES TO SCAVENGE";
+                    document.getElementById('status-hint').classList.add('text-red-500');
+                } else {
+                    document.getElementById('status-hint').innerText = "CRITICAL: PROTECT REMAINING CROPS";
+                }
+            } else {
+                ptsEl.classList.remove('energy-danger');
+                document.getElementById('status-hint').classList.remove('text-red-500');
+            }
+        }
+
+        function moveWeather(id) {
+            let w = weather[id], v = document.getElementById('game-viewport').offsetWidth;
+            w.x += w.vx; w.y += w.vy;
+            if (w.x > v || w.x < 0) w.vx *= -1; if (w.y > v || w.y < 0) w.vy *= -1;
+            document.getElementById(id).style.left = w.x + 'px'; document.getElementById(id).style.top = w.y + 'px';
+        }
+
+        function isUnder(tile, wId) {
+            const w = weather[wId], v = document.getElementById('game-viewport').offsetWidth;
+            const tileEl = container.children[tiles.indexOf(tile)];
+            const rect = tileEl.getBoundingClientRect();
+            const viewRect = document.getElementById('game-viewport').getBoundingClientRect();
+            const tx = rect.left - viewRect.left + (rect.width/2);
+            const ty = rect.top - viewRect.top + (rect.height/2);
+            const dx = tx - w.x, dy = ty - w.y;
+            return Math.sqrt(dx*dx + dy*dy) < (w.r / 100) * v;
+        }
+
+        function updateXP() {
+            if (xp >= xpNext) {
+                isPaused = true;
+                document.getElementById('lvl-overlay').classList.remove('hidden');
+                const wrap = document.getElementById('card-wrap'); wrap.innerHTML = '';
+                [...UPGRADES].sort(()=>.5-Math.random()).slice(0,3).forEach(u => {
+                    const c = document.createElement('div');
+                    c.className = 'bg-slate-900 border border-slate-700 p-3 rounded-xl flex items-center gap-4 cursor-pointer hover:border-indigo-500';
+                    c.innerHTML = `<div class="text-2xl">${u.i}</div><div><div class="font-bold text-[11px] uppercase">${u.n}</div><div class="text-[9px] text-slate-500">${u.d}</div></div>`;
+                    c.onclick = () => {
+                        if(u.id === 'S') perks.sun += 0.8; if(u.id === 'R') perks.rain += 0.6;
+                        if(u.id === 'V') perks.reward += 10; if(u.id === 'L') { perks.maxH += 50; perks.drainBase *= 0.85; }
+                        level++; xp = 0; xpNext += 60; isPaused = false;
+                        document.getElementById('lvl-overlay').classList.add('hidden');
+                        if (level > highRank) { highRank = level; localStorage.setItem('aura-high-rank', highRank); document.getElementById('high-rank').innerText = `Best: Rank ${highRank}`; }
+                        updateUI();
+                    };
+                    wrap.appendChild(c);
+                });
+            }
+            document.getElementById('xp-bar').style.width = (xp / xpNext * 100) + '%';
+        }
+
+        function updateHint() {
+            if (points >= SEED_COST) document.getElementById('status-hint').innerText = "System ready for planting";
+        }
+
+        function reset(t) { t.status = 'empty'; t.growth = 0; t.health = perks.maxH; t.inner.style.height = '0%'; t.el.className = 'tile'; t.icon.innerHTML = '🌱'; t.hBar.style.width = '0%'; updateUI(); }
+        function updateUI() { document.getElementById('pts').innerText = Math.floor(points); document.getElementById('lvl-txt').innerText = `Level ${level}`; }
+
+        gameLoop();
+    </script>
 </body>
 </html>
