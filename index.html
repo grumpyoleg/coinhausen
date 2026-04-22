@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>AURA_OS</title>
+    <title>AURA_OS: CORE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;800&display=swap');
@@ -15,22 +13,30 @@
             height: 100vh; width: 100vw; display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
         
-        /* PWA UI Fixes */
         #game-viewport { 
             position: relative; width: 90vw; height: 90vw; max-width: 400px; max-height: 400px; 
             background: #0f172a; border-radius: 20px; border: 2px solid #334155; overflow: hidden; 
         }
 
-        .tile { background: rgba(30, 41, 59, 0.4); border-radius: 10px; position: relative; overflow: hidden; border: 1px solid #1e293b; transition: all 0.2s; }
-        .tile.frozen { background: #0ea5e9 !important; animation: shake 0.2s infinite; }
+        .tile { background: rgba(30, 41, 59, 0.4); border-radius: 10px; position: relative; overflow: hidden; border: 1px solid #1e293b; transition: all 0.2s; cursor: pointer; }
+        .tile.planted { background: rgba(15, 23, 42, 0.9); }
+        .tile.frozen { background: #0ea5e9 !important; animation: shake 0.2s infinite; z-index: 30; pointer-events: none; }
+        
         @keyframes shake { 0% { transform: translate(1px, 1px); } 100% { transform: translate(-1px, -1px); } }
 
-        .growth-inner { position: absolute; bottom: 0; width: 100%; background: linear-gradient(to top, #064e3b, #10b981); transition: height 0.3s; pointer-events: none; }
-        .float-val { position: absolute; left: 50%; top: 40%; transform: translate(-50%, -50%); font-weight: 800; animation: floatUp 0.8s forwards; pointer-events: none; z-index: 50; }
-        @keyframes floatUp { 0% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, -40px); } }
+        .health-bar { position: absolute; top: 0; left: 0; height: 4px; width: 0%; background: #ef4444; z-index: 4; transition: width 0.1s; }
+        .growth-inner { position: absolute; bottom: 0; width: 100%; background: linear-gradient(to top, #064e3b, #10b981); transition: height 0.3s; pointer-events: none; z-index: 1; }
+        .plant-icon { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; opacity: 0; transition: 0.3s; z-index: 2; pointer-events: none; }
+        .tile.planted .plant-icon { opacity: 0.8; }
 
-        .weather-unit { position: absolute; border-radius: 50%; filter: blur(30px); opacity: 0.4; pointer-events: none; z-index: 20; }
-        #objective-timer { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 5rem; font-weight: 800; color: rgba(255,255,255,0.05); z-index: 5; pointer-events: none; display: none; }
+        .float-text { position: absolute; left: 50%; top: 20%; transform: translateX(-50%); font-weight: 800; font-size: 1.2rem; pointer-events: none; z-index: 60; animation: floatUp 0.8s ease-out forwards; }
+        @keyframes floatUp { 0% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, -50px); } }
+
+        .weather-unit { position: absolute; border-radius: 50%; filter: blur(30px); opacity: 0.4; pointer-events: none; z-index: 20; top: 0; left: 0; }
+        .perk-card { background: #0f172a; border: 1px solid #334155; padding: 12px; border-radius: 12px; cursor: pointer; }
+        .perk-card:hover { border-color: #6366f1; background: #1e293b; }
+
+        #boss-warning { position: absolute; inset: 0; background: rgba(239, 68, 68, 0.2); display: none; align-items: center; justify-content: center; z-index: 40; pointer-events: none; border: 4px solid #ef4444; }
     </style>
 </head>
 <body>
@@ -47,143 +53,142 @@
     </div>
 
     <div id="game-viewport">
-        <div id="objective-timer">60</div>
+        <div id="boss-warning" class="font-black text-red-500 text-2xl italic text-center uppercase">System Glitch<br><span class="text-sm">Sector Frozen</span></div>
         <div id="grid-container" class="grid grid-cols-5 grid-rows-5 w-full h-full gap-2 p-3 relative z-10"></div>
         <div id="sun" class="weather-unit bg-yellow-400 w-24 h-24"></div>
         <div id="cloud" class="weather-unit bg-blue-500 w-24 h-24"></div>
     </div>
 
-    <div class="w-full max-w-[400px] mt-6 px-4">
-        <div class="flex justify-between text-[10px] font-bold mb-1">
-            <span class="text-slate-500 uppercase">System Level <span id="lvl-num">1</span></span>
-            <span id="xp-val" class="text-indigo-400">0%</span>
+    <div class="w-full max-w-[400px] mt-6 px-4 space-y-4">
+        <div>
+            <div class="flex justify-between text-[9px] font-black uppercase mb-1">
+                <span class="text-slate-500">System Level <span id="lvl-num">1</span></span>
+                <span id="xp-val" class="text-indigo-400">0%</span>
+            </div>
+            <div class="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                <div id="xp-bar" class="h-full bg-indigo-500 transition-all" style="width: 0%"></div>
+            </div>
         </div>
-        <div class="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden mb-4">
-            <div id="xp-bar" class="h-full bg-indigo-500 transition-all" style="width: 0%"></div>
-        </div>
-        
-        <div class="flex justify-between text-[10px] font-bold mb-1">
-            <span class="text-slate-500 uppercase">Stability</span>
-            <span id="stab-val" class="text-amber-500">0%</span>
-        </div>
-        <div class="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-            <div id="stability-bar" class="h-full bg-amber-600 transition-all" style="width: 0%"></div>
+
+        <div>
+            <div class="flex justify-between text-[9px] font-black uppercase mb-1">
+                <span class="text-slate-500">Module Stability</span>
+                <span id="stab-val" class="text-amber-500">0%</span>
+            </div>
+            <div class="h-2 w-full bg-slate-800 rounded-full overflow-hidden border border-slate-700">
+                <div id="stability-bar" class="h-full bg-gradient-to-r from-amber-600 to-yellow-400 transition-all" style="width: 0%"></div>
+            </div>
         </div>
     </div>
 
     <div id="lvl-overlay" class="hidden fixed inset-0 z-[100] flex flex-col items-center justify-center p-8 bg-slate-950/95 backdrop-blur-md">
-        <h2 id="modal-title" class="text-xl font-black text-white italic tracking-widest mb-6">PROTOCOL UPGRADE</h2>
+        <h2 id="modal-title" class="text-xl font-black text-white italic mb-6 uppercase">Install Module</h2>
         <div id="card-wrap" class="flex flex-col gap-3 w-full max-w-xs"></div>
     </div>
 
     <script>
-        // CORE VARIABLES
-        let points = 100, xp = 0, xpNext = 100, level = 1, isPaused = false, stability = 0;
-        let inObjective = false, objTimer = 0, objGoal = 4, objCurrent = 0;
+        let points = 100, xp = 0, xpNext = 100, level = 1, isPaused = false;
+        let stability = 0;
         const tiles = [];
-        const perksBase = { sun: 2.2, rain: 1.2, reward: 12, drain: 0.08, maxH: 100 };
-        let perks = { ...perksBase };
-        let highScore = localStorage.getItem('aura_high_score') || 0;
-        document.getElementById('high-score').innerText = highScore;
+        
+        let statsBase = { sunMult: 2.2, rainMult: 1.4, reward: 12, decay: 0.15, plantCost: 15, shield: false };
+        let stats = { ...statsBase };
+        
+        const POOL = [
+            { id: 'S', n: 'SUPERNOVA', d: '+1.5x Sun Speed', i: '☀️', run: () => stats.sunMult += 1.5 },
+            { id: 'M', n: 'MONSOON', d: '+1.0x Rain Speed', i: '🌧️', run: () => stats.rainMult += 1.0 },
+            { id: 'O', n: 'OVERCLOCK', d: '+8 Energy Reward', i: '💎', run: () => stats.reward += 8 },
+            { id: 'N', n: 'NANOBOTS', d: 'Slow Decay (40%)', i: '🤖', run: () => stats.decay *= 0.6 },
+            { id: 'B', n: 'BATTERY', d: 'Plant Cost: 10', i: '🔋', run: () => stats.plantCost = 10 },
+            { id: 'H', n: 'SHIELD', d: 'Ignore Glitches', i: '🛡️', run: () => stats.shield = true }
+        ];
 
-        // VIBRATION HELPER
-        function doVibrate(ms) {
-            if ("vibrate" in navigator) navigator.vibrate(ms);
+        function showFloat(el, txt, col) {
+            const d = document.createElement('div'); d.className = 'float-text';
+            d.innerText = txt; d.style.color = col;
+            el.appendChild(d); setTimeout(() => d.remove(), 800);
         }
 
-        // INIT GRID
         const container = document.getElementById('grid-container');
         for (let i = 0; i < 25; i++) {
             const el = document.createElement('div'); el.className = 'tile';
             const inner = document.createElement('div'); inner.className = 'growth-inner';
-            el.appendChild(inner);
-            const tileObj = { el, inner, status: 'empty', growth: 0, health: 100, isFrozen: false };
+            const hBar = document.createElement('div'); hBar.className = 'health-bar';
+            const icon = document.createElement('div'); icon.className = 'plant-icon'; icon.innerHTML = '🌱';
+            el.append(inner, hBar, icon);
+            
+            const obj = { el, inner, hBar, icon, status: 'empty', growth: 0, health: 100, frozen: false };
             el.onclick = () => {
-                if (isPaused || tileObj.isFrozen || tileObj.status !== 'empty') return;
-                if (points >= 15) {
-                    points -= 15; tileObj.status = 'growing'; el.classList.add('planted');
-                } else { points += 1; }
-                updateUI();
+                if (isPaused || obj.frozen || obj.status !== 'empty') return;
+                if (points >= stats.plantCost) {
+                    points -= stats.plantCost; obj.status = 'growing'; obj.health = 100;
+                    el.classList.add('planted'); updateUI();
+                } else {
+                    points += 1; showFloat(el, "+1", "#94a3b8"); updateUI();
+                }
             };
-            tiles.push(tileObj); container.appendChild(el);
+            tiles.push(obj); container.appendChild(el);
         }
 
-        // WEATHER
-        let weather = { sun: { x: 50, y: 50, vx: 1.5, vy: 1.2 }, cloud: { x: 200, y: 200, vx: -1.2, vy: 1.5 } };
+        let weather = { sun: { x: 50, y: 50, vx: 1.3, vy: 1.1 }, cloud: { x: 200, y: 200, vx: -1.1, vy: 1.3 } };
 
         function gameLoop() {
             if (isPaused) return requestAnimationFrame(gameLoop);
 
-            // Stability Logic
-            if (stability > 0) stability -= 0.03;
-            else { stability = 0; perks = { ...perksBase }; }
-
-            // Objective Logic
-            if (inObjective) {
-                objTimer -= 0.016;
-                document.getElementById('objective-timer').innerText = Math.ceil(objTimer);
-                if (objTimer <= 0) gameOver("CRITICAL SYSTEM FAILURE");
+            if (stability > 0) {
+                stability -= 0.04; 
+            } else {
+                stability = 0;
+                stats = { ...statsBase };
             }
 
-            // Move Weather
             ['sun', 'cloud'].forEach(id => {
                 let w = weather[id]; w.x += w.vx; w.y += w.vy;
-                if (w.x > 380 || w.x < 0) w.vx *= -1; if (w.y > 380 || w.y < 0) w.vy *= -1;
+                if (w.x > 320 || w.x < 0) w.vx *= -1; if (w.y > 320 || w.y < 0) w.vy *= -1;
                 document.getElementById(id).style.transform = `translate(${w.x}px, ${w.y}px)`;
             });
 
-            // Tile Logic
             tiles.forEach(t => {
-                if (t.status === 'growing' && !t.isFrozen) {
-                    let sHit = checkHit(t, 'sun'), cHit = checkHit(t, 'cloud');
-                    let rate = (sHit && cHit) ? 0.35 : 0.08;
-                    if (sHit) rate *= perks.sun; if (cHit) rate *= perks.rain;
-                    
-                    t.growth += rate;
-                    t.inner.style.height = t.growth + '%';
+                if (t.status === 'growing' && !t.frozen) {
+                    let sH = checkHit(t, 'sun'), cH = checkHit(t, 'cloud');
+                    if (sH || cH) t.health = Math.min(100, t.health + 1); else t.health -= stats.decay;
+                    t.hBar.style.width = t.health + '%';
 
-                    if (t.growth >= 100) {
-                        t.status = 'empty'; t.growth = 0; t.el.classList.remove('planted');
-                        points += perks.reward; xp += 34;
-                        doVibrate(40); // Soft pulse for harvest
-                        if (inObjective) { objCurrent++; if (objCurrent >= objGoal) winObjective(); }
-                        checkLevelUp();
+                    if (t.health <= 0) {
+                        showFloat(t.el, "DEAD", "#ef4444");
+                        resetTile(t);
+                    } else {
+                        let rate = 0.08;
+                        if (sH) rate *= stats.sunMult; if (cH) rate *= stats.rainMult;
+                        t.growth += rate;
+                        t.inner.style.height = t.growth + '%';
+                        if (t.growth >= 100) {
+                            points += stats.reward; xp += 35;
+                            showFloat(t.el, `+${stats.reward}`, "#10b981");
+                            resetTile(t); checkLevelUp();
+                        }
                     }
                 }
             });
-
             updateUI();
             requestAnimationFrame(gameLoop);
         }
 
-        function checkHit(tile, wId) {
-            const w = weather[wId], idx = tiles.indexOf(tile);
-            const tx = ((idx % 5) * 80) + 40, ty = (Math.floor(idx / 5) * 80) + 40;
-            return Math.sqrt((tx-w.x-48)**2 + (ty-w.y-48)**2) < 60;
+        function checkHit(t, wId) {
+            const w = weather[wId], idx = tiles.indexOf(t);
+            const tx = ((idx % 5) * 75) + 35, ty = (Math.floor(idx / 5) * 75) + 35;
+            return Math.sqrt((tx - w.x - 48)**2 + (ty - w.y - 48)**2) < 65;
         }
 
-        // HAZARD: FREEZE (Level 3+)
-        setInterval(() => {
-            if (isPaused || level < 3) return;
-            let target = tiles[Math.floor(Math.random() * tiles.length)];
-            if (!target.isFrozen) {
-                target.isFrozen = true; target.el.classList.add('frozen');
-                doVibrate([100, 50, 100]); // Glitch vibration
-                if (target.status === 'growing') { target.status = 'empty'; target.growth = 0; target.el.classList.remove('planted'); }
-                setTimeout(() => { target.isFrozen = false; target.el.classList.remove('frozen'); }, 4000);
-            }
-        }, 7000);
+        function resetTile(t) {
+            t.status = 'empty'; t.growth = 0; t.health = 0; t.el.classList.remove('planted');
+            t.inner.style.height = '0%'; t.hBar.style.width = '0%';
+        }
 
         function checkLevelUp() {
             if (xp >= xpNext) {
-                isPaused = true; level++;
-                if (level > highScore) { 
-                    highScore = level; 
-                    localStorage.setItem('aura_high_score', highScore);
-                    document.getElementById('high-score').innerText = highScore;
-                }
-                if (level % 10 === 0) showObjective();
-                else showUpgrade();
+                isPaused = true; level++; xp = 0;
+                if (level % 10 === 0) triggerBoss(); else showUpgrade();
             }
         }
 
@@ -191,36 +196,47 @@
             const overlay = document.getElementById('lvl-overlay');
             overlay.classList.remove('hidden');
             const wrap = document.getElementById('card-wrap'); wrap.innerHTML = '';
-            [{n:'SUPERNOVA', i:'☀️'}, {n:'MONSOON', i:'🌧️'}, {n:'OVERCLOCK', i:'💎'}].forEach(u => {
+            
+            const shuffled = POOL.sort(() => 0.5 - Math.random()).slice(0, 3);
+            shuffled.forEach(u => {
                 let div = document.createElement('div');
-                div.className = "bg-slate-900 p-4 rounded-xl border border-slate-800 text-white font-bold flex items-center gap-4";
-                div.innerHTML = `<span>${u.i}</span> ${u.n}`;
-                div.onclick = () => {
-                    stability = 100; perks.reward = 22; xp = 0; isPaused = false;
-                    overlay.classList.add('hidden');
+                div.className = 'perk-card';
+                div.innerHTML = `<div class="font-bold">${u.i} ${u.n}</div><div class="text-[10px] text-slate-400">${u.d}</div>`;
+                div.onclick = () => { 
+                    u.run(); 
+                    stability = 100; 
+                    isPaused = false; 
+                    overlay.classList.add('hidden'); 
                 };
                 wrap.appendChild(div);
             });
         }
 
-        function showObjective() {
-            document.getElementById('lvl-overlay').classList.remove('hidden');
-            document.getElementById('modal-title').innerText = "CRITICAL OVERLOAD";
-            document.getElementById('card-wrap').innerHTML = `<button onclick="startObj()" class="bg-white text-black p-4 rounded-xl font-black">START MISSION (60S)</button>`;
-        }
-
-        function startObj() {
-            document.getElementById('lvl-overlay').classList.add('hidden');
-            inObjective = true; objTimer = 60; objCurrent = 0; isPaused = false;
-            document.getElementById('objective-timer').style.display = 'block';
-        }
-
-        function winObjective() {
-            inObjective = false; document.getElementById('objective-timer').style.display = 'none';
-        }
-
-        function gameOver(msg) {
-            alert(msg); location.reload();
+        function triggerBoss() {
+            document.getElementById('boss-warning').style.display = 'flex';
+            if (stats.shield) {
+                setTimeout(() => { 
+                    document.getElementById('boss-warning').innerText = "SHIELD PROTECTED";
+                    setTimeout(() => { isPaused = false; document.getElementById('boss-warning').style.display = 'none'; showUpgrade(); }, 2000);
+                }, 1000);
+                return;
+            }
+            
+            let bossTime = 0;
+            const bossInterval = setInterval(() => {
+                bossTime++;
+                tiles.forEach(t => {
+                    if (Math.random() > 0.6) {
+                        t.frozen = true; t.el.classList.add('frozen');
+                        setTimeout(() => { t.frozen = false; t.el.classList.remove('frozen'); }, 3000);
+                    }
+                });
+                if (bossTime > 5) { 
+                    clearInterval(bossInterval); 
+                    document.getElementById('boss-warning').style.display = 'none'; 
+                    isPaused = false; showUpgrade(); 
+                }
+            }, 4000);
         }
 
         function updateUI() {
@@ -230,6 +246,10 @@
             document.getElementById('xp-val').innerText = Math.floor(xp/xpNext*100) + '%';
             document.getElementById('stability-bar').style.width = stability + '%';
             document.getElementById('stab-val').innerText = Math.floor(stability) + '%';
+
+            let h = localStorage.getItem('aura_high') || 0;
+            if (level > h) localStorage.setItem('aura_high', level);
+            document.getElementById('high-score').innerText = h;
         }
 
         gameLoop();
