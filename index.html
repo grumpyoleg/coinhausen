@@ -2,197 +2,199 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AURA: BALANCED</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>AURA_OS: LANDSCAPE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;800&display=swap');
-        body { background: #020617; font-family: 'JetBrains Mono', monospace; margin: 0; overflow: hidden; touch-action: manipulation; color: #f1f5f9; }
-        #game-viewport { position: relative; width: 92vw; height: 92vw; max-width: 480px; max-height: 480px; background: #0f172a; border-radius: 20px; border: 2px solid #334155; overflow: hidden; }
-        #grid-container { display: grid; grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(5, 1fr); width: 100%; height: 100%; gap: 8px; padding: 12px; z-index: 10; position: relative; }
-        .tile { background: rgba(30, 41, 59, 0.5); border-radius: 12px; position: relative; overflow: hidden; border: 1px solid #1e293b; transition: transform 0.1s; }
-        .tile:active { transform: scale(0.95); }
-        .energy-danger { color: #f87171; animation: pulse 1s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        .growth-inner { position: absolute; bottom: 0; width: 100%; background: linear-gradient(to top, #064e3b, #10b981); transition: height 0.3s ease; z-index: 2; }
-        .health-bar { position: absolute; top: 0; left: 0; height: 4px; background: #ef4444; z-index: 5; opacity: 0; width: 100%; }
-        .tile.planted .health-bar { opacity: 1; }
-        .plant-icon { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; opacity: 0; transition: 0.3s; z-index: 3; }
-        .tile.planted .plant-icon, .matured .plant-icon, .dead .plant-icon { opacity: 1; }
-        .weather-unit { position: absolute; border-radius: 50%; filter: blur(40px); opacity: 0.4; pointer-events: none; z-index: 20; transform: translate(-50%, -50%); }
-        #xp-bar { height: 100%; width: 0%; background: #6366f1; transition: width 0.3s; }
-        .overlay { position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; backdrop-blur: md; }
+        body { 
+            background: #020617; font-family: 'JetBrains Mono', monospace; 
+            margin: 0; overflow: hidden; touch-action: none; color: #f1f5f9;
+            height: 100vh; width: 100vw; display: flex; 
+        }
+
+        /* Sidebar Layout */
+        .sidebar { width: 200px; padding: 20px; display: flex; flex-direction: column; justify-content: center; z-index: 50; }
+        
+        #game-container { flex-grow: 1; display: flex; align-items: center; justify-content: center; position: relative; }
+
+        #grid-viewport { 
+            position: relative; width: 450px; height: 450px; 
+            background: #0f172a; border-radius: 12px; border: 2px solid #334155; overflow: hidden; 
+        }
+
+        .tile { border: 1px solid #1e293b; background: rgba(30, 41, 59, 0.4); position: relative; transition: 0.1s; }
+        
+        /* Cursor Highlight */
+        .tile.selected { border: 3px solid #f1f5f9; box-shadow: inset 0 0 15px rgba(255,255,255,0.2); z-index: 10; transform: scale(1.05); }
+
+        .growth-inner { position: absolute; bottom: 0; width: 100%; background: linear-gradient(to top, #064e3b, #10b981); pointer-events: none; transition: height 0.3s; }
+        
+        /* Virtual Controls */
+        .controls-layer { position: fixed; bottom: 20px; left: 0; right: 0; display: flex; justify-content: space-between; padding: 0 40px; pointer-events: none; }
+        .dpad, .action-btn { pointer-events: auto; }
+        .btn { background: #1e293b; border: 2px solid #334155; width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; active:bg-indigo-600; }
+        .action-btn .btn { width: 80px; height: 80px; border-radius: 50%; background: #312e81; color: white; border-color: #4338ca; font-size: 1.5rem; }
+
+        .weather-unit { position: absolute; border-radius: 50%; filter: blur(30px); opacity: 0.4; pointer-events: none; z-index: 5; }
     </style>
 </head>
-<body class="flex flex-col items-center justify-center min-h-screen p-4">
+<body>
 
-    <div class="w-full max-w-[480px] flex justify-between items-end mb-4 px-2">
+    <div class="sidebar">
+        <h1 class="text-2xl font-black italic mb-8">AURA_OS</h1>
+        <span class="text-[10px] text-slate-500 uppercase font-bold">Energy</span>
+        <p id="pts" class="text-4xl font-black text-white mb-6">100</p>
+        <span class="text-[10px] text-slate-500 uppercase font-bold">System Level</span>
+        <p id="lvl-num" class="text-2xl font-black text-indigo-400">1</p>
+    </div>
+
+    <div id="game-container">
+        <div id="grid-viewport">
+            <div id="grid-container" class="grid grid-cols-5 grid-rows-5 w-full h-full gap-2 p-3 relative z-10"></div>
+            <div id="sun" class="weather-unit bg-yellow-400 w-24 h-24"></div>
+            <div id="cloud" class="weather-unit bg-blue-500 w-24 h-24"></div>
+        </div>
+    </div>
+
+    <div class="sidebar text-right">
+        <div class="mb-6">
+            <span class="text-[10px] text-slate-500 uppercase font-bold">Sync</span>
+            <div class="h-2 w-full bg-slate-800 rounded-full mt-1"><div id="xp-bar" class="h-full bg-indigo-500 rounded-full" style="width: 0%"></div></div>
+        </div>
         <div>
-            <h1 class="text-xl font-black italic text-white tracking-tighter">AURA_OS</h1>
-            <p id="lvl-txt" class="text-[9px] text-indigo-400 font-bold uppercase tracking-widest">Level 1</p>
-        </div>
-        <div class="text-right">
-            <p class="text-[9px] font-bold text-slate-500 uppercase">Energy</p>
-            <p id="pts" class="text-3xl font-black">100</p>
+            <span class="text-[10px] text-slate-500 uppercase font-bold">Stability</span>
+            <div class="h-2 w-full bg-slate-800 rounded-full mt-1"><div id="stab-bar" class="h-full bg-amber-600 rounded-full" style="width: 0%"></div></div>
         </div>
     </div>
 
-    <div id="game-viewport">
-        <div id="grid-container"></div>
-        <div id="sun" class="weather-unit bg-yellow-400 w-32 h-32"></div>
-        <div id="cloud" class="weather-unit bg-blue-500 w-28 h-28"></div>
+    <div class="controls-layer">
+        <div class="dpad grid grid-cols-3 gap-1">
+            <div></div><button class="btn" onclick="moveCursor(0,-1)">▲</button><div></div>
+            <button class="btn" onclick="moveCursor(-1,0)">◀</button><div></div><button class="btn" onclick="moveCursor(1,0)">▶</button>
+            <div></div><button class="btn" onclick="moveCursor(0,1)">▼</button><div></div>
+        </div>
+        <div class="action-btn flex items-end">
+            <button class="btn shadow-lg" onclick="pressX()">X</button>
+        </div>
     </div>
 
-    <div class="w-full max-w-[480px] h-1.5 bg-slate-800 rounded-full mt-6 overflow-hidden">
-        <div id="xp-bar"></div>
-    </div>
-
-    <div class="w-full max-w-[480px] mt-4 flex justify-between items-center px-2">
-        <p id="status-hint" class="text-[10px] uppercase font-bold text-slate-500 italic">Steady flow detected</p>
-        <p id="high-rank" class="text-[10px] uppercase font-bold text-emerald-500">Best: Rank 0</p>
-    </div>
-
-    <div id="lvl-overlay" class="hidden overlay bg-slate-950/98">
-        <h2 class="text-2xl font-black text-white italic mb-1 uppercase">Upgrade Selection</h2>
-        <div id="card-wrap" class="flex flex-col gap-3 w-full max-w-xs mt-6"></div>
+    <div id="lvl-overlay" class="hidden fixed inset-0 z-[100] flex flex-col items-center justify-center p-8 bg-slate-950/90 backdrop-blur-md">
+        <h2 class="text-2xl font-black text-white italic mb-6">UPGRADE SELECT</h2>
+        <div id="card-wrap" class="flex gap-4"></div>
     </div>
 
     <script>
-        const GRID_SIZE = 5;
-        const SEED_COST = 15;
-        const container = document.getElementById('grid-container');
+        let pts = 100, xp = 0, xpNext = 100, lvl = 1, stab = 0, isPaused = false;
+        let cursorIdx = 12; // Start in middle
         const tiles = [];
-        
-        // --- NEW BALANCED STATS ---
-        let points = 100, xp = 0, xpNext = 120, level = 1, isPaused = false;
-        let perks = { sun: 2.5, rain: 1.8, reward: 25, drainBase: 0.03, maxH: 100 };
+        const perks = { sun: 2.2, rain: 1.2, rew: 12 };
 
-        let highRank = localStorage.getItem('aura-high-rank') || 0;
-        document.getElementById('high-rank').innerText = `Best: Rank ${highRank}`;
-
-        const UPGRADES = [
-            { id: 'S', n: 'HELIO-MAX', d: 'Sun efficiency +50%', i: '☀️' },
-            { id: 'R', n: 'STORM-NODE', d: 'Rain efficiency +50%', i: '🌧️' },
-            { id: 'V', n: 'VOID-CELL', d: 'Harvest +12 Energy', i: '💎' },
-            { id: 'L', n: 'BIO-CORE', d: 'Max Health +60 / Drain -20%', i: '🛡️' }
-        ];
-
-        for (let i = 0; i < GRID_SIZE * GRID_SIZE; i++) {
+        // Init Grid
+        const grid = document.getElementById('grid-container');
+        for (let i = 0; i < 25; i++) {
             const el = document.createElement('div'); el.className = 'tile';
             const inner = document.createElement('div'); inner.className = 'growth-inner';
-            const hBar = document.createElement('div'); hBar.className = 'health-bar';
-            const icon = document.createElement('div'); icon.className = 'plant-icon'; icon.innerHTML = '🌱';
-            el.append(hBar, inner, icon);
-            const obj = { el, inner, hBar, icon, status: 'empty', growth: 0, health: 100 };
-            el.addEventListener('pointerdown', () => {
-                if (isPaused) return;
-                if (obj.status === 'empty') {
-                    if (points >= SEED_COST) {
-                        points -= SEED_COST; obj.status = 'growing'; el.classList.add('planted'); obj.health = perks.maxH;
-                    } else {
-                        // SCAVENGE BUFFED (+2)
-                        points += 2;
-                        document.getElementById('status-hint').innerText = "Scavenging +2 Energy...";
-                    }
-                    updateUI();
-                }
-            });
-            container.appendChild(el); tiles.push(obj);
+            el.appendChild(inner);
+            const obj = { el, inner, status: 'empty', growth: 0 };
+            tiles.push(obj); grid.appendChild(el);
         }
 
-        let weather = { sun: { x: 50, y: 50, vx: 1.5, vy: 1.2, r: 18 }, cloud: { x: 300, y: 300, vx: -1.3, vy: 1.7, r: 15 } };
+        function updateCursor() {
+            tiles.forEach((t, i) => {
+                t.el.classList.toggle('selected', i === cursorIdx);
+            });
+        }
+        updateCursor();
+
+        // Control Logic
+        function moveCursor(dx, dy) {
+            let x = cursorIdx % 5; let y = Math.floor(cursorIdx / 5);
+            x = Math.max(0, Math.min(4, x + dx));
+            y = Math.max(0, Math.min(4, y + dy));
+            cursorIdx = y * 5 + x;
+            updateCursor();
+        }
+
+        function pressX() {
+            if (isPaused) return;
+            const t = tiles[cursorIdx];
+            if (t.status === 'empty' && pts >= 15) {
+                pts -= 15; t.status = 'growing'; t.el.classList.add('planted');
+            } else if (t.status === 'empty') {
+                pts += 1; // Scavenge
+            }
+        }
+
+        // Keyboard Support
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowUp') moveCursor(0,-1);
+            if (e.key === 'ArrowDown') moveCursor(0,1);
+            if (e.key === 'ArrowLeft') moveCursor(-1,0);
+            if (e.key === 'ArrowRight') moveCursor(1,0);
+            if (e.key.toLowerCase() === 'x') pressX();
+        });
+
+        // Weather System
+        let weather = { sun: { x: 50, y: 50, vx: 1.2, vy: 0.8 }, cloud: { x: 200, y: 200, vx: -0.8, vy: 1.1 } };
 
         function gameLoop() {
             if (isPaused) return requestAnimationFrame(gameLoop);
-            moveWeather('sun'); moveWeather('cloud');
 
-            let activeCount = tiles.filter(t => t.status === 'growing' || t.status === 'matured').length;
-            
-            // SMARTER SCALING: Drain increases much slower at Level 4
-            let adaptiveDrain = (perks.drainBase + (level * 0.025)) * (1 + (activeCount * 0.06));
+            // Stability decay
+            if (stab > 0) stab -= 0.03; else stab = 0;
 
+            // Move Weather
+            ['sun', 'cloud'].forEach(id => {
+                let w = weather[id]; w.x += w.vx; w.y += w.vy;
+                if (w.x > 400 || w.x < 0) w.vx *= -1; if (w.y > 400 || w.y < 0) w.vy *= -1;
+                document.getElementById(id).style.transform = `translate(${w.x}px, ${w.y}px)`;
+            });
+
+            // Growth Logic
             tiles.forEach(t => {
-                const sHit = isUnder(t, 'sun'), cHit = isUnder(t, 'cloud');
                 if (t.status === 'growing') {
-                    if (!sHit && !cHit) t.health -= adaptiveDrain;
-                    else t.health = Math.min(perks.maxH, t.health + 0.8);
-
-                    let rate = 0.09; // Faster base growth
-                    if (sHit) { rate *= perks.sun; t.el.classList.add('hit-sun'); } else t.el.classList.remove('hit-sun');
-                    if (cHit) { rate *= perks.rain; t.el.classList.add('hit-cloud'); } else t.el.classList.remove('hit-cloud');
+                    const idx = tiles.indexOf(t);
+                    const tx = (idx % 5) * 90 + 45; const ty = Math.floor(idx / 5) * 90 + 45;
+                    const sHit = Math.sqrt((tx-weather.sun.x-48)**2 + (ty-weather.sun.y-48)**2) < 60;
+                    const cHit = Math.sqrt((tx-weather.cloud.x-48)**2 + (ty-weather.cloud.y-48)**2) < 60;
                     
+                    let rate = 0.08;
+                    if (sHit) rate *= perks.sun; if (cHit) rate *= perks.rain;
                     t.growth += rate;
                     t.inner.style.height = t.growth + '%';
-                    t.hBar.style.width = (t.health / perks.maxH * 100) + '%';
 
-                    if (t.health <= 0) { t.status = 'dead'; t.regen = 100; t.el.className = 'tile dead'; t.icon.innerHTML = '💀'; }
                     if (t.growth >= 100) {
-                        t.status = 'matured'; t.el.classList.add('matured'); t.icon.innerHTML = '✨';
-                        setTimeout(() => { if (t.status === 'matured') { points += perks.reward; xp += 40; updateXP(); reset(t); } }, 400);
+                        t.status = 'empty'; t.growth = 0; t.el.classList.remove('planted');
+                        pts += (stab > 0) ? 22 : 12; xp += 34;
+                        if (xp >= xpNext) triggerLevelUp();
                     }
-                } else if (t.status === 'dead') {
-                    t.regen -= (0.4 * (sHit || cHit ? 4 : 1));
-                    t.inner.style.height = t.regen + '%';
-                    if (t.regen <= 0) reset(t);
                 }
             });
-            checkEnergyState(activeCount);
+
+            document.getElementById('pts').innerText = Math.floor(pts);
+            document.getElementById('lvl-num').innerText = lvl;
+            document.getElementById('xp-bar').style.width = (xp/xpNext*100)+'%';
+            document.getElementById('stab-bar').style.width = stab + '%';
+            
             requestAnimationFrame(gameLoop);
         }
 
-        function checkEnergyState(activePlants) {
-            const ptsEl = document.getElementById('pts');
-            if (points < SEED_COST) {
-                ptsEl.classList.add('energy-danger');
-                if (activePlants === 0) document.getElementById('status-hint').innerText = "OUT OF ENERGY: TAP TILES TO SCAVENGE";
-            } else {
-                ptsEl.classList.remove('energy-danger');
-                if (activePlants > 0) document.getElementById('status-hint').innerText = "Nurture your crops";
-                else document.getElementById('status-hint').innerText = "Ready to plant";
-            }
+        function triggerLevelUp() {
+            isPaused = true; lvl++; xp = 0; xpNext += 20;
+            const overlay = document.getElementById('lvl-overlay');
+            overlay.classList.remove('hidden');
+            const wrap = document.getElementById('card-wrap'); wrap.innerHTML = '';
+            ['UPGRADE A', 'UPGRADE B'].forEach(txt => {
+                let btn = document.createElement('button');
+                btn.className = "bg-indigo-600 p-6 rounded-xl font-bold text-white";
+                btn.innerText = txt;
+                btn.onclick = () => {
+                    stab = 100; isPaused = false; overlay.classList.add('hidden');
+                };
+                wrap.appendChild(btn);
+            });
         }
-
-        function moveWeather(id) {
-            let w = weather[id], v = document.getElementById('game-viewport').offsetWidth;
-            w.x += w.vx; w.y += w.vy;
-            if (w.x > v || w.x < 0) w.vx *= -1; if (w.y > v || w.y < 0) w.vy *= -1;
-            document.getElementById(id).style.left = w.x + 'px'; document.getElementById(id).style.top = w.y + 'px';
-        }
-
-        function isUnder(tile, wId) {
-            const w = weather[wId], v = document.getElementById('game-viewport').offsetWidth;
-            const idx = tiles.indexOf(tile);
-            const tx = ((idx % GRID_SIZE) / GRID_SIZE * v) + (v / 10);
-            const ty = (Math.floor(idx / GRID_SIZE) / GRID_SIZE * v) + (v / 10);
-            const dx = tx - w.x, dy = ty - w.y;
-            return Math.sqrt(dx*dx + dy*dy) < (w.r / 100) * v;
-        }
-
-        function updateXP() {
-            if (xp >= xpNext) {
-                isPaused = true;
-                document.getElementById('lvl-overlay').classList.remove('hidden');
-                const wrap = document.getElementById('card-wrap'); wrap.innerHTML = '';
-                [...UPGRADES].sort(()=>.5-Math.random()).slice(0,3).forEach(u => {
-                    const c = document.createElement('div');
-                    c.className = 'bg-slate-900 border border-slate-700 p-3 rounded-xl flex items-center gap-4 cursor-pointer hover:border-indigo-500';
-                    c.innerHTML = `<div class="text-2xl">${u.i}</div><div><div class="font-bold text-[11px] uppercase text-white">${u.n}</div><div class="text-[9px] text-slate-500">${u.d}</div></div>`;
-                    c.onclick = () => {
-                        if(u.id === 'S') perks.sun += 1.0; if(u.id === 'R') perks.rain += 0.8;
-                        if(u.id === 'V') perks.reward += 12; if(u.id === 'L') { perks.maxH += 60; perks.drainBase *= 0.8; }
-                        level++; xp = 0; xpNext += 60; isPaused = false;
-                        document.getElementById('lvl-overlay').classList.add('hidden');
-                        if (level > highRank) { highRank = level; localStorage.setItem('aura-high-rank', highRank); document.getElementById('high-rank').innerText = `Best: Rank ${highRank}`; }
-                        updateUI();
-                    };
-                    wrap.appendChild(c);
-                });
-            }
-            document.getElementById('xp-bar').style.width = (xp / xpNext * 100) + '%';
-        }
-
-        function reset(t) { t.status = 'empty'; t.growth = 0; t.health = perks.maxH; t.inner.style.height = '0%'; t.el.className = 'tile'; t.icon.innerHTML = '🌱'; t.hBar.style.width = '0%'; updateUI(); }
-        function updateUI() { document.getElementById('pts').innerText = Math.floor(points); document.getElementById('lvl-txt').innerText = `Level ${level}`; }
 
         gameLoop();
     </script>
