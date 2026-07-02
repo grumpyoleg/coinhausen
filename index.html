@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>QuantCorp Tycoon - Full Save Edition</title>
+    <title>QuantCorp Tycoon - Balanced Market Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -17,10 +17,8 @@
 </head>
 <body class="p-3 pt-2 md:p-6 min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black select-none relative overflow-x-hidden safe-bottom">
 
-    <!-- POPUP CONTAINER -->
     <div id="popup-container" class="fixed top-4 right-4 z-50 space-y-3 w-80 max-w-[calc(100vw-2rem)] pointer-events-none"></div>
 
-    <!-- ONBOARDING MODAL -->
     <div id="onboarding-modal" class="fixed inset-0 bg-black/95 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-sm text-center space-y-5 shadow-2xl">
             <h3 class="text-base font-bold text-slate-200 uppercase tracking-wider">QuantCorp Terminal</h3>
@@ -43,7 +41,6 @@
         </div>
     </div>
 
-    <!-- INVESTMENT MODAL -->
     <div id="invest-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-40 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
         <div class="bg-slate-900 border-t sm:border border-slate-800 p-5 rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md shadow-2xl space-y-5 pb-8 sm:pb-5">
             <div class="flex justify-between items-center border-b border-slate-800/60 pb-3">
@@ -85,10 +82,8 @@
         </div>
     </div>
 
-    <!-- MAIN INTERFACE -->
     <div class="max-w-[1700px] mx-auto space-y-3">
         
-        <!-- HEADER -->
         <div class="bg-slate-900/60 border border-slate-800/80 rounded-xl p-3 flex flex-wrap items-center justify-between gap-2 shadow-sm backdrop-blur-sm">
             <div class="flex items-center space-x-3">
                 <div class="h-9 w-9 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center font-bold text-sm text-white shadow-md">QC</div>
@@ -109,7 +104,6 @@
             </div>
         </div>
 
-        <!-- STATS GRID -->
         <header class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
             <div class="bg-slate-900/90 border border-slate-800/60 p-3 rounded-xl">
                 <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Available Balance</div>
@@ -127,10 +121,8 @@
             </div>
         </header>
 
-        <!-- MAIN GRID -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-3.5">
             
-            <!-- LEFT COLUMN -->
             <div class="lg:col-span-5 space-y-3.5 order-2 lg:order-1">
                 <div class="bg-slate-900/40 border border-slate-800 p-4 rounded-xl shadow-lg backdrop-blur-md">
                     <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center mb-3">
@@ -139,7 +131,6 @@
                     <div id="my-portfolio-container" class="space-y-2.5 max-h-[300px] overflow-y-auto custom-scrollbar pr-0.5"></div>
                 </div>
 
-                <!-- LEADERBOARD -->
                 <div class="bg-slate-900/40 border border-slate-800 p-4 rounded-xl shadow-lg backdrop-blur-md">
                     <div class="flex justify-between items-center mb-2.5">
                         <h2 class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center">🏆 Global Leaderboard (Cloud)</h2>
@@ -164,7 +155,6 @@
                 </div>
             </div>
 
-            <!-- RIGHT COLUMN -->
             <div class="lg:col-span-7 order-1 lg:order-2">
                 <div class="bg-slate-900/40 border border-slate-800 p-4 rounded-xl shadow-lg backdrop-blur-md">
                     <div class="flex justify-between items-center border-b border-slate-800 pb-2.5 mb-2">
@@ -218,7 +208,6 @@
         });
 
         function initGameData() {
-            // Seeded Bot-Generation based on ID to make prices stable over reloads
             for (let i = 1; i <= 50; i++) {
                 let pIdx = (i * 3) % prefix.length;
                 let sIdx = (i * 7) % suffix.length;
@@ -230,9 +219,12 @@
                 const risk = risks[rIdx];
                 let multiplier = risk === "Conservative" ? 0.3 : risk === "Moderate" ? 1.0 : risk === "Aggressive" ? 2.2 : 5.0;
                 
+                // FIXED FORMULA: Allows negative starting alltime history (-25% to +65%)
+                let simulatedHistoricalProfit = -25.0 + ((i * 7) % 90); 
+
                 game.bots.push({
                     id: i, name: bName, ticker: ticker, strategy: strategies[stIdx],
-                    risk: risk, mult: multiplier, alltimeProfitPct: 15.0 + (i * 0.5), tokenPriceInBtc: 0.01 
+                    risk: risk, mult: multiplier, alltimeProfitPct: simulatedHistoricalProfit, tokenPriceInBtc: 0.01 
                 });
             }
         }
@@ -543,7 +535,7 @@
                             <div class="text-slate-200 truncate max-w-[110px] sm:max-w-[150px]">${bot.name}</div>
                             <div class="text-[9px] text-slate-500 font-normal">${bot.strategy}</div>
                         </td>
-                        <td class="py-2.5 px-2 text-right mono font-bold ${bot.alltimeProfitPct >= 0 ? 'text-emerald-400':'text-rose-400'}">${bot.alltimeProfitPct.toFixed(1)}%</td>
+                        <td class="py-2.5 px-2 text-right mono font-bold ${bot.alltimeProfitPct >= 0 ? 'text-emerald-400':'text-rose-400'}">${bot.alltimeProfitPct >= 0 ? '+':''}${bot.alltimeProfitPct.toFixed(1)}%</td>
                         <td class="py-2.5 px-2 text-right mono">
                             <div class="font-bold text-slate-300">${bot.tokenPriceInBtc.toFixed(4)}</div>
                             <div class="text-[9px] text-slate-500">~${(bot.tokenPriceInBtc * game.btcPrice).toFixed(1)}$</div>
