@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>QuantCorp Tycoon - Cloud & Smart Load Edition</title>
+    <title>QuantCorp Tycoon - Full Save Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -17,8 +17,10 @@
 </head>
 <body class="p-3 pt-2 md:p-6 min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black select-none relative overflow-x-hidden safe-bottom">
 
+    <!-- POPUP CONTAINER -->
     <div id="popup-container" class="fixed top-4 right-4 z-50 space-y-3 w-80 max-w-[calc(100vw-2rem)] pointer-events-none"></div>
 
+    <!-- ONBOARDING MODAL -->
     <div id="onboarding-modal" class="fixed inset-0 bg-black/95 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-sm text-center space-y-5 shadow-2xl">
             <h3 class="text-base font-bold text-slate-200 uppercase tracking-wider">QuantCorp Terminal</h3>
@@ -41,6 +43,7 @@
         </div>
     </div>
 
+    <!-- INVESTMENT MODAL -->
     <div id="invest-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-40 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
         <div class="bg-slate-900 border-t sm:border border-slate-800 p-5 rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md shadow-2xl space-y-5 pb-8 sm:pb-5">
             <div class="flex justify-between items-center border-b border-slate-800/60 pb-3">
@@ -82,8 +85,10 @@
         </div>
     </div>
 
+    <!-- MAIN INTERFACE -->
     <div class="max-w-[1700px] mx-auto space-y-3">
         
+        <!-- HEADER -->
         <div class="bg-slate-900/60 border border-slate-800/80 rounded-xl p-3 flex flex-wrap items-center justify-between gap-2 shadow-sm backdrop-blur-sm">
             <div class="flex items-center space-x-3">
                 <div class="h-9 w-9 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center font-bold text-sm text-white shadow-md">QC</div>
@@ -104,6 +109,7 @@
             </div>
         </div>
 
+        <!-- STATS GRID -->
         <header class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
             <div class="bg-slate-900/90 border border-slate-800/60 p-3 rounded-xl">
                 <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Available Balance</div>
@@ -121,8 +127,10 @@
             </div>
         </header>
 
+        <!-- MAIN GRID -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-3.5">
             
+            <!-- LEFT COLUMN -->
             <div class="lg:col-span-5 space-y-3.5 order-2 lg:order-1">
                 <div class="bg-slate-900/40 border border-slate-800 p-4 rounded-xl shadow-lg backdrop-blur-md">
                     <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center mb-3">
@@ -131,6 +139,7 @@
                     <div id="my-portfolio-container" class="space-y-2.5 max-h-[300px] overflow-y-auto custom-scrollbar pr-0.5"></div>
                 </div>
 
+                <!-- LEADERBOARD -->
                 <div class="bg-slate-900/40 border border-slate-800 p-4 rounded-xl shadow-lg backdrop-blur-md">
                     <div class="flex justify-between items-center mb-2.5">
                         <h2 class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center">🏆 Global Leaderboard (Cloud)</h2>
@@ -155,6 +164,7 @@
                 </div>
             </div>
 
+            <!-- RIGHT COLUMN -->
             <div class="lg:col-span-7 order-1 lg:order-2">
                 <div class="bg-slate-900/40 border border-slate-800 p-4 rounded-xl shadow-lg backdrop-blur-md">
                     <div class="flex justify-between items-center border-b border-slate-800 pb-2.5 mb-2">
@@ -189,8 +199,8 @@
         };
 
         const CLOUD_URL = "https://kvdb.io/MNY7g6C6j5E8bWwz6fK78w/tycoon_global_leaderboard";
-
         let activeTargetBotId = null;
+
         const prefix = ["Apex", "Quantum", "Hyper", "Vortex", "Satoshi", "Cyber", "Aegis", "Alpha", "Zero", "Nexus", "Neural", "Vector"];
         const suffix = ["Fund", "Core", "Matrix", "Pool", "Systems", "Protocol", "Yield", "Quant"];
         const strategies = ["Scalping", "Leverage", "Grid DCA", "Momentum", "Arbitrage"];
@@ -207,8 +217,28 @@
             fetchCustomBtcPrice();
         });
 
+        function initGameData() {
+            // Seeded Bot-Generation based on ID to make prices stable over reloads
+            for (let i = 1; i <= 50; i++) {
+                let pIdx = (i * 3) % prefix.length;
+                let sIdx = (i * 7) % suffix.length;
+                let stIdx = (i * 2) % strategies.length;
+                let rIdx = (i * 11) % risks.length;
+
+                const bName = prefix[pIdx] + " " + suffix[sIdx] + " #" + i;
+                const ticker = bName.split(' ').map(w => w[0]).join('').replace('#','').substring(0,3) + i;
+                const risk = risks[rIdx];
+                let multiplier = risk === "Conservative" ? 0.3 : risk === "Moderate" ? 1.0 : risk === "Aggressive" ? 2.2 : 5.0;
+                
+                game.bots.push({
+                    id: i, name: bName, ticker: ticker, strategy: strategies[stIdx],
+                    risk: risk, mult: multiplier, alltimeProfitPct: 15.0 + (i * 0.5), tokenPriceInBtc: 0.01 
+                });
+            }
+        }
+
         function saveToBrowserStorage() {
-            localStorage.setItem('quantcorp_save_v2', JSON.stringify({
+            localStorage.setItem('quantcorp_save_v3', JSON.stringify({
                 nickname: game.nickname, balance: game.balance, level: game.level,
                 xp: game.xp, xpNeeded: game.xpNeeded, statExits: game.statExits,
                 statTotalProfitUsd: game.statTotalProfitUsd, portfolio: game.portfolio
@@ -216,7 +246,7 @@
         }
 
         function loadFromBrowserStorage() {
-            const rawSave = localStorage.getItem('quantcorp_save_v2');
+            const rawSave = localStorage.getItem('quantcorp_save_v3');
             if (rawSave) {
                 const parsed = JSON.parse(rawSave);
                 Object.assign(game, parsed);
@@ -226,7 +256,6 @@
             }
         }
 
-        // --- ONBOARDING INTERFACE SWITCHES ---
         window.switchOnboardingTab = function(tab) {
             const tabNew = document.getElementById('tab-btn-new');
             const tabLoad = document.getElementById('tab-btn-load');
@@ -248,7 +277,7 @@
 
         window.saveOnboarding = function() {
             const input = document.getElementById('nickname-input').value.trim().replace(/[^a-zA-Z0-9_]/g, '');
-            if(input.length < 3) { alert('Moniker must be at least 3 chars (A-Z, 0-9, _)'); return; }
+            if(input.length < 3) { alert('Moniker must be at least 3 chars'); return; }
             game.nickname = input;
             document.getElementById('user-nickname').innerText = game.nickname;
             document.getElementById('onboarding-modal').classList.add('hidden');
@@ -263,46 +292,42 @@
                 const parsed = JSON.parse(atob(code));
                 game.nickname = parsed.n; game.balance = parsed.b; game.level = parsed.l;
                 game.xp = parsed.x; game.xpNeeded = parsed.xn; game.statExits = parsed.se;
-                game.statTotalProfitUsd = parsed.sp; game.portfolio = {};
+                game.statTotalProfitUsd = parsed.sp; game.portfolio = parsed.p || {};
                 saveToBrowserStorage();
                 window.location.reload();
-            } catch(e) {
-                alert("Failed to decrypt string. Ensure you copied the exact, complete save code.");
-            }
+            } catch(e) { alert("Failed to decrypt string."); }
         }
 
         window.copySaveCode = function() {
             const stateString = btoa(JSON.stringify({
                 n: game.nickname, b: game.balance, l: game.level, x: game.xp, 
-                xn: game.xpNeeded, se: game.statExits, sp: game.statTotalProfitUsd
+                xn: game.xpNeeded, se: game.statExits, sp: game.statTotalProfitUsd, p: game.portfolio
             }));
             navigator.clipboard.writeText(stateString);
-            showPopup("SYSTEM", "Save-Code copied to clipboard!", "info");
+            showPopup("SYSTEM", "Full Export Code copied to clipboard!", "info");
         }
 
         window.promptLoadCode = function() {
-            const code = prompt("Paste Save-Code string:");
+            const code = prompt("Paste Complete Backup Code string:");
             if (!code) return;
             try {
                 const parsed = JSON.parse(atob(code));
                 game.nickname = parsed.n; game.balance = parsed.b; game.level = parsed.l;
                 game.xp = parsed.x; game.xpNeeded = parsed.xn; game.statExits = parsed.se;
-                game.statTotalProfitUsd = parsed.sp; game.portfolio = {};
+                game.statTotalProfitUsd = parsed.sp; game.portfolio = parsed.p || {};
                 saveToBrowserStorage();
                 window.location.reload();
-            } catch(e) { alert("Invalid Save-Code."); }
+            } catch(e) { alert("Invalid Backup Code."); }
         }
 
-        // --- HTTP CLOUD CORE FUNCTIONS ---
         async function fetchGlobalLeaderboard() {
             try {
                 document.getElementById('cloud-status').innerText = "Syncing...";
                 const res = await fetch(CLOUD_URL);
-                if (!res.ok) throw new Error("No data yet");
+                if (!res.ok) throw new Error();
                 let board = await res.json();
                 board.sort((a,b) => b.exits - a.exits);
-                board = board.slice(0, 5);
-                renderLeaderboardUI(board);
+                renderLeaderboardUI(board.slice(0, 5));
                 document.getElementById('cloud-status').innerText = "🟢 Online";
             } catch (err) {
                 document.getElementById('cloud-status').innerText = "⚠️ Local Mode";
@@ -320,27 +345,17 @@
                 } catch(e){}
 
                 let myEntry = currentBoard.find(e => e.name === game.nickname);
-                if (myEntry) {
-                    if (game.statExits > myEntry.exits) myEntry.exits = game.statExits;
-                } else {
-                    currentBoard.push({ name: game.nickname, exits: game.statExits });
-                }
+                if (myEntry) { if (game.statExits > myEntry.exits) myEntry.exits = game.statExits; } 
+                else { currentBoard.push({ name: game.nickname, exits: game.statExits }); }
 
                 currentBoard.sort((a,b) => b.exits - a.exits);
-                currentBoard = currentBoard.slice(0, 20);
-
-                await fetch(CLOUD_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(currentBoard)
-                });
+                await fetch(CLOUD_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(currentBoard.slice(0, 20)) });
                 fetchGlobalLeaderboard();
-            } catch (err) { console.log("Cloud push failed", err); }
+            } catch (err) {}
         }
 
         function renderLeaderboardUI(board) {
-            const list = document.getElementById('leaderboard-list');
-            list.innerHTML = '';
+            const list = document.getElementById('leaderboard-list'); list.innerHTML = '';
             board.forEach((entry, i) => {
                 const isMe = entry.name === game.nickname;
                 list.innerHTML += `
@@ -349,19 +364,6 @@
                         <span class="text-slate-300 font-bold">${entry.exits} Exits</span>
                     </li>`;
             });
-        }
-
-        function initGameData() {
-            for (let i = 1; i <= 50; i++) {
-                const bName = prefix[Math.floor(Math.random() * prefix.length)] + " " + suffix[Math.floor(Math.random() * suffix.length)] + " #" + i;
-                const ticker = bName.split(' ').map(w => w[0]).join('').replace('#','').substring(0,3) + i;
-                const risk = risks[Math.floor(Math.random() * risks.length)];
-                let multiplier = risk === "Conservative" ? 0.3 : risk === "Moderate" ? 1.0 : risk === "Aggressive" ? 2.2 : 5.0;
-                game.bots.push({
-                    id: i, name: bName, ticker: ticker, strategy: strategies[Math.floor(Math.random() * strategies.length)],
-                    risk: risk, mult: multiplier, alltimeProfitPct: (Math.random() * 40) - 10, tokenPriceInBtc: 0.01 
-                });
-            }
         }
 
         async function fetchCustomBtcPrice() {
@@ -404,20 +406,23 @@
         }
 
         function checkAutomatedOrders() {
+            let changes = false;
             Object.keys(game.portfolio).forEach(botId => {
                 const asset = game.portfolio[botId];
                 const bot = game.bots.find(b => b.id == botId);
+                if(!bot) return;
                 const currentBtcValue = asset.tokenCount * bot.tokenPriceInBtc;
                 const yourProfitPct = ((currentBtcValue - asset.initialInvestedBtc) / asset.initialInvestedBtc) * 100;
 
                 if (asset.takeProfit !== null && yourProfitPct >= asset.takeProfit) {
-                    showPopup(bot.ticker, `🎯 TAKE-PROFIT triggered automatically!`, 'success');
-                    executeSellShares(botId);
+                    showPopup(bot.ticker, `🎯 AUTOMATED TAKE-PROFIT TRIGGERED!`, 'success');
+                    executeSellShares(botId); changes = true;
                 } else if (asset.stopLoss !== null && yourProfitPct <= asset.stopLoss) {
-                    showPopup(bot.ticker, `🛑 STOP-LOSS triggered!`, 'danger');
-                    executeSellShares(botId);
+                    showPopup(bot.ticker, `🛑 AUTOMATED STOP-LOSS TRIGGERED!`, 'danger');
+                    executeSellShares(botId); changes = true;
                 }
             });
+            if(changes) saveToBrowserStorage();
         }
 
         function showPopup(title, message, type = 'info') {
@@ -436,7 +441,7 @@
             game.xp += amount;
             if (game.xp >= game.xpNeeded) {
                 game.level += 1; game.xp = 0; game.xpNeeded = Math.floor(game.xpNeeded * 1.6);
-                showPopup("✨ RANK UP", `Promoted to Operations Level ${game.level}!`, 'info');
+                showPopup("✨ RANK UP", `Operations Level ${game.level}!`, 'info');
             }
             saveToBrowserStorage();
         }
@@ -447,8 +452,7 @@
             const maxInvestmentBtc = Math.min(game.balance, game.level * 0.25);
             document.getElementById('modal-title').innerText = `DEPLOY: $${bot.ticker}`;
             const btcSlider = document.getElementById('modal-btc-slider');
-            btcSlider.max = maxInvestmentBtc;
-            btcSlider.value = (maxInvestmentBtc * 0.5).toFixed(3);
+            btcSlider.max = maxInvestmentBtc; btcSlider.value = (maxInvestmentBtc * 0.5).toFixed(3);
             if(parseFloat(btcSlider.value) < 0.001) btcSlider.value = 0.001;
             document.getElementById('modal-max-label').innerText = `Max Cap: ${maxInvestmentBtc.toFixed(3)} BTC`;
             document.getElementById('tp-toggle').checked = false; document.getElementById('sl-toggle').checked = false;
@@ -507,17 +511,12 @@
             if (rawNetProfitBtc > 0) finalBtcPayout -= (rawNetProfitBtc * 0.1);
             const cleanNetProfitBtc = finalBtcPayout - asset.initialInvestedBtc;
             
-            game.balance += finalBtcPayout;
-            game.statExits += 1;
-            game.statTotalProfitUsd += cleanNetProfitBtc * game.btcPrice;
-            
+            game.balance += finalBtcPayout; game.statExits += 1; game.statTotalProfitUsd += cleanNetProfitBtc * game.btcPrice;
             if (cleanNetProfitBtc > 0) gainXp(Math.floor(cleanNetProfitBtc * 1500) + 20);
-            showPopup(bot.ticker, `Position liquidated.`, cleanNetProfitBtc >= 0 ? 'success' : 'danger');
             
+            showPopup(bot ? bot.ticker : "ALGO", `Position liquidated.`, cleanNetProfitBtc >= 0 ? 'success' : 'danger');
             delete game.portfolio[botId];
-            saveToBrowserStorage();
-            syncScoreToCloud();
-            updateUI();
+            saveToBrowserStorage(); syncScoreToCloud(); updateUI();
         }
 
         window.sellShares = function(botId) { executeSellShares(botId); }
@@ -535,8 +534,7 @@
             profitEl.className = "text-base font-bold mono mt-0.5 " + (game.statTotalProfitUsd >= 0 ? "text-emerald-400" : "text-rose-500");
             document.getElementById('xp-bar').style.width = Math.min((game.xp / game.xpNeeded) * 100, 100) + "%";
 
-            const marketTbody = document.getElementById('market-tbody');
-            marketTbody.innerHTML = '';
+            const marketTbody = document.getElementById('market-tbody'); marketTbody.innerHTML = '';
             game.bots.forEach(bot => {
                 const isInvested = game.portfolio[bot.id] !== undefined;
                 marketTbody.innerHTML += `
@@ -564,6 +562,7 @@
                 portfolioContainer.innerHTML = '';
                 currentHoldings.forEach(asset => {
                     const bot = game.bots.find(b => b.id === asset.botId);
+                    if(!bot) return;
                     const currentBtcValue = asset.tokenCount * bot.tokenPriceInBtc;
                     const yourProfitPct = ((currentBtcValue - asset.initialInvestedBtc) / asset.initialInvestedBtc) * 100;
                     let limitBadges = "";
@@ -586,7 +585,10 @@
             }
             
             let totalPortfolioBtc = 0;
-            Object.values(game.portfolio).forEach(p => { totalPortfolioBtc += p.tokenCount * game.bots.find(b => b.id === p.botId).tokenPriceInBtc; });
+            Object.values(game.portfolio).forEach(p => { 
+                const b = game.bots.find(bot => bot.id === p.botId);
+                if(b) totalPortfolioBtc += p.tokenCount * b.tokenPriceInBtc; 
+            });
             document.getElementById('total-nav').innerText = totalPortfolioBtc.toFixed(8) + " BTC";
             document.getElementById('total-nav-usd').innerText = "~ " + (totalPortfolioBtc * game.btcPrice).toLocaleString('en-US', {minimumFractionDigits: 2}) + " $";
         }
