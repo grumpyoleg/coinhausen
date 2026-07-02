@@ -1,258 +1,595 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="bg-slate-950 text-slate-100">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>AURA_OS: CORE</title>
+    <title>QuantCorp Tycoon - Cloud & Smart Load Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;800&display=swap');
-        body { 
-            background: #020617; font-family: 'JetBrains Mono', monospace; 
-            margin: 0; overflow: hidden; touch-action: none; color: #f1f5f9;
-            height: 100vh; width: 100vw; display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
-        
-        #game-viewport { 
-            position: relative; width: 90vw; height: 90vw; max-width: 400px; max-height: 400px; 
-            background: #0f172a; border-radius: 20px; border: 2px solid #334155; overflow: hidden; 
-        }
-
-        .tile { background: rgba(30, 41, 59, 0.4); border-radius: 10px; position: relative; overflow: hidden; border: 1px solid #1e293b; transition: all 0.2s; cursor: pointer; }
-        .tile.planted { background: rgba(15, 23, 42, 0.9); }
-        .tile.frozen { background: #0ea5e9 !important; animation: shake 0.2s infinite; z-index: 30; pointer-events: none; }
-        
-        @keyframes shake { 0% { transform: translate(1px, 1px); } 100% { transform: translate(-1px, -1px); } }
-
-        .health-bar { position: absolute; top: 0; left: 0; height: 4px; width: 0%; background: #ef4444; z-index: 4; transition: width 0.1s; }
-        .growth-inner { position: absolute; bottom: 0; width: 100%; background: linear-gradient(to top, #064e3b, #10b981); transition: height 0.3s; pointer-events: none; z-index: 1; }
-        .plant-icon { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; opacity: 0; transition: 0.3s; z-index: 2; pointer-events: none; }
-        .tile.planted .plant-icon { opacity: 0.8; }
-
-        .float-text { position: absolute; left: 50%; top: 20%; transform: translateX(-50%); font-weight: 800; font-size: 1.2rem; pointer-events: none; z-index: 60; animation: floatUp 0.8s ease-out forwards; }
-        @keyframes floatUp { 0% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, -50px); } }
-
-        .weather-unit { position: absolute; border-radius: 50%; filter: blur(30px); opacity: 0.4; pointer-events: none; z-index: 20; top: 0; left: 0; }
-        .perk-card { background: #0f172a; border: 1px solid #334155; padding: 12px; border-radius: 12px; cursor: pointer; }
-        .perk-card:hover { border-color: #6366f1; background: #1e293b; }
-
-        #boss-warning { position: absolute; inset: 0; background: rgba(239, 68, 68, 0.2); display: none; align-items: center; justify-content: center; z-index: 40; pointer-events: none; border: 4px solid #ef4444; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .toast-popup { animation: slideIn 0.3s ease-out forwards; }
     </style>
 </head>
-<body>
+<body class="p-3 pt-2 md:p-6 min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black select-none relative overflow-x-hidden safe-bottom">
 
-    <div class="w-full max-w-[400px] flex justify-between items-end mb-4 px-4">
-        <div>
-            <h1 class="text-xl font-black italic text-white leading-none">AURA_OS</h1>
-            <div class="text-[9px] text-slate-500 font-bold uppercase mt-1">Best Level: <span id="high-score">0</span></div>
-        </div>
-        <div class="text-right">
-            <span class="text-[10px] text-indigo-400 font-bold uppercase">Energy</span>
-            <p id="pts" class="text-3xl font-black leading-none">100</p>
-        </div>
-    </div>
+    <div id="popup-container" class="fixed top-4 right-4 z-50 space-y-3 w-80 max-w-[calc(100vw-2rem)] pointer-events-none"></div>
 
-    <div id="game-viewport">
-        <div id="boss-warning" class="font-black text-red-500 text-2xl italic text-center uppercase">System Glitch<br><span class="text-sm">Sector Frozen</span></div>
-        <div id="grid-container" class="grid grid-cols-5 grid-rows-5 w-full h-full gap-2 p-3 relative z-10"></div>
-        <div id="sun" class="weather-unit bg-yellow-400 w-24 h-24"></div>
-        <div id="cloud" class="weather-unit bg-blue-500 w-24 h-24"></div>
-    </div>
-
-    <div class="w-full max-w-[400px] mt-6 px-4 space-y-4">
-        <div>
-            <div class="flex justify-between text-[9px] font-black uppercase mb-1">
-                <span class="text-slate-500">System Level <span id="lvl-num">1</span></span>
-                <span id="xp-val" class="text-indigo-400">0%</span>
+    <div id="onboarding-modal" class="fixed inset-0 bg-black/95 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-sm text-center space-y-5 shadow-2xl">
+            <h3 class="text-base font-bold text-slate-200 uppercase tracking-wider">QuantCorp Terminal</h3>
+            <p class="text-xs text-slate-400">Initialize a new operational identity or restore an existing mainframe backup.</p>
+            
+            <div class="grid grid-cols-2 gap-2 p-1 bg-slate-950 border border-slate-800 rounded-xl">
+                <button id="tab-btn-new" onclick="switchOnboardingTab('new')" class="py-2 text-[10px] uppercase font-bold tracking-wider rounded-lg bg-indigo-600 text-white transition-all">New Agent</button>
+                <button id="tab-btn-load" onclick="switchOnboardingTab('load')" class="py-2 text-[10px] uppercase font-bold tracking-wider rounded-lg text-slate-400 transition-all">Load Backup</button>
             </div>
-            <div class="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-                <div id="xp-bar" class="h-full bg-indigo-500 transition-all" style="width: 0%"></div>
-            </div>
-        </div>
 
-        <div>
-            <div class="flex justify-between text-[9px] font-black uppercase mb-1">
-                <span class="text-slate-500">Module Stability</span>
-                <span id="stab-val" class="text-amber-500">0%</span>
+            <div id="onboarding-view-new" class="space-y-3">
+                <input type="text" id="nickname-input" placeholder="Moniker (e.g. Satoshi_99)" maxlength="12" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-4 py-3 text-sm mono focus:outline-none focus:border-indigo-500 text-center">
+                <button onclick="saveOnboarding()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-xs font-bold uppercase tracking-wider transition-all">Initialize Session</button>
             </div>
-            <div class="h-2 w-full bg-slate-800 rounded-full overflow-hidden border border-slate-700">
-                <div id="stability-bar" class="h-full bg-gradient-to-r from-amber-600 to-yellow-400 transition-all" style="width: 0%"></div>
+
+            <div id="onboarding-view-load" class="space-y-3 hidden">
+                <textarea id="onboarding-load-input" placeholder="Paste your cryptographic save code string here..." class="w-full h-24 bg-slate-950 border border-slate-800 text-slate-300 rounded-xl px-3 py-2 text-[11px] mono focus:outline-none focus:border-indigo-500 resize-none"></textarea>
+                <button onclick="executeOnboardingLoad()" class="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 rounded-xl text-xs font-bold uppercase tracking-wider transition-all">Restore System State</button>
             </div>
         </div>
     </div>
 
-    <div id="lvl-overlay" class="hidden fixed inset-0 z-[100] flex flex-col items-center justify-center p-8 bg-slate-950/95 backdrop-blur-md">
-        <h2 id="modal-title" class="text-xl font-black text-white italic mb-6 uppercase">Install Module</h2>
-        <div id="card-wrap" class="flex flex-col gap-3 w-full max-w-xs"></div>
+    <div id="invest-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-40 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-slate-900 border-t sm:border border-slate-800 p-5 rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md shadow-2xl space-y-5 pb-8 sm:pb-5">
+            <div class="flex justify-between items-center border-b border-slate-800/60 pb-3">
+                <h3 id="modal-title" class="text-sm font-bold text-slate-200 uppercase tracking-wider">License Algorithm</h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-white p-2 text-lg">✕</button>
+            </div>
+            <div class="space-y-2">
+                <div class="flex justify-between text-xs font-semibold">
+                    <span class="text-slate-400">BTC Capital:</span>
+                    <span id="modal-btc-val" class="mono text-amber-400 font-bold text-sm">0.1000 BTC</span>
+                </div>
+                <input type="range" id="modal-btc-slider" min="0.001" max="1" step="0.001" class="w-full h-3 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-amber-500 py-2" oninput="updateModalValues()">
+                <div class="flex justify-between text-[10px] text-slate-500 mono"><span id="modal-min-label">Min: 0.001 BTC</span><span id="modal-max-label">Max: --</span></div>
+            </div>
+            <div class="bg-slate-950/80 p-3.5 rounded-xl border border-slate-800/60 space-y-2">
+                <label class="flex items-center space-x-3 cursor-pointer">
+                    <input type="checkbox" id="tp-toggle" class="w-4 h-4 rounded bg-slate-800 border-slate-700 text-indigo-500 focus:ring-0" onchange="toggleParamSliders()">
+                    <span class="text-xs font-bold text-slate-300">Take-Profit (Target)</span>
+                </label>
+                <div id="tp-slider-container" class="opacity-30 pointer-events-none transition-opacity duration-200">
+                    <div class="flex justify-between text-[11px] mono mb-1"><span class="text-slate-500">Triggers at:</span><span id="tp-val" class="text-emerald-400 font-bold">+15%</span></div>
+                    <input type="range" id="tp-slider" min="5" max="100" step="5" value="15" class="w-full h-2 bg-slate-800 rounded-lg appearance-none accent-emerald-500" oninput="updateModalValues()">
+                </div>
+            </div>
+            <div class="bg-slate-950/80 p-3.5 rounded-xl border border-slate-800/60 space-y-2">
+                <label class="flex items-center space-x-3 cursor-pointer">
+                    <input type="checkbox" id="sl-toggle" class="w-4 h-4 rounded bg-slate-800 border-slate-700 text-indigo-500 focus:ring-0" onchange="toggleParamSliders()">
+                    <span class="text-xs font-bold text-slate-300">Stop-Loss (Safety Net)</span>
+                </label>
+                <div id="sl-slider-container" class="opacity-30 pointer-events-none transition-opacity duration-200">
+                    <div class="flex justify-between text-[11px] mono mb-1"><span class="text-slate-500">Triggers at:</span><span id="sl-val" class="text-rose-400 font-bold">-10%</span></div>
+                    <input type="range" id="sl-slider" min="-50" max="-5" step="5" value="-10" class="w-full h-2 bg-slate-800 rounded-lg appearance-none accent-rose-500" oninput="updateModalValues()">
+                </div>
+            </div>
+            <div class="pt-2 flex space-x-3">
+                <button onclick="closeModal()" class="flex-1 py-3 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-bold text-slate-300 uppercase tracking-wider">Cancel</button>
+                <button onclick="confirmInvestment()" class="flex-1 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg">Deploy</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-[1700px] mx-auto space-y-3">
+        
+        <div class="bg-slate-900/60 border border-slate-800/80 rounded-xl p-3 flex flex-wrap items-center justify-between gap-2 shadow-sm backdrop-blur-sm">
+            <div class="flex items-center space-x-3">
+                <div class="h-9 w-9 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center font-bold text-sm text-white shadow-md">QC</div>
+                <div>
+                    <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider leading-none" id="user-nickname">Quant Executive</div>
+                    <div class="text-xs font-bold text-indigo-400 mono mt-1" id="manager-level">LVL 1</div>
+                </div>
+            </div>
+            <div class="flex-1 min-w-[120px] max-w-xs mx-2">
+                <div class="flex justify-between text-[9px] text-slate-500 mono mb-1"><span>OPERATIONS XP</span><span id="xp-text">0/100</span></div>
+                <div class="w-full bg-slate-950 rounded-full h-1.5 overflow-hidden border border-slate-800/40">
+                    <div id="xp-bar" class="bg-indigo-500 h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+            <div class="flex space-x-1.5 w-full sm:w-auto justify-end">
+                <button onclick="copySaveCode()" class="px-2 py-1.5 bg-slate-800 hover:bg-slate-700 rounded text-[10px] uppercase font-bold tracking-wider mono text-slate-300">📋 Copy Code</button>
+                <button onclick="promptLoadCode()" class="px-2 py-1.5 bg-indigo-950/40 border border-indigo-800/50 text-indigo-300 hover:bg-indigo-900/30 rounded text-[10px] uppercase font-bold tracking-wider mono">📥 Load</button>
+            </div>
+        </div>
+
+        <header class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+            <div class="bg-slate-900/90 border border-slate-800/60 p-3 rounded-xl">
+                <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Available Balance</div>
+                <div class="text-xs sm:text-sm font-bold mono text-amber-400 mt-0.5" id="user-balance">1.00000000 BTC</div>
+                <div class="text-[9px] text-slate-500 mono" id="user-balance-usd">~0.00 $</div>
+            </div>
+            <div class="bg-slate-900/90 border border-slate-800/60 p-3 rounded-xl">
+                <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Active Portfolio</div>
+                <div class="text-xs sm:text-sm font-bold mono text-emerald-400 mt-0.5" id="total-nav">0.00000000 BTC</div>
+                <div class="text-[9px] text-slate-500 mono" id="total-nav-usd">~0.00 $</div>
+            </div>
+            <div id="btc-card" class="bg-slate-900/90 border border-slate-800/60 p-3 rounded-xl col-span-2 sm:col-span-1">
+                <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider flex items-center justify-between"><span>Live Market Feed</span><span id="api-status" class="text-[9px] text-cyan-400 font-mono">Syncing...</span></div>
+                <div class="text-sm font-bold mono text-blue-400 mt-0.5" id="btc-price">Loading...</div>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-3.5">
+            
+            <div class="lg:col-span-5 space-y-3.5 order-2 lg:order-1">
+                <div class="bg-slate-900/40 border border-slate-800 p-4 rounded-xl shadow-lg backdrop-blur-md">
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center mb-3">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-2 animate-pulse"></span>Active Algos Portfolio
+                    </h2>
+                    <div id="my-portfolio-container" class="space-y-2.5 max-h-[300px] overflow-y-auto custom-scrollbar pr-0.5"></div>
+                </div>
+
+                <div class="bg-slate-900/40 border border-slate-800 p-4 rounded-xl shadow-lg backdrop-blur-md">
+                    <div class="flex justify-between items-center mb-2.5">
+                        <h2 class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center">🏆 Global Leaderboard (Cloud)</h2>
+                        <span id="cloud-status" class="text-[9px] font-mono text-slate-500">Connecting...</span>
+                    </div>
+                    <div class="bg-slate-950/60 rounded-xl p-2 border border-slate-800/50">
+                        <ol id="leaderboard-list" class="divide-y divide-slate-900 text-xs font-mono space-y-1.5">
+                            <li class="text-center py-4 text-slate-600 text-[11px]">Syncing with global matrix...</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/20 border border-slate-800/60 p-3 rounded-xl grid grid-cols-2 gap-2 text-center">
+                    <div class="border-r border-slate-800/80">
+                        <div class="text-[9px] text-slate-500 uppercase font-bold tracking-wider">Successful Exits</div>
+                        <div class="text-base font-bold text-slate-300 mono mt-0.5" id="stat-exits">0</div>
+                    </div>
+                    <div>
+                        <div class="text-[9px] text-slate-500 uppercase font-bold tracking-wider">Net Profit Realized</div>
+                        <div class="text-base font-bold mono mt-0.5" id="stat-profit">0.00 $</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-7 order-1 lg:order-2">
+                <div class="bg-slate-900/40 border border-slate-800 p-4 rounded-xl shadow-lg backdrop-blur-md">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-2.5 mb-2">
+                        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300">Global Algo Market</h2>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-500 mono">BOTS: 50</span>
+                    </div>
+                    <div class="overflow-x-auto custom-scrollbar max-h-[500px] lg:max-h-[640px] overflow-y-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+                        <table class="w-full text-left border-collapse min-w-[340px]">
+                            <thead>
+                                <tr class="border-b border-slate-800 text-slate-500 text-[10px] uppercase font-bold tracking-wider">
+                                    <th class="py-2 pr-2 pl-1">Identifier</th>
+                                    <th class="py-2 px-2 text-right">Alltime</th>
+                                    <th class="py-2 px-2 text-right">Price (NAV)</th>
+                                    <th class="py-2 pl-2 pr-1 text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="market-tbody" class="divide-y divide-slate-900/60"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        let points = 100, xp = 0, xpNext = 100, level = 1, isPaused = false;
-        let stability = 0;
-        const tiles = [];
-        
-        let statsBase = { sunMult: 2.2, rainMult: 1.4, reward: 12, decay: 0.15, plantCost: 15, shield: false };
-        let stats = { ...statsBase };
-        
-        const POOL = [
-            { id: 'S', n: 'SUPERNOVA', d: '+1.5x Sun Speed', i: '☀️', run: () => stats.sunMult += 1.5 },
-            { id: 'M', n: 'MONSOON', d: '+1.0x Rain Speed', i: '🌧️', run: () => stats.rainMult += 1.0 },
-            { id: 'O', n: 'OVERCLOCK', d: '+8 Energy Reward', i: '💎', run: () => stats.reward += 8 },
-            { id: 'N', n: 'NANOBOTS', d: 'Slow Decay (40%)', i: '🤖', run: () => stats.decay *= 0.6 },
-            { id: 'B', n: 'BATTERY', d: 'Plant Cost: 10', i: '🔋', run: () => stats.plantCost = 10 },
-            { id: 'H', n: 'SHIELD', d: 'Ignore Glitches', i: '🛡️', run: () => stats.shield = true }
-        ];
+        let game = {
+            nickname: "", balance: 1.00000000, 
+            btcPrice: 0.0, lastBtcPrice: 0.0,
+            level: 1, xp: 0, xpNeeded: 100,
+            statExits: 0, statTotalProfitUsd: 0, 
+            bots: [], portfolio: {}, performanceFeePct: 10
+        };
 
-        function showFloat(el, txt, col) {
-            const d = document.createElement('div'); d.className = 'float-text';
-            d.innerText = txt; d.style.color = col;
-            el.appendChild(d); setTimeout(() => d.remove(), 800);
-        }
+        const CLOUD_URL = "https://kvdb.io/MNY7g6C6j5E8bWwz6fK78w/tycoon_global_leaderboard";
 
-        const container = document.getElementById('grid-container');
-        for (let i = 0; i < 25; i++) {
-            const el = document.createElement('div'); el.className = 'tile';
-            const inner = document.createElement('div'); inner.className = 'growth-inner';
-            const hBar = document.createElement('div'); hBar.className = 'health-bar';
-            const icon = document.createElement('div'); icon.className = 'plant-icon'; icon.innerHTML = '🌱';
-            el.append(inner, hBar, icon);
+        let activeTargetBotId = null;
+        const prefix = ["Apex", "Quantum", "Hyper", "Vortex", "Satoshi", "Cyber", "Aegis", "Alpha", "Zero", "Nexus", "Neural", "Vector"];
+        const suffix = ["Fund", "Core", "Matrix", "Pool", "Systems", "Protocol", "Yield", "Quant"];
+        const strategies = ["Scalping", "Leverage", "Grid DCA", "Momentum", "Arbitrage"];
+        const risks = ["Conservative", "Moderate", "Aggressive", "Degen"];
+
+        window.addEventListener('load', () => {
+            initGameData();
+            loadFromBrowserStorage();
+            fetchGlobalLeaderboard(); 
             
-            const obj = { el, inner, hBar, icon, status: 'empty', growth: 0, health: 100, frozen: false };
-            el.onclick = () => {
-                if (isPaused || obj.frozen || obj.status !== 'empty') return;
-                if (points >= stats.plantCost) {
-                    points -= stats.plantCost; obj.status = 'growing'; obj.health = 100;
-                    el.classList.add('planted'); updateUI();
-                } else {
-                    points += 1; showFloat(el, "+1", "#94a3b8"); updateUI();
-                }
-            };
-            tiles.push(obj); container.appendChild(el);
+            setInterval(fetchCustomBtcPrice, 7000);
+            setInterval(fastGameLoop, 1000);
+            setInterval(fetchGlobalLeaderboard, 20000);
+            fetchCustomBtcPrice();
+        });
+
+        function saveToBrowserStorage() {
+            localStorage.setItem('quantcorp_save_v2', JSON.stringify({
+                nickname: game.nickname, balance: game.balance, level: game.level,
+                xp: game.xp, xpNeeded: game.xpNeeded, statExits: game.statExits,
+                statTotalProfitUsd: game.statTotalProfitUsd, portfolio: game.portfolio
+            }));
         }
 
-        let weather = { sun: { x: 50, y: 50, vx: 1.3, vy: 1.1 }, cloud: { x: 200, y: 200, vx: -1.1, vy: 1.3 } };
-
-        function gameLoop() {
-            if (isPaused) return requestAnimationFrame(gameLoop);
-
-            if (stability > 0) {
-                stability -= 0.04; 
+        function loadFromBrowserStorage() {
+            const rawSave = localStorage.getItem('quantcorp_save_v2');
+            if (rawSave) {
+                const parsed = JSON.parse(rawSave);
+                Object.assign(game, parsed);
+                document.getElementById('user-nickname').innerText = game.nickname;
             } else {
-                stability = 0;
-                stats = { ...statsBase };
+                document.getElementById('onboarding-modal').classList.remove('hidden');
             }
+        }
 
-            ['sun', 'cloud'].forEach(id => {
-                let w = weather[id]; w.x += w.vx; w.y += w.vy;
-                if (w.x > 320 || w.x < 0) w.vx *= -1; if (w.y > 320 || w.y < 0) w.vy *= -1;
-                document.getElementById(id).style.transform = `translate(${w.x}px, ${w.y}px)`;
-            });
+        // --- ONBOARDING INTERFACE SWITCHES ---
+        window.switchOnboardingTab = function(tab) {
+            const tabNew = document.getElementById('tab-btn-new');
+            const tabLoad = document.getElementById('tab-btn-load');
+            const viewNew = document.getElementById('onboarding-view-new');
+            const viewLoad = document.getElementById('onboarding-view-load');
 
-            tiles.forEach(t => {
-                if (t.status === 'growing' && !t.frozen) {
-                    let sH = checkHit(t, 'sun'), cH = checkHit(t, 'cloud');
-                    if (sH || cH) t.health = Math.min(100, t.health + 1); else t.health -= stats.decay;
-                    t.hBar.style.width = t.health + '%';
+            if(tab === 'new') {
+                tabNew.className = "py-2 text-[10px] uppercase font-bold tracking-wider rounded-lg bg-indigo-600 text-white transition-all";
+                tabLoad.className = "py-2 text-[10px] uppercase font-bold tracking-wider rounded-lg text-slate-400 transition-all";
+                viewNew.classList.remove('hidden');
+                viewLoad.classList.add('hidden');
+            } else {
+                tabLoad.className = "py-2 text-[10px] uppercase font-bold tracking-wider rounded-lg bg-emerald-600 text-white transition-all";
+                tabNew.className = "py-2 text-[10px] uppercase font-bold tracking-wider rounded-lg text-slate-400 transition-all";
+                viewLoad.classList.remove('hidden');
+                viewNew.classList.add('hidden');
+            }
+        }
 
-                    if (t.health <= 0) {
-                        showFloat(t.el, "DEAD", "#ef4444");
-                        resetTile(t);
-                    } else {
-                        let rate = 0.08;
-                        if (sH) rate *= stats.sunMult; if (cH) rate *= stats.rainMult;
-                        t.growth += rate;
-                        t.inner.style.height = t.growth + '%';
-                        if (t.growth >= 100) {
-                            points += stats.reward; xp += 35;
-                            showFloat(t.el, `+${stats.reward}`, "#10b981");
-                            resetTile(t); checkLevelUp();
-                        }
-                    }
+        window.saveOnboarding = function() {
+            const input = document.getElementById('nickname-input').value.trim().replace(/[^a-zA-Z0-9_]/g, '');
+            if(input.length < 3) { alert('Moniker must be at least 3 chars (A-Z, 0-9, _)'); return; }
+            game.nickname = input;
+            document.getElementById('user-nickname').innerText = game.nickname;
+            document.getElementById('onboarding-modal').classList.add('hidden');
+            saveToBrowserStorage();
+            syncScoreToCloud();
+        }
+
+        window.executeOnboardingLoad = function() {
+            const code = document.getElementById('onboarding-load-input').value.trim();
+            if(!code) { alert("Please input a valid code string."); return; }
+            try {
+                const parsed = JSON.parse(atob(code));
+                game.nickname = parsed.n; game.balance = parsed.b; game.level = parsed.l;
+                game.xp = parsed.x; game.xpNeeded = parsed.xn; game.statExits = parsed.se;
+                game.statTotalProfitUsd = parsed.sp; game.portfolio = {};
+                saveToBrowserStorage();
+                window.location.reload();
+            } catch(e) {
+                alert("Failed to decrypt string. Ensure you copied the exact, complete save code.");
+            }
+        }
+
+        window.copySaveCode = function() {
+            const stateString = btoa(JSON.stringify({
+                n: game.nickname, b: game.balance, l: game.level, x: game.xp, 
+                xn: game.xpNeeded, se: game.statExits, sp: game.statTotalProfitUsd
+            }));
+            navigator.clipboard.writeText(stateString);
+            showPopup("SYSTEM", "Save-Code copied to clipboard!", "info");
+        }
+
+        window.promptLoadCode = function() {
+            const code = prompt("Paste Save-Code string:");
+            if (!code) return;
+            try {
+                const parsed = JSON.parse(atob(code));
+                game.nickname = parsed.n; game.balance = parsed.b; game.level = parsed.l;
+                game.xp = parsed.x; game.xpNeeded = parsed.xn; game.statExits = parsed.se;
+                game.statTotalProfitUsd = parsed.sp; game.portfolio = {};
+                saveToBrowserStorage();
+                window.location.reload();
+            } catch(e) { alert("Invalid Save-Code."); }
+        }
+
+        // --- HTTP CLOUD CORE FUNCTIONS ---
+        async function fetchGlobalLeaderboard() {
+            try {
+                document.getElementById('cloud-status').innerText = "Syncing...";
+                const res = await fetch(CLOUD_URL);
+                if (!res.ok) throw new Error("No data yet");
+                let board = await res.json();
+                board.sort((a,b) => b.exits - a.exits);
+                board = board.slice(0, 5);
+                renderLeaderboardUI(board);
+                document.getElementById('cloud-status').innerText = "🟢 Online";
+            } catch (err) {
+                document.getElementById('cloud-status').innerText = "⚠️ Local Mode";
+                renderLeaderboardUI([{name: "Satoshi_Core", exits: 99}, {name: "QuantWhale", exits: 45}]);
+            }
+        }
+
+        async function syncScoreToCloud() {
+            if (!game.nickname) return;
+            try {
+                let currentBoard = [];
+                try {
+                    const res = await fetch(CLOUD_URL);
+                    if (res.ok) currentBoard = await res.json();
+                } catch(e){}
+
+                let myEntry = currentBoard.find(e => e.name === game.nickname);
+                if (myEntry) {
+                    if (game.statExits > myEntry.exits) myEntry.exits = game.statExits;
+                } else {
+                    currentBoard.push({ name: game.nickname, exits: game.statExits });
                 }
-            });
-            updateUI();
-            requestAnimationFrame(gameLoop);
-        }
 
-        function checkHit(t, wId) {
-            const w = weather[wId], idx = tiles.indexOf(t);
-            const tx = ((idx % 5) * 75) + 35, ty = (Math.floor(idx / 5) * 75) + 35;
-            return Math.sqrt((tx - w.x - 48)**2 + (ty - w.y - 48)**2) < 65;
-        }
+                currentBoard.sort((a,b) => b.exits - a.exits);
+                currentBoard = currentBoard.slice(0, 20);
 
-        function resetTile(t) {
-            t.status = 'empty'; t.growth = 0; t.health = 0; t.el.classList.remove('planted');
-            t.inner.style.height = '0%'; t.hBar.style.width = '0%';
-        }
-
-        function checkLevelUp() {
-            if (xp >= xpNext) {
-                isPaused = true; level++; xp = 0;
-                if (level % 10 === 0) triggerBoss(); else showUpgrade();
-            }
-        }
-
-        function showUpgrade() {
-            const overlay = document.getElementById('lvl-overlay');
-            overlay.classList.remove('hidden');
-            const wrap = document.getElementById('card-wrap'); wrap.innerHTML = '';
-            
-            const shuffled = POOL.sort(() => 0.5 - Math.random()).slice(0, 3);
-            shuffled.forEach(u => {
-                let div = document.createElement('div');
-                div.className = 'perk-card';
-                div.innerHTML = `<div class="font-bold">${u.i} ${u.n}</div><div class="text-[10px] text-slate-400">${u.d}</div>`;
-                div.onclick = () => { 
-                    u.run(); 
-                    stability = 100; 
-                    isPaused = false; 
-                    overlay.classList.add('hidden'); 
-                };
-                wrap.appendChild(div);
-            });
-        }
-
-        function triggerBoss() {
-            document.getElementById('boss-warning').style.display = 'flex';
-            if (stats.shield) {
-                setTimeout(() => { 
-                    document.getElementById('boss-warning').innerText = "SHIELD PROTECTED";
-                    setTimeout(() => { isPaused = false; document.getElementById('boss-warning').style.display = 'none'; showUpgrade(); }, 2000);
-                }, 1000);
-                return;
-            }
-            
-            let bossTime = 0;
-            const bossInterval = setInterval(() => {
-                bossTime++;
-                tiles.forEach(t => {
-                    if (Math.random() > 0.6) {
-                        t.frozen = true; t.el.classList.add('frozen');
-                        setTimeout(() => { t.frozen = false; t.el.classList.remove('frozen'); }, 3000);
-                    }
+                await fetch(CLOUD_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(currentBoard)
                 });
-                if (bossTime > 5) { 
-                    clearInterval(bossInterval); 
-                    document.getElementById('boss-warning').style.display = 'none'; 
-                    isPaused = false; showUpgrade(); 
-                }
-            }, 4000);
+                fetchGlobalLeaderboard();
+            } catch (err) { console.log("Cloud push failed", err); }
         }
+
+        function renderLeaderboardUI(board) {
+            const list = document.getElementById('leaderboard-list');
+            list.innerHTML = '';
+            board.forEach((entry, i) => {
+                const isMe = entry.name === game.nickname;
+                list.innerHTML += `
+                    <li class="flex justify-between py-1 px-1.5 ${isMe ? 'bg-indigo-500/10 text-indigo-300 rounded font-bold border-l-2 border-l-indigo-500' : 'text-slate-400'}">
+                        <span>#${i+1} ${entry.name}</span>
+                        <span class="text-slate-300 font-bold">${entry.exits} Exits</span>
+                    </li>`;
+            });
+        }
+
+        function initGameData() {
+            for (let i = 1; i <= 50; i++) {
+                const bName = prefix[Math.floor(Math.random() * prefix.length)] + " " + suffix[Math.floor(Math.random() * suffix.length)] + " #" + i;
+                const ticker = bName.split(' ').map(w => w[0]).join('').replace('#','').substring(0,3) + i;
+                const risk = risks[Math.floor(Math.random() * risks.length)];
+                let multiplier = risk === "Conservative" ? 0.3 : risk === "Moderate" ? 1.0 : risk === "Aggressive" ? 2.2 : 5.0;
+                game.bots.push({
+                    id: i, name: bName, ticker: ticker, strategy: strategies[Math.floor(Math.random() * strategies.length)],
+                    risk: risk, mult: multiplier, alltimeProfitPct: (Math.random() * 40) - 10, tokenPriceInBtc: 0.01 
+                });
+            }
+        }
+
+        async function fetchCustomBtcPrice() {
+            try {
+                const response = await fetch('https://api.thingspeak.com/apps/thinghttp/send_request?api_key=CTGCF12NZVUTAYCG');
+                const rawText = await response.text();
+                let cleanText = rawText.replace(/\./g, '').replace(',', '.');     
+                const parsedPrice = parseFloat(cleanText);
+                if (!isNaN(parsedPrice) && parsedPrice > 0) {
+                    if (game.btcPrice === 0) game.btcPrice = parsedPrice;
+                    game.lastBtcPrice = game.btcPrice; game.btcPrice = parsedPrice;
+                    document.getElementById('api-status').innerText = "Live (USD)";
+                    processMarketTick((game.btcPrice - game.lastBtcPrice) / game.lastBtcPrice);
+                }
+            } catch (error) {
+                if (game.btcPrice === 0) game.btcPrice = 61508.34;
+                const simulatedMove = (Math.random() - 0.495) * 0.0006;
+                game.lastBtcPrice = game.btcPrice; game.btcPrice += game.btcPrice * simulatedMove;
+                processMarketTick(simulatedMove);
+            } finally { updateUI(); }
+        }
+
+        function fastGameLoop() {
+            if (game.btcPrice === 0) return; 
+            const microMove = (Math.random() - 0.5) * 0.0001;
+            game.lastBtcPrice = game.btcPrice; game.btcPrice += game.btcPrice * microMove;
+            processMarketTick(microMove);
+            checkAutomatedOrders();
+            updateUI();
+        }
+
+        function processMarketTick(moveFactor) {
+            game.bots.forEach(bot => {
+                const internalBotVibe = (Math.random() - 0.5) * 0.0025;
+                const totalPerformance = (moveFactor * bot.mult) + (internalBotVibe * bot.mult);
+                bot.tokenPriceInBtc += bot.tokenPriceInBtc * totalPerformance;
+                if(bot.tokenPriceInBtc < 0.0001) bot.tokenPriceInBtc = 0.0001;
+                bot.alltimeProfitPct += totalPerformance * 100;
+            });
+        }
+
+        function checkAutomatedOrders() {
+            Object.keys(game.portfolio).forEach(botId => {
+                const asset = game.portfolio[botId];
+                const bot = game.bots.find(b => b.id == botId);
+                const currentBtcValue = asset.tokenCount * bot.tokenPriceInBtc;
+                const yourProfitPct = ((currentBtcValue - asset.initialInvestedBtc) / asset.initialInvestedBtc) * 100;
+
+                if (asset.takeProfit !== null && yourProfitPct >= asset.takeProfit) {
+                    showPopup(bot.ticker, `🎯 TAKE-PROFIT triggered automatically!`, 'success');
+                    executeSellShares(botId);
+                } else if (asset.stopLoss !== null && yourProfitPct <= asset.stopLoss) {
+                    showPopup(bot.ticker, `🛑 STOP-LOSS triggered!`, 'danger');
+                    executeSellShares(botId);
+                }
+            });
+        }
+
+        function showPopup(title, message, type = 'info') {
+            const container = document.getElementById('popup-container');
+            const popup = document.createElement('div');
+            let bgClass = type === 'success' ? "bg-emerald-950/95 border-emerald-500 text-emerald-200" : type === 'danger' ? "bg-rose-950/95 border-rose-500 text-rose-200" : "bg-indigo-950/95 border-indigo-500 text-indigo-200";
+            popup.className = `toast-popup p-3 rounded-xl border shadow-2xl backdrop-blur-md flex flex-col pointer-events-auto ${bgClass}`;
+            popup.innerHTML = `
+                <div class="flex justify-between items-center border-b border-white/10 pb-1 mb-1"><span class="text-xs font-bold font-mono uppercase">${title}</span><button onclick="this.parentElement.parentElement.remove()" class="text-[10px] opacity-50">✕</button></div>
+                <p class="text-[11px] font-medium">${message}</p>`;
+            container.appendChild(popup);
+            setTimeout(() => { if(popup.parentNode) popup.remove(); }, 5000);
+        }
+
+        function gainXp(amount) {
+            game.xp += amount;
+            if (game.xp >= game.xpNeeded) {
+                game.level += 1; game.xp = 0; game.xpNeeded = Math.floor(game.xpNeeded * 1.6);
+                showPopup("✨ RANK UP", `Promoted to Operations Level ${game.level}!`, 'info');
+            }
+            saveToBrowserStorage();
+        }
+
+        window.openInvestModal = function(botId) {
+            activeTargetBotId = botId;
+            const bot = game.bots.find(b => b.id === botId);
+            const maxInvestmentBtc = Math.min(game.balance, game.level * 0.25);
+            document.getElementById('modal-title').innerText = `DEPLOY: $${bot.ticker}`;
+            const btcSlider = document.getElementById('modal-btc-slider');
+            btcSlider.max = maxInvestmentBtc;
+            btcSlider.value = (maxInvestmentBtc * 0.5).toFixed(3);
+            if(parseFloat(btcSlider.value) < 0.001) btcSlider.value = 0.001;
+            document.getElementById('modal-max-label').innerText = `Max Cap: ${maxInvestmentBtc.toFixed(3)} BTC`;
+            document.getElementById('tp-toggle').checked = false; document.getElementById('sl-toggle').checked = false;
+            toggleParamSliders(); updateModalValues();
+            document.getElementById('invest-modal').classList.remove('hidden');
+        }
+
+        window.closeModal = function() { document.getElementById('invest-modal').classList.add('hidden'); activeTargetBotId = null; }
+
+        window.toggleParamSliders = function() {
+            const tpActive = document.getElementById('tp-toggle').checked;
+            document.getElementById('tp-slider-container').style.opacity = tpActive ? "1" : "0.3";
+            document.getElementById('tp-slider-container').style.pointerEvents = tpActive ? "auto" : "none";
+            const slActive = document.getElementById('sl-toggle').checked;
+            document.getElementById('sl-slider-container').style.opacity = slActive ? "1" : "0.3";
+            document.getElementById('sl-slider-container').style.pointerEvents = slActive ? "auto" : "none";
+        }
+
+        window.updateModalValues = function() {
+            const btcVal = parseFloat(document.getElementById('modal-btc-slider').value);
+            document.getElementById('modal-btc-val').innerText = btcVal.toFixed(4) + " BTC";
+            document.getElementById('tp-val').innerText = "+" + document.getElementById('tp-slider').value + "%";
+            document.getElementById('sl-val').innerText = document.getElementById('sl-slider').value + "%";
+        }
+
+        window.confirmInvestment = function() {
+            if(!activeTargetBotId) return;
+            const bot = game.bots.find(b => b.id === activeTargetBotId);
+            const btcAmount = parseFloat(document.getElementById('modal-btc-slider').value);
+            if (btcAmount <= 0 || btcAmount > game.balance) { showPopup("ERROR", "Insufficient liquidity.", "danger"); return; }
+            
+            const useTp = document.getElementById('tp-toggle').checked;
+            const useSl = document.getElementById('sl-toggle').checked;
+            const tokensPurchased = btcAmount / bot.tokenPriceInBtc;
+            game.balance -= btcAmount;
+
+            if (!game.portfolio[activeTargetBotId]) {
+                game.portfolio[activeTargetBotId] = { botId: activeTargetBotId, tokenCount: tokensPurchased, initialInvestedBtc: btcAmount, takeProfit: useTp ? parseFloat(document.getElementById('tp-slider').value) : null, stopLoss: useSl ? parseFloat(document.getElementById('sl-slider').value) : null };
+            } else {
+                game.portfolio[activeTargetBotId].tokenCount += tokensPurchased;
+                game.portfolio[activeTargetBotId].initialInvestedBtc += btcAmount;
+                game.portfolio[activeTargetBotId].takeProfit = useTp ? parseFloat(document.getElementById('tp-slider').value) : null;
+                game.portfolio[activeTargetBotId].stopLoss = useSl ? parseFloat(document.getElementById('sl-slider').value) : null;
+            }
+            showPopup(bot.ticker, `Capital allocation confirmed.`, 'info');
+            closeModal(); saveToBrowserStorage(); updateUI();
+        }
+
+        function executeSellShares(botId) {
+            const asset = game.portfolio[botId]; if (!asset) return;
+            const bot = game.bots.find(b => b.id == botId);
+            const currentBtcValue = asset.tokenCount * bot.tokenPriceInBtc;
+            const rawNetProfitBtc = currentBtcValue - asset.initialInvestedBtc;
+            let finalBtcPayout = currentBtcValue;
+
+            if (rawNetProfitBtc > 0) finalBtcPayout -= (rawNetProfitBtc * 0.1);
+            const cleanNetProfitBtc = finalBtcPayout - asset.initialInvestedBtc;
+            
+            game.balance += finalBtcPayout;
+            game.statExits += 1;
+            game.statTotalProfitUsd += cleanNetProfitBtc * game.btcPrice;
+            
+            if (cleanNetProfitBtc > 0) gainXp(Math.floor(cleanNetProfitBtc * 1500) + 20);
+            showPopup(bot.ticker, `Position liquidated.`, cleanNetProfitBtc >= 0 ? 'success' : 'danger');
+            
+            delete game.portfolio[botId];
+            saveToBrowserStorage();
+            syncScoreToCloud();
+            updateUI();
+        }
+
+        window.sellShares = function(botId) { executeSellShares(botId); }
 
         function updateUI() {
-            document.getElementById('pts').innerText = Math.floor(points);
-            document.getElementById('lvl-num').innerText = level;
-            document.getElementById('xp-bar').style.width = (xp / xpNext * 100) + '%';
-            document.getElementById('xp-val').innerText = Math.floor(xp/xpNext*100) + '%';
-            document.getElementById('stability-bar').style.width = stability + '%';
-            document.getElementById('stab-val').innerText = Math.floor(stability) + '%';
+            document.getElementById('user-balance').innerText = game.balance.toFixed(8) + " BTC";
+            document.getElementById('user-balance-usd').innerText = "~ " + (game.balance * game.btcPrice).toLocaleString('en-US', {minimumFractionDigits: 2}) + " $";
+            document.getElementById('btc-price').innerText = game.btcPrice > 0 ? game.btcPrice.toLocaleString('en-US', {minimumFractionDigits: 2}) + " $" : "Syncing...";
+            document.getElementById('manager-level').innerText = `LVL ${game.level}`;
+            document.getElementById('xp-text').innerText = `${game.xp}/${game.xpNeeded}`;
+            document.getElementById('stat-exits').innerText = game.statExits;
+            
+            const profitEl = document.getElementById('stat-profit');
+            profitEl.innerText = (game.statTotalProfitUsd >= 0 ? '+' : '') + game.statTotalProfitUsd.toLocaleString('en-US', {minimumFractionDigits: 2}) + " $";
+            profitEl.className = "text-base font-bold mono mt-0.5 " + (game.statTotalProfitUsd >= 0 ? "text-emerald-400" : "text-rose-500");
+            document.getElementById('xp-bar').style.width = Math.min((game.xp / game.xpNeeded) * 100, 100) + "%";
 
-            let h = localStorage.getItem('aura_high') || 0;
-            if (level > h) localStorage.setItem('aura_high', level);
-            document.getElementById('high-score').innerText = h;
+            const marketTbody = document.getElementById('market-tbody');
+            marketTbody.innerHTML = '';
+            game.bots.forEach(bot => {
+                const isInvested = game.portfolio[bot.id] !== undefined;
+                marketTbody.innerHTML += `
+                    <tr class="hover:bg-slate-900/30 text-[11px] sm:text-xs border-b border-slate-900/80 transition-colors ${isInvested ? 'bg-indigo-950/10 border-l-2 border-l-indigo-500' : ''}">
+                        <td class="py-2.5 pr-2 pl-1 font-semibold">
+                            <div class="text-slate-200 truncate max-w-[110px] sm:max-w-[150px]">${bot.name}</div>
+                            <div class="text-[9px] text-slate-500 font-normal">${bot.strategy}</div>
+                        </td>
+                        <td class="py-2.5 px-2 text-right mono font-bold ${bot.alltimeProfitPct >= 0 ? 'text-emerald-400':'text-rose-400'}">${bot.alltimeProfitPct.toFixed(1)}%</td>
+                        <td class="py-2.5 px-2 text-right mono">
+                            <div class="font-bold text-slate-300">${bot.tokenPriceInBtc.toFixed(4)}</div>
+                            <div class="text-[9px] text-slate-500">~${(bot.tokenPriceInBtc * game.btcPrice).toFixed(1)}$</div>
+                        </td>
+                        <td class="py-2.5 pl-2 pr-1 text-center">
+                            <button class="px-2.5 py-1.5 sm:py-1 bg-indigo-600 text-white rounded text-[10px] font-bold uppercase transition-all" onclick="openInvestModal(${bot.id})">Buy</button>
+                        </td>
+                    </tr>`;
+            });
+
+            const portfolioContainer = document.getElementById('my-portfolio-container');
+            const currentHoldings = Object.values(game.portfolio);
+            if(currentHoldings.length === 0) {
+                portfolioContainer.innerHTML = `<div class="text-center text-xs text-slate-600 py-12 border border-dashed border-slate-800 rounded-xl">No active licenses.</div>`;
+            } else {
+                portfolioContainer.innerHTML = '';
+                currentHoldings.forEach(asset => {
+                    const bot = game.bots.find(b => b.id === asset.botId);
+                    const currentBtcValue = asset.tokenCount * bot.tokenPriceInBtc;
+                    const yourProfitPct = ((currentBtcValue - asset.initialInvestedBtc) / asset.initialInvestedBtc) * 100;
+                    let limitBadges = "";
+                    if(asset.takeProfit) limitBadges += `<span class="text-[9px] bg-emerald-950/80 border border-emerald-800/60 px-1 py-0.5 rounded text-emerald-400 font-bold">TP: +${asset.takeProfit}%</span>`;
+                    if(asset.stopLoss) limitBadges += `<span class="text-[9px] bg-rose-950/80 border border-rose-800/60 px-1 py-0.5 rounded text-rose-400 font-bold ${asset.takeProfit?'ml-1':''}">SL: ${asset.stopLoss}%</span>`;
+
+                    portfolioContainer.innerHTML += `
+                        <div class="bg-slate-950/80 border border-slate-800 p-3 rounded-lg flex flex-col justify-between border-l-4 ${yourProfitPct >= 0 ? 'border-l-emerald-500' : 'border-l-rose-500'}">
+                            <div class="flex justify-between items-start">
+                                <div class="max-w-[70%]">
+                                    <h4 class="text-xs font-bold text-slate-200 truncate">${bot.name}</h4>
+                                    <div class="mt-1 flex flex-wrap gap-1">${limitBadges === "" ? '<span class="text-[9px] text-slate-600">No automation</span>' : limitBadges}</div>
+                                </div>
+                                <div class="mono text-xs font-bold text-right ${yourProfitPct >= 0 ? 'text-emerald-400':'text-rose-400'}">${yourProfitPct >= 0 ? '+':''}${yourProfitPct.toFixed(1)}%</div>
+                            </div>
+                            <div class="flex justify-between text-[11px] mono mt-2 border-t border-slate-900 pt-2 text-slate-400"><span>NAV: ${currentBtcValue.toFixed(4)} BTC</span><span class="text-cyan-400">~ ${(currentBtcValue * game.btcPrice).toFixed(1)} $</span></div>
+                            <button class="w-full mt-2.5 py-2 bg-rose-500/10 text-rose-400 text-[10px] rounded font-bold uppercase border border-rose-500/20" onclick="sellShares(${bot.id})">Liquidate Position</button>
+                        </div>`;
+                });
+            }
+            
+            let totalPortfolioBtc = 0;
+            Object.values(game.portfolio).forEach(p => { totalPortfolioBtc += p.tokenCount * game.bots.find(b => b.id === p.botId).tokenPriceInBtc; });
+            document.getElementById('total-nav').innerText = totalPortfolioBtc.toFixed(8) + " BTC";
+            document.getElementById('total-nav-usd').innerText = "~ " + (totalPortfolioBtc * game.btcPrice).toLocaleString('en-US', {minimumFractionDigits: 2}) + " $";
         }
-
-        gameLoop();
     </script>
 </body>
 </html>
