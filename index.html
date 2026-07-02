@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>QuantCorp Tycoon - Balanced Market Edition</title>
+    <title>QuantCorp Tycoon - Pure Live Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -201,8 +201,10 @@
             loadFromBrowserStorage();
             fetchGlobalLeaderboard(); 
             
+            // PURE LIVE SYSTEM: Only look at the live API every 7 seconds
             setInterval(fetchCustomBtcPrice, 7000);
-            setInterval(fastGameLoop, 1000);
+            // Engine Loop now only checks triggers and refreshes the display, zero fake movements
+            setInterval(engineLoop, 1000);
             setInterval(fetchGlobalLeaderboard, 20000);
             fetchCustomBtcPrice();
         });
@@ -219,7 +221,6 @@
                 const risk = risks[rIdx];
                 let multiplier = risk === "Conservative" ? 0.3 : risk === "Moderate" ? 1.0 : risk === "Aggressive" ? 2.2 : 5.0;
                 
-                // FIXED FORMULA: Allows negative starting alltime history (-25% to +65%)
                 let simulatedHistoricalProfit = -25.0 + ((i * 7) % 90); 
 
                 game.bots.push({
@@ -366,30 +367,31 @@
                 const parsedPrice = parseFloat(cleanText);
                 if (!isNaN(parsedPrice) && parsedPrice > 0) {
                     if (game.btcPrice === 0) game.btcPrice = parsedPrice;
-                    game.lastBtcPrice = game.btcPrice; game.btcPrice = parsedPrice;
+                    game.lastBtcPrice = game.btcPrice; 
+                    game.btcPrice = parsedPrice;
                     document.getElementById('api-status').innerText = "Live (USD)";
-                    processMarketTick((game.btcPrice - game.lastBtcPrice) / game.lastBtcPrice);
+                    
+                    // Trigger market changes ONLY when the real API brings a new price
+                    let realMoveFactor = (game.btcPrice - game.lastBtcPrice) / game.lastBtcPrice;
+                    processMarketTick(realMoveFactor);
                 }
             } catch (error) {
                 if (game.btcPrice === 0) game.btcPrice = 61508.34;
-                const simulatedMove = (Math.random() - 0.495) * 0.0006;
-                game.lastBtcPrice = game.btcPrice; game.btcPrice += game.btcPrice * simulatedMove;
-                processMarketTick(simulatedMove);
+                document.getElementById('api-status').innerText = "Sync Error";
             } finally { updateUI(); }
         }
 
-        function fastGameLoop() {
+        function engineLoop() {
             if (game.btcPrice === 0) return; 
-            const microMove = (Math.random() - 0.5) * 0.0001;
-            game.lastBtcPrice = game.btcPrice; game.btcPrice += game.btcPrice * microMove;
-            processMarketTick(microMove);
+            // Only checks automated safety orders and updates UI frames (0% simulation)
             checkAutomatedOrders();
             updateUI();
         }
 
         function processMarketTick(moveFactor) {
             game.bots.forEach(bot => {
-                const internalBotVibe = (Math.random() - 0.5) * 0.0025;
+                // Bots move proportionally strictly tied to the real BTC move factor
+                const internalBotVibe = (Math.random() - 0.5) * 0.001; 
                 const totalPerformance = (moveFactor * bot.mult) + (internalBotVibe * bot.mult);
                 bot.tokenPriceInBtc += bot.tokenPriceInBtc * totalPerformance;
                 if(bot.tokenPriceInBtc < 0.0001) bot.tokenPriceInBtc = 0.0001;
