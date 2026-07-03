@@ -278,7 +278,6 @@
                 const ticker = bName.split(' ').map(w => w[0]).join('').replace('#','').substring(0,3) + i;
                 const risk = risks[rIdx];
                 
-                // KORREKTUR: Stark gedämpfte Volatilitäten pro Zyklus für realistischere Bewegungen
                 let baseVol = risk === "Conservative" ? 0.0015 : risk === "Moderate" ? 0.004 : risk === "Aggressive" ? 0.008 : 0.015;
 
                 game.bots.push({
@@ -363,11 +362,19 @@
                 const parsedPrice = parseFloat(cleanText);
                 
                 if (!isNaN(parsedPrice) && parsedPrice > 0) {
+                    if (game.btcPrice > 0) {
+                        game.lastBtcPrice = game.btcPrice;
+                    } else {
+                        game.lastBtcPrice = parsedPrice;
+                    }
                     game.btcPrice = parsedPrice;
                     document.getElementById('api-status').innerText = "Live (USD)";
                 }
             } catch (error) {
-                if (game.btcPrice === 0) game.btcPrice = 65000.00;
+                if (game.btcPrice === 0) {
+                    game.btcPrice = 65000.00;
+                    game.lastBtcPrice = 65000.00;
+                }
                 document.getElementById('api-status').innerText = "Local Mode";
             } finally { 
                 updateUI(); 
@@ -383,17 +390,37 @@
         }
 
         function executeStrategicBotDecisions() {
-            game.bots.forEach(bot => {
-                const direction = Math.random() > 0.5 ? 1 : -1;
-                let changePercent = Math.random() * bot.vol;
-                let directionModifier = direction * changePercent;
+            // Berechne die echte prozentuale Veränderung des Bitcoin-Kurses
+            let btcChangePct = 0.0;
+            if (game.lastBtcPrice > 0) {
+                btcChangePct = ((game.btcPrice - game.lastBtcPrice) / game.lastBtcPrice);
+            }
 
-                bot.tokenPriceInBtc += bot.tokenPriceInBtc * directionModifier;
+            game.bots.forEach(bot => {
+                const baseDirection = Math.random() > 0.5 ? 1 : -1;
+                let randomVolatility = Math.random() * bot.vol;
+                
+                // NEU: Marktkopplung (Beta-Faktor je nach Risiko)
+                let beta = bot.risk === "Conservative" ? 0.05 : bot.risk === "Moderate" ? 0.3 : bot.risk === "Aggressive" ? 0.8 : 1.5;
+                
+                // Die finale Bewegung setzt sich aus Zufall + BTC-Trend zusammen
+                let marketImpact = btcChangePct * beta;
+                
+                // Sonderlogik für konservative Bots bei Krypto-Crashes (Hedging-Effekt)
+                if (btcChangePct < 0 && bot.risk === "Conservative") {
+                    marketImpact = Math.abs(marketImpact) * 0.2; // Nutzt Shorts, federt den Sturz ab
+                }
+
+                let finalDirectionModifier = (baseDirection * randomVolatility) + marketImpact;
+
+                bot.tokenPriceInBtc += bot.tokenPriceInBtc * finalDirectionModifier;
                 if(bot.tokenPriceInBtc < 0.0001) bot.tokenPriceInBtc = 0.0001; 
                 
-                // Aktualisiere das P&L des Bots akkurat basierend auf dem prozentualen Sprung
-                bot.alltimeProfitPct += directionModifier * 100;
+                bot.alltimeProfitPct += finalDirectionModifier * 100;
             });
+
+            // Speichere den aktuellen Preis als alten Preis für den nächsten Zyklus
+            game.lastBtcPrice = game.btcPrice;
         }
 
         function checkAutomatedOrders() {
