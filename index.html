@@ -1,222 +1,306 @@
 <!DOCTYPE html>
-<html lang="en" class="bg-slate-950 text-slate-100">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>QuantCorp Tycoon - Strategic Matrix</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuantCorp Tycoon</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        .mono { font-family: 'JetBrains Mono', monospace; }
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
-        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        .toast-popup { animation: slideIn 0.3s ease-out forwards; }
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap');
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #030712;
+        }
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        /* Custom Scrollbar for Logs/Market */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #090d16;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 99px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+        /* Toast Popup Animations */
+        @keyframes slideIn {
+            from { transform: translateY(1rem); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .toast-popup {
+            animation: slideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
     </style>
 </head>
-<body class="p-3 pt-2 md:p-6 min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black select-none relative overflow-x-hidden safe-bottom">
+<body class="text-slate-300 min-h-screen selection:bg-indigo-500/30 selection:text-indigo-200 antialiased pb-8">
 
-    <div id="popup-container" class="fixed top-4 right-4 z-50 space-y-3 w-80 max-w-[calc(100vw-2rem)] pointer-events-none"></div>
-
-    <div id="onboarding-modal" class="fixed inset-0 bg-black/95 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-sm text-center space-y-5 shadow-2xl">
-            <h3 class="text-base font-bold text-slate-200 uppercase tracking-wider">QuantCorp Terminal</h3>
-            <p class="text-xs text-slate-400">Initialize a new operational identity or restore an existing backup.</p>
-            <div class="grid grid-cols-2 gap-2 p-1 bg-slate-950 border border-slate-800 rounded-xl">
-                <button id="tab-btn-new" onclick="switchOnboardingTab('new')" class="py-2 text-[10px] uppercase font-bold tracking-wider rounded-lg bg-indigo-600 text-white transition-all">New Agent</button>
-                <button id="tab-btn-load" onclick="switchOnboardingTab('load')" class="py-2 text-[10px] uppercase font-bold tracking-wider rounded-lg text-slate-400 transition-all">Load Backup</button>
-            </div>
-            <div id="onboarding-view-new" class="space-y-3">
-                <input type="text" id="nickname-input" placeholder="Moniker (e.g. Satoshi_99)" maxlength="12" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-4 py-3 text-sm mono focus:outline-none focus:border-indigo-500 text-center">
-                <button onclick="saveOnboarding()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-xs font-bold uppercase tracking-wider transition-all">Initialize Session</button>
-            </div>
-            <div id="onboarding-view-load" class="space-y-3 hidden">
-                <textarea id="onboarding-load-input" placeholder="Paste your cryptographic save code string here..." class="w-full h-24 bg-slate-950 border border-slate-800 text-slate-300 rounded-xl px-3 py-2 text-[11px] mono focus:outline-none focus:border-indigo-500 resize-none"></textarea>
-                <button onclick="executeOnboardingLoad()" class="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 rounded-xl text-xs font-bold uppercase tracking-wider transition-all">Restore System State</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="invest-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-40 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
-        <div class="bg-slate-900 border-t sm:border border-slate-800 p-5 rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md shadow-2xl space-y-5 pb-8 sm:pb-5">
-            <div class="flex justify-between items-center border-b border-slate-800/60 pb-3">
-                <h3 id="modal-title" class="text-sm font-bold text-slate-200 uppercase tracking-wider">License Algorithm</h3>
-                <button onclick="closeModal()" class="text-slate-400 hover:text-white p-2 text-lg">✕</button>
-            </div>
-            <div class="space-y-2">
-                <div class="flex justify-between text-xs font-semibold">
-                    <span class="text-slate-400">BTC Capital:</span>
-                    <span id="modal-btc-val" class="mono text-amber-400 font-bold text-sm">0.1000 BTC</span>
+    <!-- TOP HEADER BAR -->
+    <header class="border-b border-slate-900 bg-slate-950/80 backdrop-blur-md sticky top-0 z-40 px-4 py-3">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
+            <div class="flex items-center gap-3">
+                <div class="h-8 w-8 bg-gradient-to-tr from-indigo-600 to-violet-500 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                    <span class="text-white font-extrabold text-sm tracking-tighter">Q</span>
                 </div>
-                <input type="range" id="modal-btc-slider" min="0.001" max="1" step="0.001" class="w-full h-3 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-amber-500 py-2" oninput="updateModalValues()">
-                <div class="flex justify-between text-[10px] text-slate-500 mono"><span id="modal-min-label">Min: 0.001 BTC</span><span id="modal-max-label">Max: --</span></div>
-            </div>
-            <div class="bg-slate-950/80 p-3.5 rounded-xl border border-slate-800/60 space-y-2">
-                <label class="flex items-center space-x-3 cursor-pointer">
-                    <input type="checkbox" id="tp-toggle" class="w-4 h-4 rounded bg-slate-800 border-slate-700 text-indigo-500 focus:ring-0" onchange="toggleParamSliders()">
-                    <span class="text-xs font-bold text-slate-300">Take-Profit (Target)</span>
-                </label>
-                <div id="tp-slider-container" class="opacity-30 pointer-events-none transition-opacity duration-200">
-                    <div class="flex justify-between text-[11px] mono mb-1"><span class="text-slate-500">Triggers at:</span><span id="tp-val" class="text-emerald-400 font-bold">+15%</span></div>
-                    <input type="range" id="tp-slider" min="5" max="100" step="5" value="15" class="w-full h-2 bg-slate-800 rounded-lg appearance-none accent-emerald-500" oninput="updateModalValues()">
-                </div>
-            </div>
-            <div class="bg-slate-950/80 p-3.5 rounded-xl border border-slate-800/60 space-y-2">
-                <label class="flex items-center space-x-3 cursor-pointer">
-                    <input type="checkbox" id="sl-toggle" class="w-4 h-4 rounded bg-slate-800 border-slate-700 text-indigo-500 focus:ring-0" onchange="toggleParamSliders()">
-                    <span class="text-xs font-bold text-slate-300">Stop-Loss (Safety Net)</span>
-                </label>
-                <div id="sl-slider-container" class="opacity-30 pointer-events-none transition-opacity duration-200">
-                    <div class="flex justify-between text-[11px] mono mb-1"><span class="text-slate-500">Triggers at:</span><span id="sl-val" class="text-rose-400 font-bold">-10%</span></div>
-                    <input type="range" id="sl-slider" min="-50" max="-5" step="5" value="-10" class="w-full h-2 bg-slate-800 rounded-lg appearance-none accent-rose-500" oninput="updateModalValues()">
-                </div>
-            </div>
-            <div class="pt-2 flex space-x-3">
-                <button onclick="closeModal()" class="flex-1 py-3 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-bold text-slate-300 uppercase tracking-wider">Cancel</button>
-                <button onclick="confirmInvestment()" class="flex-1 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg">Deploy</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="max-w-[1700px] mx-auto space-y-3">
-        
-        <div class="bg-slate-900/60 border border-slate-800/80 rounded-xl p-3 flex flex-wrap items-center justify-between gap-2 shadow-sm backdrop-blur-sm">
-            <div class="flex items-center space-x-3">
-                <div class="h-9 w-9 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center font-bold text-sm text-white shadow-md">QC</div>
                 <div>
-                    <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider leading-none" id="user-nickname">Quant Executive</div>
-                    <div class="text-xs font-bold text-indigo-400 mono mt-1" id="manager-level">LVL 1</div>
+                    <h1 class="text-sm font-extrabold text-white tracking-wider uppercase">QuantCorp Terminal</h1>
+                    <div class="text-[10px] text-slate-500 flex items-center gap-2 mt-0.5">
+                        <span id="cloud-status">⚪ Syncing...</span>
+                        <span>•</span>
+                        <span id="api-status">⚪ Connecting...</span>
+                    </div>
                 </div>
             </div>
-            <div class="flex-1 min-w-[120px] max-w-xs mx-2">
-                <div class="flex justify-between text-[9px] text-slate-500 mono mb-1"><span>OPERATIONS XP</span><span id="xp-text">0/100</span></div>
-                <div class="w-full bg-slate-950 rounded-full h-1.5 overflow-hidden border border-slate-800/40">
-                    <div id="xp-bar" class="bg-indigo-500 h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
-                </div>
-            </div>
-            <div class="flex space-x-1.5 w-full sm:w-auto justify-end">
-                <button onclick="copySaveCode()" class="px-2 py-1.5 bg-slate-800 hover:bg-slate-700 rounded text-[10px] uppercase font-bold tracking-wider mono text-slate-300">📋 Copy Code</button>
-                <button onclick="promptLoadCode()" class="px-2 py-1.5 bg-indigo-950/40 border border-indigo-800/50 text-indigo-300 hover:bg-indigo-900/30 rounded text-[10px] uppercase font-bold tracking-wider mono">📥 Load</button>
-            </div>
-        </div>
 
-        <header class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-            <div class="bg-slate-900/90 border border-slate-800/60 p-3 rounded-xl">
-                <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Available Balance</div>
-                <div class="text-xs sm:text-sm font-bold mono text-amber-400 mt-0.5" id="user-balance">1.00000000 BTC</div>
-                <div class="text-[9px] text-slate-500 mono" id="user-balance-usd">~0.00 $</div>
-            </div>
-            <div class="bg-slate-900/90 border border-slate-800/60 p-3 rounded-xl">
-                <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Active Portfolio</div>
-                <div class="text-xs sm:text-sm font-bold mono text-emerald-400 mt-0.5" id="total-nav">0.00000000 BTC</div>
-                <div class="text-[9px] text-slate-500 mono" id="total-nav-usd">~0.00 $</div>
-            </div>
-            <div id="btc-card" class="bg-slate-900/90 border border-slate-800/60 p-3 rounded-xl col-span-2 sm:col-span-1">
-                <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider flex items-center justify-between"><span>Live Market Feed</span><span id="api-status" class="text-[9px] text-cyan-400 font-mono">Syncing...</span></div>
-                <div class="text-sm font-bold mono text-blue-400 mt-0.5" id="btc-price">Loading...</div>
-            </div>
-        </header>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-            <div class="bg-gradient-to-r from-emerald-950/60 to-slate-900/80 border border-emerald-500/40 rounded-xl p-4 shadow-lg backdrop-blur-sm">
-                <div class="flex justify-between items-center mb-2.5">
-                    <span class="text-xs uppercase font-bold tracking-wider text-emerald-400 flex items-center">
-                        <span class="w-2 h-2 rounded-full bg-emerald-400 mr-2 animate-pulse"></span>🔥 Top 3 Alpha Systems (Bullish)
-                    </span>
-                    <span class="text-[9px] font-mono bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-500/30 uppercase tracking-widest font-bold">Outperforming</span>
+            <!-- BTC Tracker -->
+            <div class="flex items-center gap-4 bg-slate-900/60 border border-slate-800/80 px-3 py-1.5 rounded-xl">
+                <div class="text-[10px] uppercase font-bold tracking-wider text-slate-500">Index Price</div>
+                <div class="flex items-center gap-1.5">
+                    <span class="text-amber-500 font-bold text-xs mono">⚡ BTC:</span>
+                    <span id="btc-price" class="text-white font-bold text-xs mono">0.00 $</span>
                 </div>
-                <div id="top-3-container" class="grid grid-cols-3 gap-2.5 text-center font-mono"></div>
             </div>
-            <div class="bg-gradient-to-r from-rose-950/60 to-slate-900/80 border border-rose-500/40 rounded-xl p-4 shadow-lg backdrop-blur-sm">
-                <div class="flex justify-between items-center mb-2.5">
-                    <span class="text-xs uppercase font-bold tracking-wider text-rose-400 flex items-center">
-                        <span class="w-2 h-2 rounded-full bg-rose-400 mr-2 animate-pulse"></span>❄️ Bottom 3 Beta Systems (Bearish)
-                    </span>
-                    <span class="text-[9px] font-mono bg-rose-500/20 text-rose-300 px-1.5 py-0.5 rounded border border-rose-500/30 uppercase tracking-widest font-bold">Risk Exposure</span>
-                </div>
-                <div id="bottom-3-container" class="grid grid-cols-3 gap-2.5 text-center font-mono"></div>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-3.5">
             
-            <div class="lg:col-span-5 space-y-3.5 order-2 lg:order-1">
-                <div class="bg-slate-900/40 border border-slate-800 p-4 rounded-xl shadow-lg backdrop-blur-md">
-                    <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center mb-3">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-2 animate-pulse"></span>Active Algos Portfolio
-                    </h2>
-                    <div id="my-portfolio-container" class="space-y-2.5 max-h-[260px] overflow-y-auto custom-scrollbar pr-0.5"></div>
-                </div>
-
-                <div class="bg-slate-900/40 border border-slate-800 p-4 rounded-xl shadow-lg backdrop-blur-md">
-                    <h2 class="text-xs font-bold uppercase tracking-wider text-indigo-400 flex items-center mb-2.5">
-                        📜 Operational Logs & Automated Exits
-                    </h2>
-                    <div id="log-container" class="bg-slate-950/80 rounded-xl p-2.5 border border-slate-800/60 max-h-[160px] overflow-y-auto custom-scrollbar space-y-1 text-[10px] mono text-slate-400">
-                        <div class="text-slate-600 text-center py-2">System logs initialized. No historic triggers.</div>
+            <!-- Account Information -->
+            <div class="flex items-center gap-3">
+                <div class="text-right">
+                    <div id="user-nickname" class="text-xs font-bold text-slate-200">QuantumTrader</div>
+                    <div class="flex items-center gap-1.5 justify-end mt-0.5">
+                        <span id="manager-level" class="text-[9px] bg-indigo-500/20 text-indigo-300 px-1 py-0.5 rounded font-extrabold">LVL 1</span>
+                        <span id="xp-text" class="text-[9px] font-bold text-slate-500 mono">0/100</span>
                     </div>
                 </div>
-
-                <div class="bg-slate-900/40 border border-slate-800 p-4 rounded-xl shadow-lg backdrop-blur-md">
-                    <div class="flex justify-between items-center mb-2.5">
-                        <h2 class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center">🏆 Global Leaderboard (Cloud)</h2>
-                        <span id="cloud-status" class="text-[9px] font-mono text-slate-500">Connecting...</span>
-                    </div>
-                    <div class="bg-slate-950/60 rounded-xl p-2 border border-slate-800/50">
-                        <ol id="leaderboard-list" class="divide-y divide-slate-900 text-xs font-mono space-y-1.5">
-                            <li class="text-center py-4 text-slate-600 text-[11px]">Syncing with global matrix...</li>
-                        </ol>
-                    </div>
-                </div>
-
-                <div class="bg-slate-900/20 border border-slate-800/60 p-3 rounded-xl grid grid-cols-2 gap-2 text-center">
-                    <div class="border-r border-slate-800/80">
-                        <div class="text-[9px] text-slate-500 uppercase font-bold tracking-wider">Successful Exits</div>
-                        <div class="text-base font-bold text-slate-300 mono mt-0.5" id="stat-exits">0</div>
-                    </div>
-                    <div>
-                        <div class="text-[9px] text-slate-500 uppercase font-bold tracking-wider">Net Profit Realized</div>
-                        <div class="text-base font-bold mono mt-0.5" id="stat-profit">0.00 $</div>
-                    </div>
+                <div class="w-20 bg-slate-900 h-2 rounded-full overflow-hidden border border-slate-800">
+                    <div id="xp-bar" class="h-full bg-gradient-to-r from-indigo-500 to-violet-500 transition-all duration-300" style="width: 0%"></div>
                 </div>
             </div>
+        </div>
+    </header>
 
-            <div class="lg:col-span-7 order-1 lg:order-2">
-                <div class="bg-slate-900/40 border border-slate-800 p-4 rounded-xl shadow-lg backdrop-blur-md space-y-3">
-                    <div class="flex flex-wrap items-center justify-between border-b border-slate-800 pb-2.5 gap-2">
-                        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300">Global Algo Market (Decision Cycle 7s)</h2>
-                        
-                        <div class="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
-                            <input type="text" id="market-search" placeholder="Search..." oninput="updateUI()" class="bg-slate-950 border border-slate-800 text-slate-300 rounded px-2 py-1 text-[10px] font-mono focus:outline-none focus:border-indigo-500 w-24 sm:w-32">
-                            <select id="market-risk-filter" onchange="updateUI()" class="bg-slate-950 border border-slate-800 text-slate-400 rounded px-1.5 py-1 text-[10px] font-mono focus:outline-none">
-                                <option value="All">All Risks</option>
-                                <option value="Conservative">Conservative</option>
-                                <option value="Moderate">Moderate</option>
-                                <option value="Aggressive">Aggressive</option>
-                                <option value="Degen">Degen</option>
-                            </select>
+    <!-- MAIN DASHBOARD CONTENT -->
+    <main class="max-w-7xl mx-auto px-4 mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- LEFT COLUMN: Portfolio & Overview (5 Cols) -->
+        <section class="lg:col-span-5 flex flex-col gap-6">
+            
+            <!-- WALLET BALANCE WIDGET -->
+            <div class="bg-gradient-to-b from-slate-950 to-slate-950/60 border border-slate-900 rounded-2xl p-5 shadow-xl relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+                    <svg class="w-24 h-24 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                </div>
+                <h3 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Liquid Funds</h3>
+                <div id="user-balance" class="text-2xl font-black text-white tracking-tight mono mt-1">0.00000000 BTC</div>
+                <div id="user-balance-usd" class="text-xs font-medium text-emerald-400 mt-0.5">~ 0.00 $</div>
+
+                <div class="grid grid-cols-2 gap-4 mt-5 pt-4 border-t border-slate-900/80">
+                    <div>
+                        <div class="text-[9px] font-bold text-slate-500 uppercase tracking-wider">In Flight (NAV)</div>
+                        <div id="total-nav" class="text-xs font-bold text-slate-300 mt-0.5 mono">0.00000000 BTC</div>
+                        <div id="total-nav-usd" class="text-[10px] text-slate-500 mt-0.5">~ 0.00 $</div>
+                    </div>
+                    <div class="border-l border-slate-900 pl-4">
+                        <div class="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Total Operations</div>
+                        <div class="flex gap-3 mt-0.5">
+                            <div>
+                                <div class="text-[9px] text-slate-500">Exits</div>
+                                <div id="stat-exits" class="text-xs font-bold text-slate-300 mono">0</div>
+                            </div>
+                            <div>
+                                <div class="text-[9px] text-slate-500">P&L (Gross)</div>
+                                <div id="stat-profit" class="text-xs font-bold text-emerald-400 mono">+0.00 $</div>
+                            </div>
                         </div>
                     </div>
-
-                    <div class="overflow-x-auto custom-scrollbar max-h-[500px] lg:max-h-[640px] overflow-y-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-                        <table class="w-full text-left border-collapse min-w-[340px]">
-                            <thead>
-                                <tr class="border-b border-slate-800 text-slate-500 text-[10px] uppercase font-bold tracking-wider">
-                                    <th class="py-2 pr-2 pl-1">Identifier</th>
-                                    <th class="py-2 px-2 text-right">Alltime</th>
-                                    <th class="py-2 px-2 text-right">Price (NAV)</th>
-                                    <th class="py-2 pl-2 pr-1 text-center">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="market-tbody" class="divide-y divide-slate-900/60"></tbody>
-                        </table>
-                    </div>
                 </div>
+
+                <!-- Backup & Restore Buttons -->
+                <div class="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-slate-900/40">
+                    <button onclick="copySaveCode()" class="py-1 px-2 text-[9px] uppercase tracking-wider font-bold rounded bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-400 transition-all text-center">Export Backup</button>
+                    <button onclick="promptLoadCode()" class="py-1 px-2 text-[9px] uppercase tracking-wider font-bold rounded bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-400 transition-all text-center">Import Backup</button>
+                </div>
+            </div>
+
+            <!-- ACTIVE MANAGEMENT LICENSES (PORTFOLIO) -->
+            <div class="bg-slate-950/40 border border-slate-900 rounded-2xl p-4 flex flex-col shadow-lg">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-xs font-extrabold text-white uppercase tracking-wider flex items-center gap-2">
+                        <span class="h-1.5 w-1.5 rounded-full bg-indigo-500"></span>
+                        Active Direct Allocations
+                    </h3>
+                </div>
+                <div id="my-portfolio-container" class="space-y-3 overflow-y-auto max-h-[360px] pr-1">
+                    <!-- Dynamic Portfolio Render -->
+                </div>
+            </div>
+
+            <!-- TOP MOVERS AND RISK BOTS -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-slate-950/40 border border-slate-900 p-3 rounded-xl flex flex-col gap-2">
+                    <h4 class="text-[10px] font-bold tracking-wider uppercase text-emerald-400 flex items-center gap-1">📈 Gainers (Top 3)</h4>
+                    <div id="top-3-container" class="grid grid-cols-1 gap-1.5 text-center"></div>
+                </div>
+                <div class="bg-slate-950/40 border border-slate-900 p-3 rounded-xl flex flex-col gap-2">
+                    <h4 class="text-[10px] font-bold tracking-wider uppercase text-rose-400 flex items-center gap-1">📉 Risk Vectors</h4>
+                    <div id="bottom-3-container" class="grid grid-cols-1 gap-1.5 text-center"></div>
+                </div>
+            </div>
+
+            <!-- LOGS PANEL -->
+            <div class="bg-slate-950/60 border border-slate-900 rounded-2xl p-4 shadow-md">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                    <span class="h-1 w-1 bg-slate-600 rounded-full animate-ping"></span> Telemetry Logs
+                </h3>
+                <div id="log-container" class="h-28 overflow-y-auto font-mono text-[10px] text-slate-500 space-y-0.5 bg-slate-950 border border-slate-900 rounded-xl p-2">
+                    <div class="text-slate-600 text-center py-2">Systemprotokoll bereit.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- RIGHT COLUMN: Algorithmic Marketplace (7 Cols) -->
+        <section class="lg:col-span-7 flex flex-col gap-4 bg-slate-950/40 border border-slate-900 rounded-2xl p-4 shadow-xl">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-900 pb-4">
+                <div>
+                    <h2 class="text-sm font-extrabold text-white uppercase tracking-wider">Algorithmic Modules</h2>
+                    <p class="text-[10px] text-slate-500 mt-0.5">Deploy risk vectors across autonomous high-frequency models.</p>
+                </div>
+
+                <!-- Market Filters -->
+                <div class="flex items-center gap-2">
+                    <input id="market-search" type="text" placeholder="Search bot..." oninput="updateUI()" class="bg-slate-900 border border-slate-800 text-xs px-2.5 py-1.5 rounded-lg text-slate-200 focus:outline-none focus:border-indigo-500 placeholder-slate-600 w-32 sm:w-40">
+                    <select id="market-risk-filter" onchange="updateUI()" class="bg-slate-900 border border-slate-800 text-xs px-2 py-1.5 rounded-lg text-slate-300 focus:outline-none focus:border-indigo-500">
+                        <option value="All">All Risks</option>
+                        <option value="Conservative">Conservative</option>
+                        <option value="Moderate">Moderate</option>
+                        <option value="Aggressive">Aggressive</option>
+                        <option value="Degen">Degen</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Marketplace Grid / Table Wrapper -->
+            <div class="overflow-x-auto overflow-y-auto max-h-[710px] pr-1">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="text-[10px] uppercase font-bold text-slate-500 tracking-wider border-b border-slate-900">
+                            <th class="py-2 pr-2 pl-1">Bot Config / Framework</th>
+                            <th class="py-2 px-2 text-right">All-Time P&L</th>
+                            <th class="py-2 px-2 text-right">NAV (BTC)</th>
+                            <th class="py-2 pl-2 pr-1 text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="market-tbody" class="divide-y divide-slate-900/40">
+                        <!-- Dynamic Bot Generation Rows -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- GLOBAL NOTIFICATION POPUP CONTAINER -->
+    <div id="popup-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 w-72 sm:w-80 pointer-events-none"></div>
+
+    <!-- ONBOARDING MODAL -->
+    <div id="onboarding-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-950 border border-slate-900 w-full max-w-sm rounded-2xl p-6 shadow-2xl">
+            <div class="flex justify-center mb-4">
+                <div class="h-10 w-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                    <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                </div>
+            </div>
+            <h3 class="text-sm font-extrabold text-white text-center uppercase tracking-wider">Initialize Protocol License</h3>
+            <p class="text-xs text-slate-500 text-center mt-1">Establish your cryptographically mapped identity to boot terminal systems.</p>
+
+            <div class="grid grid-cols-2 gap-2 mt-5 p-1 bg-slate-900 rounded-xl border border-slate-800">
+                <button id="tab-btn-new" onclick="switchOnboardingTab('new')" class="py-2 text-[10px] uppercase font-bold tracking-wider rounded-lg bg-indigo-600 text-white transition-all">New Node</button>
+                <button id="tab-btn-load" onclick="switchOnboardingTab('load')" class="py-2 text-[10px] uppercase font-bold tracking-wider rounded-lg text-slate-400 transition-all">Restore Sync</button>
+            </div>
+
+            <!-- View: Create New Account -->
+            <div id="onboarding-view-new" class="mt-4 flex flex-col gap-3">
+                <label class="text-[10px] uppercase font-bold tracking-wider text-slate-500">Moniker / Callsign</label>
+                <input id="nickname-input" type="text" placeholder="e.g. Satoshi_Alpha" maxlength="15" class="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+                <button onclick="saveOnboarding()" class="w-full mt-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-2.5 rounded-lg shadow-lg shadow-indigo-600/20 uppercase tracking-wider">Synchronize Core</button>
+            </div>
+
+            <!-- View: Restore Account -->
+            <div id="onboarding-view-load" class="mt-4 flex flex-col gap-3 hidden">
+                <label class="text-[10px] uppercase font-bold tracking-wider text-slate-500">Encryption Backup Key</label>
+                <textarea id="onboarding-load-input" rows="4" placeholder="Paste base64 code here..." class="bg-slate-900 border border-slate-800 rounded-lg p-2 text-[10px] text-slate-300 font-mono focus:outline-none focus:border-emerald-500 resize-none"></textarea>
+                <button onclick="executeOnboardingLoad()" class="w-full mt-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2.5 rounded-lg shadow-lg shadow-emerald-600/20 uppercase tracking-wider">Decrypt & Load</button>
             </div>
         </div>
     </div>
 
+    <!-- INVEST / DEPLOY ALLOCATION MODAL -->
+    <div id="invest-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-950 border border-slate-900 w-full max-w-md rounded-2xl p-5 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-slate-900 pb-3 mb-4">
+                <h3 id="modal-title" class="text-xs font-extrabold text-white uppercase tracking-wider">Deploy Framework Allocation</h3>
+                <button onclick="closeModal()" class="text-slate-500 hover:text-white transition-colors text-xs">✕</button>
+            </div>
+
+            <!-- Investment Amount Configuration -->
+            <div class="flex flex-col gap-2 mb-4">
+                <div class="flex justify-between items-center">
+                    <label class="text-[10px] uppercase font-bold tracking-wider text-slate-500">Allocation Principal</label>
+                    <span id="modal-max-label" class="text-[9px] font-bold text-indigo-400">Max Cap: 0.00 BTC</span>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 p-3 rounded-xl flex items-center justify-between">
+                    <input id="modal-btc-slider" type="range" min="0.001" max="1.0" step="0.001" oninput="updateModalValues()" class="w-2/3 h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500">
+                    <span id="modal-btc-val" class="text-sm font-black font-mono text-white">0.0010 BTC</span>
+                </div>
+            </div>
+
+            <!-- Parameter Configuration Limits (TP / SL) -->
+            <div class="space-y-3">
+                <label class="text-[10px] uppercase font-bold tracking-wider text-slate-500 block">Algorithmic Risk Overrides</label>
+                
+                <!-- Take Profit Parameter -->
+                <div class="bg-slate-900/50 border border-slate-900 p-3 rounded-xl flex flex-col gap-2">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                            <input id="tp-toggle" type="checkbox" onchange="toggleParamSliders()" class="w-3.5 h-3.5 rounded bg-slate-950 border-slate-800 text-indigo-600 focus:ring-0 cursor-pointer">
+                            <span class="text-[11px] font-bold text-slate-300">Target Take-Profit</span>
+                        </div>
+                        <span id="tp-val" class="text-xs font-extrabold text-emerald-400 mono">+10%</span>
+                    </div>
+                    <div id="tp-slider-container" class="transition-opacity duration-200">
+                        <input id="tp-slider" type="range" min="5" max="300" step="5" value="25" oninput="updateModalValues()" class="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500">
+                    </div>
+                </div>
+
+                <!-- Stop Loss Parameter -->
+                <div class="bg-slate-900/50 border border-slate-900 p-3 rounded-xl flex flex-col gap-2">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                            <input id="sl-toggle" type="checkbox" onchange="toggleParamSliders()" class="w-3.5 h-3.5 rounded bg-slate-950 border-slate-800 text-indigo-600 focus:ring-0 cursor-pointer">
+                            <span class="text-[11px] font-bold text-slate-300">Trigger Stop-Loss</span>
+                        </div>
+                        <span id="sl-val" class="text-xs font-extrabold text-rose-400 mono">-10%</span>
+                    </div>
+                    <div id="sl-slider-container" class="transition-opacity duration-200">
+                        <input id="sl-slider" type="range" min="-90" max="-5" step="5" value="-15" oninput="updateModalValues()" class="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-rose-500">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Finalize System Deployment -->
+            <div class="grid grid-cols-2 gap-3 mt-5">
+                <button onclick="closeModal()" class="py-2 text-xs font-bold uppercase tracking-wider rounded-lg border border-slate-800 bg-slate-900/50 text-slate-400 hover:text-white transition-all">Cancel</button>
+                <button onclick="confirmInvestment()" class="py-2 text-xs font-bold uppercase tracking-wider rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-600/10 transition-all">Deploy Order</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- GLOBAL CONTROLLER APPLICATION SCRIPT -->
     <script>
         let game = {
             nickname: "", balance: 1.00000000, 
@@ -239,7 +323,6 @@
             loadFromBrowserStorage();
             fetchGlobalLeaderboard(); 
             
-            // Core Engine Cycle runs precisely at 7-second bounds synchronized with feed
             setInterval(engineCycle7s, 7000);
             setInterval(fetchGlobalLeaderboard, 28000);
             fetchCustomBtcPrice();
@@ -256,8 +339,8 @@
                 const ticker = bName.split(' ').map(w => w[0]).join('').replace('#','').substring(0,3) + i;
                 const risk = risks[rIdx];
                 
-                // Fine-tuned risk variance caps (lower volatility to ensure strategies feel reasoned)
-                let baseVol = risk === "Conservative" ? 0.015 : risk === "Moderate" ? 0.035 : risk === "Aggressive" ? 0.07 : 0.14;
+                // Balancierte Basis-Volatilität pro Zyklus (gedämpft für realistischere Bewegungen)
+                let baseVol = risk === "Conservative" ? 0.01 : risk === "Moderate" ? 0.025 : risk === "Aggressive" ? 0.05 : 0.09;
 
                 game.bots.push({
                     id: i, name: bName, ticker: ticker, strategy: strategies[stIdx],
@@ -288,12 +371,12 @@
 
         function processOfflineSimulation() {
             const msPassed = Date.now() - game.lastSavedTimestamp;
-            // 7-second strategic decision cycles passed offline
             const cyclesPassed = Math.floor(msPassed / 7000);
             
             if (cyclesPassed < 2) return; 
             
-            const simulationSteps = Math.min(cyclesPassed, 800);
+            // Begrenzung der Offline-Schritte, um Überhitzung zu vermeiden
+            const simulationSteps = Math.min(cyclesPassed, 400);
             let offlineExitsTriggered = 0;
             const tempBtcUsd = game.btcPrice || 64000;
 
@@ -320,7 +403,7 @@
 
             if (offlineExitsTriggered > 0) {
                 setTimeout(() => {
-                    showPopup("CORE RECOVERY", `${offlineExitsTriggered} tactical limits triggered offline. Logs compiled.`, "info");
+                    showPopup("CORE RECOVERY", `${offlineExitsTriggered} Limits im Offline-Modus ausgelöst.`, "info");
                 }, 1500);
             }
             saveToBrowserStorage();
@@ -343,7 +426,7 @@
             }
 
             const timestampStr = new Date().toLocaleTimeString();
-            const logMsg = `[${timestampStr}] 🤖 ${bot.ticker} liquidated via Offline ${triggerType} (${profitPct >= 0 ? '+' : ''}${profitPct.toFixed(1)}%)`;
+            const logMsg = `[${timestampStr}] 🤖 ${bot.ticker} über Offline-${triggerType} geschlossen (${profitPct >= 0 ? '+' : ''}${profitPct.toFixed(1)}%)`;
             game.logs.unshift(logMsg);
             if (game.logs.length > 25) game.logs.pop();
 
@@ -388,17 +471,17 @@
         window.copySaveCode = function() {
             const stateString = btoa(JSON.stringify(game));
             navigator.clipboard.writeText(stateString);
-            showPopup("SYSTEM", "Full Export Code copied to clipboard!", "info");
+            showPopup("SYSTEM", "Backup-Code in die Zwischenablage kopiert!", "info");
         }
 
         window.promptLoadCode = function() {
-            const code = prompt("Paste Complete Backup Code string:");
+            const code = prompt("Backup-Code hier einfügen:");
             if (!code) return;
             try {
                 const parsed = JSON.parse(atob(code));
                 Object.assign(game, parsed);
                 saveToBrowserStorage(); window.location.reload();
-            } catch(e) { alert("Invalid Backup Code."); }
+            } catch(e) { alert("Ungültiger Code."); }
         }
 
         async function fetchGlobalLeaderboard() {
@@ -433,11 +516,7 @@
         }
 
         function renderLeaderboardUI(board) {
-            const list = document.getElementById('leaderboard-list'); list.innerHTML = '';
-            board.forEach((entry, i) => {
-                const isMe = entry.name === game.nickname;
-                list.innerHTML += `<li class="flex justify-between py-1 px-1.5 ${isMe ? 'bg-indigo-500/10 text-indigo-300 rounded font-bold border-l-2 border-l-indigo-500' : 'text-slate-400'}"><span>#${i+1} ${entry.name}</span><span class="text-slate-300 font-bold">${entry.exits} Exits</span></li>`;
-            });
+            // Falls in der UI ein Highscore-Panel existiert, wird hier gerendert
         }
 
         async function fetchCustomBtcPrice() {
@@ -459,44 +538,41 @@
                 if (game.btcPrice === 0) game.btcPrice = 61508.34;
                 document.getElementById('api-status').innerText = "Sync Error";
             } finally { 
-                // Synchronize frontend updates on API load
                 updateUI(); 
             }
         }
 
-        // 7-SECOND STRATEGIC CYCLE: Run calculations and automation check precisely at the price feed speed
         function engineCycle7s() {
             fetchCustomBtcPrice();
-            
-            // 1. Bots pause and rethink their position over the 7s cycle
             executeStrategicBotDecisions();
-            
-            // 2. Automations check values instantly against the consolidated strategy bounds
             if (game.btcPrice > 0) {
                 checkAutomatedOrders();
             }
-            
             updateUI();
             saveToBrowserStorage();
         }
 
+        // KORRIGIERTE BOT-LOGIK: Echte zweiseitige Volatilität (Zufallsverteilung)
         function executeStrategicBotDecisions() {
             game.bots.forEach(bot => {
-                // Bots rethink strategy: Roll a decision probability weight matrix
-                const strategicRoll = Math.random();
-                let directionModifier = 0;
+                // 50/50 Chance auf positive oder negative Grundstimmung
+                const direction = Math.random() > 0.5 ? 1 : -1;
+                
+                // Berechnet eine echte Schwankung basierend auf der maximalen Bot-Volatilität
+                let changePercent = Math.random() * bot.vol;
+                let directionModifier = direction * changePercent;
 
-                // 65% chance to maintain tactical direction, 35% chance to invert or scale down positions
-                if (strategicRoll > 0.35) {
-                    // Stay or go higher: calculates drift scaling by risk volatility boundaries
-                    directionModifier = (Math.random() * 1.1) * bot.vol;
-                } else {
-                    // Consolidate or partial sell-off drop
-                    directionModifier = -(Math.random() * 0.9) * bot.vol;
+                // Anti-Explosions-Bremse: Wenn ein Bot über +300% Alltime-Profit schießt,
+                // erhöht sich die Wahrscheinlichkeit für Gewinnmitnahmen (Kursabfall) drastisch.
+                if (bot.alltimeProfitPct > 300) {
+                    if (Math.random() > 0.2) directionModifier = -Math.abs(directionModifier) * 1.5;
                 }
 
                 bot.tokenPriceInBtc += bot.tokenPriceInBtc * directionModifier;
-                if(bot.tokenPriceInBtc < 0.0001) bot.tokenPriceInBtc = 0.0001; 
+                
+                // Verhindert, dass der Wert komplett auf Null sinkt
+                if(bot.tokenPriceInBtc < 0.0005) bot.tokenPriceInBtc = 0.0005; 
+                
                 bot.alltimeProfitPct += directionModifier * 100;
             });
         }
@@ -512,11 +588,11 @@
                 const yourProfitPct = ((currentBtcValue - asset.initialInvestedBtc) / asset.initialInvestedBtc) * 100;
 
                 if (asset.takeProfit !== null && yourProfitPct >= asset.takeProfit) {
-                    showPopup(bot.ticker, `🎯 TAKE-PROFIT AUTOMATION EXECUTED! (+${yourProfitPct.toFixed(1)}%)`, 'success');
+                    showPopup(bot.ticker, `🎯 TAKE-PROFIT AUSGELÖST! (+${yourProfitPct.toFixed(1)}%)`, 'success');
                     executeSellSharesLive(botId, bot, yourProfitPct, "TAKE-PROFIT"); 
                     changes = true;
                 } else if (asset.stopLoss !== null && yourProfitPct <= asset.stopLoss) {
-                    showPopup(bot.ticker, `🛑 STOP-LOSS AUTOMATION EXECUTED! (${yourProfitPct.toFixed(1)}%)`, 'danger');
+                    showPopup(bot.ticker, `🛑 STOP-LOSS AUSGELÖST! (${yourProfitPct.toFixed(1)}%)`, 'danger');
                     executeSellSharesLive(botId, bot, yourProfitPct, "STOP-LOSS"); 
                     changes = true;
                 }
@@ -578,7 +654,7 @@
             if(!activeTargetBotId) return;
             const bot = game.bots.find(b => b.id === activeTargetBotId);
             const btcAmount = parseFloat(document.getElementById('modal-btc-slider').value);
-            if (btcAmount <= 0 || btcAmount > game.balance) { showPopup("ERROR", "Insufficient liquidity.", "danger"); return; }
+            if (btcAmount <= 0 || btcAmount > game.balance) { showPopup("ERROR", "Ungenügend Guthaben.", "danger"); return; }
             
             const useTp = document.getElementById('tp-toggle').checked;
             const useSl = document.getElementById('sl-toggle').checked;
@@ -593,7 +669,7 @@
                 game.portfolio[activeTargetBotId].takeProfit = useTp ? parseFloat(document.getElementById('tp-slider').value) : null;
                 game.portfolio[activeTargetBotId].stopLoss = useSl ? parseFloat(document.getElementById('sl-slider').value) : null;
             }
-            showPopup(bot.ticker, `Capital allocation confirmed.`, 'info');
+            showPopup(bot.ticker, `Kapital erfolgreich allokiert.`, 'info');
             closeModal(); saveToBrowserStorage(); updateUI();
         }
 
@@ -610,7 +686,7 @@
             if (cleanNetProfitBtc > 0) gainXp(Math.floor(cleanNetProfitBtc * 1500) + 20);
             
             const timestampStr = new Date().toLocaleTimeString();
-            const logMsg = `[${timestampStr}] 🎯 ${bot.ticker} liquidated via Live ${triggerType} (${profitPct >= 0 ? '+' : ''}${profitPct.toFixed(1)}%)`;
+            const logMsg = `[${timestampStr}] 🎯 ${bot.ticker} verkauft via Live-${triggerType} (${profitPct >= 0 ? '+' : ''}${profitPct.toFixed(1)}%)`;
             game.logs.unshift(logMsg);
             if (game.logs.length > 25) game.logs.pop();
 
@@ -624,7 +700,6 @@
             const currentBtcValue = asset.tokenCount * bot.tokenPriceInBtc;
             const yourProfitPct = ((currentBtcValue - asset.initialInvestedBtc) / asset.initialInvestedBtc) * 100;
             
-            showPopup(bot ? bot.ticker : "ALGO", `Manual liquidation.`, 'info');
             executeSellSharesLive(botId, bot, yourProfitPct, "MANUAL");
         }
 
@@ -641,15 +716,13 @@
             profitEl.className = "text-base font-bold mono mt-0.5 " + (game.statTotalProfitUsd >= 0 ? "text-emerald-400" : "text-rose-500");
             document.getElementById('xp-bar').style.width = Math.min((game.xp / game.xpNeeded) * 100, 100) + "%";
 
-            // LOG CONTAINER RENDERING
             const logContainer = document.getElementById('log-container');
             if (game.logs.length === 0) {
-                logContainer.innerHTML = `<div class="text-slate-600 text-center py-2">System logs initialized. No historic triggers.</div>`;
+                logContainer.innerHTML = `<div class="text-slate-600 text-center py-2">Systemprotokoll bereit.</div>`;
             } else {
                 logContainer.innerHTML = game.logs.map(log => `<div class="py-0.5 border-b border-slate-900 truncate">${log}</div>`).join('');
             }
 
-            // REDESIGNED PERFORMANCE CARDS: VIBRANT GLOW MATRIX (HIGHLY IDENTIFIABLE)
             let sortedBots = [...game.bots].sort((a,b) => b.alltimeProfitPct - a.alltimeProfitPct);
             
             const top3Container = document.getElementById('top-3-container'); top3Container.innerHTML = '';
@@ -676,7 +749,6 @@
                     </div>`;
             });
 
-            // FILTER & SEARCH MARKET LIST
             const searchVal = document.getElementById('market-search').value.toLowerCase();
             const riskFilter = document.getElementById('market-risk-filter').value;
 
@@ -705,11 +777,10 @@
                 }
             });
 
-            // Active Portfolio layout Rendering
             const portfolioContainer = document.getElementById('my-portfolio-container');
             const currentHoldings = Object.values(game.portfolio);
             if(currentHoldings.length === 0) {
-                portfolioContainer.innerHTML = `<div class="text-center text-xs text-slate-600 py-12 border border-dashed border-slate-800 rounded-xl">No active licenses.</div>`;
+                portfolioContainer.innerHTML = `<div class="text-center text-xs text-slate-600 py-12 border border-dashed border-slate-800 rounded-xl">Keine aktiven Lizenzen.</div>`;
             } else {
                 portfolioContainer.innerHTML = '';
                 currentHoldings.forEach(asset => {
@@ -726,12 +797,12 @@
                             <div class="flex justify-between items-start">
                                 <div class="max-w-[70%]">
                                     <h4 class="text-xs font-bold text-slate-200 truncate">${bot.name}</h4>
-                                    <div class="mt-1 flex flex-wrap gap-1">${limitBadges === "" ? '<span class="text-[9px] text-slate-600">No automation</span>' : limitBadges}</div>
+                                    <div class="mt-1 flex flex-wrap gap-1">${limitBadges === "" ? '<span class="text-[9px] text-slate-600">Keine Limits</span>' : limitBadges}</div>
                                 </div>
                                 <div class="mono text-xs font-bold text-right ${yourProfitPct >= 0 ? 'text-emerald-400':'text-rose-400'}">${yourProfitPct >= 0 ? '+':''}${yourProfitPct.toFixed(2)}%</div>
                             </div>
                             <div class="flex justify-between text-[11px] mono mt-2 border-t border-slate-900 pt-2 text-slate-400"><span>NAV: ${currentBtcValue.toFixed(4)} BTC</span><span class="text-cyan-400">~ ${(currentBtcValue * game.btcPrice).toFixed(1)} $</span></div>
-                            <button class="w-full mt-2.5 py-2 bg-rose-500/10 text-rose-400 text-[10px] rounded font-bold uppercase border border-rose-500/20 shadow-sm" onclick="sellShares(${bot.id})">Liquidate Position</button>
+                            <button class="w-full mt-2.5 py-2 bg-rose-500/10 text-rose-400 text-[10px] rounded font-bold uppercase border border-rose-500/20 shadow-sm" onclick="sellShares(${bot.id})">Position auflösen</button>
                         </div>`;
                 });
             }
