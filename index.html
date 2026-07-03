@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuantCorp Tycoon</title>
+    <title>QuantCorp Tycoon Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap');
@@ -44,12 +44,20 @@
                     <span class="text-white font-extrabold text-sm tracking-tighter">Q</span>
                 </div>
                 <div>
-                    <h1 class="text-sm font-extrabold text-white tracking-wider uppercase">QuantCorp Terminal</h1>
+                    <h1 class="text-sm font-extrabold text-white tracking-wider uppercase">QuantCorp Terminal v8</h1>
                     <div class="text-[10px] text-slate-500 flex items-center gap-2 mt-0.5">
                         <span id="cloud-status">⚪ Syncing...</span>
                         <span>•</span>
                         <span id="api-status">⚪ Connecting...</span>
                     </div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 px-3 py-1.5 rounded-xl">
+                <span class="text-lg">🔥</span>
+                <div class="text-left">
+                    <div class="text-[9px] uppercase font-bold tracking-wider text-amber-400">Daily Streak</div>
+                    <div id="streak-counter" class="text-xs font-black text-white font-mono">1 Tag</div>
                 </div>
             </div>
 
@@ -115,61 +123,83 @@
             <div class="bg-slate-950/40 border border-slate-900 rounded-2xl p-4 flex flex-col shadow-lg">
                 <h3 class="text-xs font-extrabold text-white uppercase tracking-wider mb-3 flex items-center gap-2">
                     <span class="h-1.5 w-1.5 rounded-full bg-indigo-500"></span>
-                    Active Direct Allocations
+                    Active Allocations & Index Funds
                 </h3>
-                <div id="my-portfolio-container" class="space-y-3 overflow-y-auto max-h-[360px] pr-1">
+                <div id="my-portfolio-container" class="space-y-3 overflow-y-auto max-h-[300px] pr-1">
                     </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
-                <div class="bg-slate-950/40 border border-slate-900 p-3 rounded-xl flex flex-col gap-2">
-                    <h4 class="text-[10px] font-bold tracking-wider uppercase text-emerald-400">📈 Gainers (Top 3)</h4>
-                    <div id="top-3-container" class="grid grid-cols-1 gap-1.5 text-center"></div>
+            <div class="bg-slate-950/40 border border-slate-900 rounded-2xl p-4 shadow-lg">
+                <h3 class="text-xs font-extrabold text-amber-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <span>🏦</span> Sovereign Staking Protokoll
+                </h3>
+                <div class="grid grid-cols-3 gap-2 mb-3">
+                    <button onclick="selectStakingTier(30, 4.5)" class="p-2 bg-slate-900 border border-slate-800 rounded-xl text-center hover:border-amber-500/40 transition-all">
+                        <div class="text-[10px] font-bold text-slate-400">30 Ticks</div>
+                        <div class="text-xs font-black text-amber-400 mono">4.5% APY</div>
+                    </button>
+                    <button onclick="selectStakingTier(60, 8.0)" class="p-2 bg-slate-900 border border-slate-800 rounded-xl text-center hover:border-amber-500/40 transition-all">
+                        <div class="text-[10px] font-bold text-slate-400">60 Ticks</div>
+                        <div class="text-xs font-black text-amber-400 mono">8.0% APY</div>
+                    </button>
+                    <button onclick="selectStakingTier(90, 14.5)" class="p-2 bg-slate-900 border border-slate-800 rounded-xl text-center hover:border-amber-500/40 transition-all">
+                        <div class="text-[10px] font-bold text-slate-400">90 Ticks</div>
+                        <div class="text-xs font-black text-amber-400 mono">14.5% APY</div>
+                    </button>
                 </div>
-                <div class="bg-slate-950/40 border border-slate-900 p-3 rounded-xl flex flex-col gap-2">
-                    <h4 class="text-[10px] font-bold tracking-wider uppercase text-rose-400">📉 Risk Vectors</h4>
-                    <div id="bottom-3-container" class="grid grid-cols-1 gap-1.5 text-center"></div>
-                </div>
+                <div id="staking-active-container" class="space-y-2">
+                    </div>
             </div>
 
             <div class="bg-slate-950/60 border border-slate-900 rounded-2xl p-4 shadow-md">
                 <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Telemetry Logs</h3>
-                <div id="log-container" class="h-28 overflow-y-auto font-mono text-[10px] text-slate-500 space-y-0.5 bg-slate-950 border border-slate-900 rounded-xl p-2"></div>
+                <div id="log-container" class="h-24 overflow-y-auto font-mono text-[10px] text-slate-500 space-y-0.5 bg-slate-950 border border-slate-900 rounded-xl p-2"></div>
             </div>
         </section>
 
-        <section class="lg:col-span-7 flex flex-col gap-4 bg-slate-950/40 border border-slate-900 rounded-2xl p-4 shadow-xl">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-900 pb-4">
-                <div>
-                    <h2 class="text-sm font-extrabold text-white uppercase tracking-wider">Algorithmic Modules</h2>
-                    <p class="text-[10px] text-slate-500 mt-0.5">Deploy risk vectors across autonomous high-frequency models.</p>
-                </div>
-
-                <div class="flex items-center gap-2">
-                    <input id="market-search" type="text" placeholder="Search bot..." oninput="updateUI()" class="bg-slate-900 border border-slate-800 text-xs px-2.5 py-1.5 rounded-lg text-slate-200 focus:outline-none focus:border-indigo-500 placeholder-slate-600 w-32 sm:w-40">
-                    <select id="market-risk-filter" onchange="updateUI()" class="bg-slate-900 border border-slate-800 text-xs px-2 py-1.5 rounded-lg text-slate-300 focus:outline-none focus:border-indigo-500">
-                        <option value="All">All Risks</option>
-                        <option value="Conservative">Conservative</option>
-                        <option value="Moderate">Moderate</option>
-                        <option value="Aggressive">Aggressive</option>
-                        <option value="Degen">Degen</option>
-                    </select>
-                </div>
+        <section class="lg:col-span-7 flex flex-col gap-6">
+            
+            <div class="bg-slate-950/40 border border-slate-900 rounded-2xl p-4 shadow-xl">
+                <h2 class="text-sm font-extrabold text-white uppercase tracking-wider mb-1">Diversified Index Funds</h2>
+                <p class="text-[10px] text-slate-500 mb-3">Investiere in gebündelte Asset-Klassen mit automatischer Neugewichtung.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="funds-marketplace">
+                    </div>
             </div>
 
-            <div class="overflow-x-auto overflow-y-auto max-h-[710px] pr-1">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="text-[10px] uppercase font-bold text-slate-500 tracking-wider border-b border-slate-900">
-                            <th class="py-2 pr-2 pl-1">Bot Config / Framework</th>
-                            <th class="py-2 px-2 text-right">All-Time P&L</th>
-                            <th class="py-2 px-2 text-right">NAV (BTC)</th>
-                            <th class="py-2 pl-2 pr-1 text-center">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="market-tbody" class="divide-y divide-slate-900/40">
-                        </tbody>
-                </table>
+            <div class="bg-slate-950/40 border border-slate-900 rounded-2xl p-4 shadow-xl flex flex-col gap-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-900 pb-4">
+                    <div>
+                        <h2 class="text-sm font-extrabold text-white uppercase tracking-wider">Algorithmic Modules</h2>
+                        <p class="text-[10px] text-slate-500 mt-0.5">Einzeltaktische Hochfrequenz-Modelle managen.</p>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <input id="market-search" type="text" placeholder="Search bot..." oninput="updateUI()" class="bg-slate-900 border border-slate-800 text-xs px-2.5 py-1.5 rounded-lg text-slate-200 focus:outline-none focus:border-indigo-500 placeholder-slate-600 w-32 sm:w-40">
+                        <select id="market-risk-filter" onchange="updateUI()" class="bg-slate-900 border border-slate-800 text-xs px-2 py-1.5 rounded-lg text-slate-300 focus:outline-none focus:border-indigo-500">
+                            <option value="All">All Risks</option>
+                            <option value="Conservative">Conservative</option>
+                            <option value="Moderate">Moderate</option>
+                            <option value="Aggressive">Aggressive</option>
+                            <option value="Degen">Degen</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto overflow-y-auto max-h-[380px] pr-1">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="text-[10px] uppercase font-bold text-slate-500 tracking-wider border-b border-slate-900">
+                                <th class="py-2 pr-2 pl-1">Bot Config / Framework</th>
+                                <th class="py-2 px-2 text-right">All-Time P&L</th>
+                                <th class="py-2 px-2 text-right">NAV (BTC)</th>
+                                <th class="py-2 pl-2 pr-1 text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="market-tbody" class="divide-y divide-slate-900/40">
+                            </tbody>
+                    </table>
+                </div>
             </div>
         </section>
     </main>
@@ -210,7 +240,7 @@
                     <span id="modal-btc-val" class="text-sm font-black font-mono text-white">0.0010 BTC</span>
                 </div>
             </div>
-            <div class="space-y-3">
+            <div id="modal-params-wrapper" class="space-y-3">
                 <div class="bg-slate-900/50 border border-slate-900 p-3 rounded-xl flex flex-col gap-2">
                     <div class="flex justify-between items-center">
                         <div class="flex items-center gap-2">
@@ -238,7 +268,19 @@
             </div>
             <div class="grid grid-cols-2 gap-3 mt-5">
                 <button onclick="closeModal()" class="py-2 text-xs font-bold uppercase tracking-wider rounded-lg border border-slate-800 bg-slate-900/50 text-slate-400">Cancel</button>
-                <button onclick="confirmInvestment()" class="py-2 text-xs font-bold uppercase tracking-wider rounded-lg bg-indigo-600 text-white">Deploy Order</button>
+                <button id="modal-confirm-btn" onclick="confirmInvestment()" class="py-2 text-xs font-bold uppercase tracking-wider rounded-lg bg-indigo-600 text-white">Deploy Order</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="staking-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-950 border border-slate-900 w-full max-w-sm rounded-2xl p-5 shadow-2xl">
+            <h3 class="text-xs font-extrabold text-white uppercase tracking-wider mb-4">Sovereign Staking Lock</h3>
+            <div class="text-[11px] text-slate-400 mb-2">Betrag in den Smart Contract einzahlen:</div>
+            <input id="staking-amount-input" type="number" step="0.01" min="0.01" value="0.10" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 font-mono text-white text-sm focus:outline-none mb-4">
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="document.getElementById('staking-modal').classList.add('hidden')" class="py-2 text-xs font-bold uppercase tracking-wider rounded-lg bg-slate-900 border border-slate-800 text-slate-400">Cancel</button>
+                <button onclick="confirmStaking()" class="py-2 text-xs font-bold uppercase tracking-wider rounded-lg bg-amber-500 text-black">Lock Funds</button>
             </div>
         </div>
     </div>
@@ -249,18 +291,26 @@
             btcPrice: 0.0, lastBtcPrice: 0.0,
             level: 1, xp: 0, xpNeeded: 100,
             statExits: 0, statTotalProfitUsd: 0, 
-            bots: [], portfolio: {}, logs: [], lastSavedTimestamp: 0
+            bots: [], portfolio: {}, logs: [], lastSavedTimestamp: 0,
+            // NEW SPECIFIC PROTOCOLS
+            funds: [], fundPortfolio: {},
+            staking: [], 
+            streak: 1, lastLoginDate: ""
         };
+
+        let selectedTicks = 30; let selectedApy = 4.5;
+        let activeTargetType = "bot"; // "bot" or "fund"
+        let activeTargetBotId = null;
 
         const prefix = ["Apex", "Quantum", "Hyper", "Vortex", "Satoshi", "Cyber", "Aegis", "Alpha", "Zero", "Nexus", "Neural", "Vector"];
         const suffix = ["Fund", "Core", "Matrix", "Pool", "Systems", "Protocol", "Yield", "Quant"];
         const strategies = ["Scalping", "Leverage", "Grid DCA", "Momentum", "Arbitrage"];
         const risks = ["Conservative", "Moderate", "Aggressive", "Degen"];
-        let activeTargetBotId = null;
 
         window.addEventListener('load', () => {
             initGameData();
             loadFromBrowserStorage();
+            processStreakLogic();
             
             setInterval(engineCycle7s, 7000);
             fetchCustomBtcPrice();
@@ -268,32 +318,58 @@
 
         function initGameData() {
             game.bots = [];
-            for (let i = 1; i <= 50; i++) {
+            for (let i = 1; i <= 30; i++) {
                 let pIdx = (i * 3) % prefix.length;
                 let sIdx = (i * 7) % suffix.length;
                 let stIdx = (i * 2) % strategies.length;
                 let rIdx = (i * 11) % risks.length;
-
                 const bName = prefix[pIdx] + " " + suffix[sIdx] + " #"+i;
                 const ticker = bName.split(' ').map(w => w[0]).join('').replace('#','').substring(0,3) + i;
                 const risk = risks[rIdx];
-                
                 let baseVol = risk === "Conservative" ? 0.0015 : risk === "Moderate" ? 0.004 : risk === "Aggressive" ? 0.008 : 0.015;
-
                 game.bots.push({
                     id: i, name: bName, ticker: ticker, strategy: strategies[stIdx],
                     risk: risk, vol: baseVol, alltimeProfitPct: 0.0, tokenPriceInBtc: 0.01 
                 });
             }
+
+            // Init predefined Index Funds
+            game.funds = [
+                { id: 101, name: "Alpha Yield ETF", desc: "Konservative & Moderate Bots gemischt.", botIds: [1, 5, 9], managementFee: 0.001 },
+                { id: 102, name: "Horizon Degen Basket", desc: "Aggressive & High-Volatility Degen-Klasse.", botIds: [4, 12, 28], managementFee: 0.0025 }
+            ];
+        }
+
+        function processStreakLogic() {
+            const todayStr = new Date().toISOString().split('T')[0];
+            if (!game.lastLoginDate) {
+                game.lastLoginDate = todayStr;
+                game.streak = 1;
+            } else {
+                const lastDate = new Date(game.lastLoginDate);
+                const currentDate = new Date(todayStr);
+                const diffTime = Math.abs(currentDate - lastDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                if (diffDays === 1) {
+                    game.streak += 1;
+                    showPopup("🔥 STREAK UP!", `Du bist seit ${game.streak} Tagen aktiv! XP-Boost aktiv.`, "success");
+                } else if (diffDays > 1) {
+                    game.streak = 1;
+                    showPopup("💔 STREAK RESET", "Du warst gestern inaktiv. Streak neu gestartet.", "danger");
+                }
+                game.lastLoginDate = todayStr;
+            }
+            document.getElementById('streak-counter').innerText = `${game.streak} ${game.streak === 1 ? 'Tag':'Tage'}`;
         }
 
         function saveToBrowserStorage() {
             game.lastSavedTimestamp = Date.now();
-            localStorage.setItem('quantcorp_save_v7', JSON.stringify(game));
+            localStorage.setItem('quantcorp_save_v8', JSON.stringify(game));
         }
 
         function loadFromBrowserStorage() {
-            const rawSave = localStorage.getItem('quantcorp_save_v7');
+            const rawSave = localStorage.getItem('quantcorp_save_v8');
             if (rawSave) {
                 const parsed = JSON.parse(rawSave);
                 Object.assign(game, parsed);
@@ -342,23 +418,17 @@
             const stateString = btoa(JSON.stringify(game));
             navigator.clipboard.writeText(stateString).then(() => {
                 showPopup("SYSTEM", "Backup-Code in die Zwischenablage kopiert!", "success");
-            }).catch(() => {
-                alert("Code konnte nicht automatisch kopiert werden. Hier ist er:\n\n" + stateString);
             });
         }
 
         window.promptLoadCode = function() {
-            const code = prompt("Füge deinen Base64 Backup-Code hier ein:");
+            const code = prompt("Backup-Code einfügen:");
             if (!code) return;
             try {
                 const parsed = JSON.parse(atob(code.trim()));
                 Object.assign(game, parsed);
-                saveToBrowserStorage(); 
-                showPopup("SYSTEM", "Backup erfolgreich geladen!", "success");
-                window.location.reload();
-            } catch(e) { 
-                showPopup("ERROR", "Ungültiger Backup-Code!", "danger"); 
-            }
+                saveToBrowserStorage(); window.location.reload();
+            } catch(e) { showPopup("ERROR", "Ungültiger Code!", "danger"); }
         }
 
         async function fetchCustomBtcPrice() {
@@ -367,61 +437,54 @@
                 const rawText = await response.text();
                 let cleanText = rawText.replace(/\./g, '').replace(',', '.');     
                 const parsedPrice = parseFloat(cleanText);
-                
                 if (!isNaN(parsedPrice) && parsedPrice > 0) {
-                    if (game.btcPrice > 0) {
-                        game.lastBtcPrice = game.btcPrice;
-                    } else {
-                        game.lastBtcPrice = parsedPrice;
-                    }
+                    game.lastBtcPrice = game.btcPrice > 0 ? game.btcPrice : parsedPrice;
                     game.btcPrice = parsedPrice;
                     document.getElementById('api-status').innerText = "Live (USD)";
                 }
             } catch (error) {
-                if (game.btcPrice === 0) {
-                    game.btcPrice = 65000.00;
-                    game.lastBtcPrice = 65000.00;
-                }
+                if (game.btcPrice === 0) { game.btcPrice = 68000.00; game.lastBtcPrice = 68000.00; }
                 document.getElementById('api-status').innerText = "Local Mode";
-            } finally { 
-                updateUI(); 
-            }
+            } finally { updateUI(); }
         }
 
         function engineCycle7s() {
             fetchCustomBtcPrice();
             executeStrategicBotDecisions();
+            processStakingEngine();
             checkAutomatedOrders();
             updateUI();
             saveToBrowserStorage();
         }
 
         function executeStrategicBotDecisions() {
-            let btcChangePct = 0.0;
-            if (game.lastBtcPrice > 0) {
-                btcChangePct = ((game.btcPrice - game.lastBtcPrice) / game.lastBtcPrice);
-            }
+            let btcChangePct = game.lastBtcPrice > 0 ? ((game.btcPrice - game.lastBtcPrice) / game.lastBtcPrice) : 0.0;
 
             game.bots.forEach(bot => {
                 const baseDirection = Math.random() > 0.5 ? 1 : -1;
                 let randomVolatility = Math.random() * bot.vol;
-                
                 let beta = bot.risk === "Conservative" ? 0.05 : bot.risk === "Moderate" ? 0.3 : bot.risk === "Aggressive" ? 0.8 : 1.5;
                 let marketImpact = btcChangePct * beta;
                 
-                if (btcChangePct < 0 && bot.risk === "Conservative") {
-                    marketImpact = Math.abs(marketImpact) * 0.2; 
-                }
+                if (btcChangePct < 0 && bot.risk === "Conservative") marketImpact = Math.abs(marketImpact) * 0.2; 
 
                 let finalDirectionModifier = (baseDirection * randomVolatility) + marketImpact;
-
                 bot.tokenPriceInBtc += bot.tokenPriceInBtc * finalDirectionModifier;
                 if(bot.tokenPriceInBtc < 0.0001) bot.tokenPriceInBtc = 0.0001; 
-                
                 bot.alltimeProfitPct += finalDirectionModifier * 100;
             });
-
             game.lastBtcPrice = game.btcPrice;
+        }
+
+        function processStakingEngine() {
+            game.staking.forEach((position, index) => {
+                if (position.ticksLeft > 0) {
+                    position.ticksLeft--;
+                    // Berechne Zins-Tick-Ertrag
+                    let tickReward = position.amountInvested * (position.apy / 100 / 365 / 24 / 60); 
+                    position.accumulatedYield += tickReward;
+                }
+            });
         }
 
         function checkAutomatedOrders() {
@@ -429,16 +492,15 @@
                 const asset = game.portfolio[botId];
                 const bot = game.bots.find(b => b.id == botId);
                 if(!bot) return;
-                
                 const currentBtcValue = asset.tokenCount * bot.tokenPriceInBtc;
                 const yourProfitPct = ((currentBtcValue - asset.initialInvestedBtc) / asset.initialInvestedBtc) * 100;
 
                 if (asset.takeProfit !== null && yourProfitPct >= asset.takeProfit) {
-                    showPopup(bot.ticker, `🎯 TAKE-PROFIT AUSGELÖST! (+${yourProfitPct.toFixed(1)}%)`, 'success');
-                    executeSellSharesLive(botId, bot, yourProfitPct, "TAKE-PROFIT"); 
+                    showPopup(bot.ticker, `🎯 TAKE-PROFIT! (+${yourProfitPct.toFixed(1)}%)`, 'success');
+                    executeSellSharesLive(botId, yourProfitPct); 
                 } else if (asset.stopLoss !== null && yourProfitPct <= asset.stopLoss) {
-                    showPopup(bot.ticker, `🛑 STOP-LOSS AUSGELÖST! (${yourProfitPct.toFixed(1)}%)`, 'danger');
-                    executeSellSharesLive(botId, bot, yourProfitPct, "STOP-LOSS"); 
+                    showPopup(bot.ticker, `🛑 STOP-LOSS! (${yourProfitPct.toFixed(1)}%)`, 'danger');
+                    executeSellSharesLive(botId, yourProfitPct); 
                 }
             });
         }
@@ -453,29 +515,35 @@
             setTimeout(() => { if(popup.parentNode) popup.remove(); }, 5000);
         }
 
-        window.openInvestModal = function(botId) {
-            activeTargetBotId = botId;
-            const bot = game.bots.find(b => b.id === botId);
+        window.openInvestModal = function(id, type = "bot") {
+            activeTargetType = type;
+            activeTargetBotId = id;
             const maxInvestmentBtc = Math.min(game.balance, game.level * 0.25);
-            document.getElementById('modal-title').innerText = `DEPLOY: $${bot.ticker}`;
-            const btcSlider = document.getElementById('modal-btc-slider');
-            btcSlider.max = maxInvestmentBtc; btcSlider.value = (maxInvestmentBtc * 0.5).toFixed(3);
-            if(parseFloat(btcSlider.value) < 0.001) btcSlider.value = 0.001;
+            
+            document.getElementById('modal-btc-slider').max = maxInvestmentBtc;
+            document.getElementById('modal-btc-slider').value = (maxInvestmentBtc * 0.5).toFixed(3);
             document.getElementById('modal-max-label').innerText = `Max Cap: ${maxInvestmentBtc.toFixed(3)} BTC`;
-            document.getElementById('tp-toggle').checked = false; document.getElementById('sl-toggle').checked = false;
-            toggleParamSliders(); updateModalValues();
+
+            if (type === "fund") {
+                const fund = game.funds.find(f => f.id === id);
+                document.getElementById('modal-title').innerText = `INVEST: ${fund.name}`;
+                document.getElementById('modal-params-wrapper').classList.add('hidden');
+            } else {
+                const bot = game.bots.find(b => b.id === id);
+                document.getElementById('modal-title').innerText = `DEPLOY: $${bot.ticker}`;
+                document.getElementById('modal-params-wrapper').classList.remove('hidden');
+            }
             document.getElementById('invest-modal').classList.remove('hidden');
+            updateModalValues();
         }
 
-        window.closeModal = function() { document.getElementById('invest-modal').classList.add('hidden'); activeTargetBotId = null; }
+        window.closeModal = function() { document.getElementById('invest-modal').classList.add('hidden'); }
 
         window.toggleParamSliders = function() {
             const tpActive = document.getElementById('tp-toggle').checked;
             document.getElementById('tp-slider-container').style.opacity = tpActive ? "1" : "0.3";
-            document.getElementById('tp-slider-container').style.pointerEvents = tpActive ? "auto" : "none";
             const slActive = document.getElementById('sl-toggle').checked;
             document.getElementById('sl-slider-container').style.opacity = slActive ? "1" : "0.3";
-            document.getElementById('sl-slider-container').style.pointerEvents = slActive ? "auto" : "none";
         }
 
         window.updateModalValues = function() {
@@ -486,44 +554,33 @@
         }
 
         window.confirmInvestment = function() {
-            if(!activeTargetBotId) return;
-            const bot = game.bots.find(b => b.id === activeTargetBotId);
             const btcAmount = parseFloat(document.getElementById('modal-btc-slider').value);
-            if (btcAmount <= 0 || btcAmount > game.balance) { showPopup("ERROR", "Ungenügend Guthaben.", "danger"); return; }
-            
-            const useTp = document.getElementById('tp-toggle').checked;
-            const useSl = document.getElementById('sl-toggle').checked;
-            const tokensPurchased = btcAmount / bot.tokenPriceInBtc;
+            if (btcAmount <= 0 || btcAmount > game.balance) return;
+
             game.balance -= btcAmount;
 
-            if (!game.portfolio[activeTargetBotId]) {
-                game.portfolio[activeTargetBotId] = { botId: activeTargetBotId, tokenCount: tokensPurchased, initialInvestedBtc: btcAmount, takeProfit: useTp ? parseFloat(document.getElementById('tp-slider').value) : null, stopLoss: useSl ? parseFloat(document.getElementById('sl-slider').value) : null };
+            if (activeTargetType === "fund") {
+                if (!game.fundPortfolio[activeTargetBotId]) {
+                    game.fundPortfolio[activeTargetBotId] = { fundId: activeTargetBotId, initialInvestedBtc: btcAmount, currentBtcValue: btcAmount };
+                } else {
+                    game.fundPortfolio[activeTargetBotId].initialInvestedBtc += btcAmount;
+                    game.fundPortfolio[activeTargetBotId].currentBtcValue += btcAmount;
+                }
+                showPopup("INDEX", "Kapital im ETF allokiert.", "success");
             } else {
-                game.portfolio[activeTargetBotId].tokenCount += tokensPurchased;
-                game.portfolio[activeTargetBotId].initialInvestedBtc += btcAmount;
-                if(useTp) game.portfolio[activeTargetBotId].takeProfit = parseFloat(document.getElementById('tp-slider').value);
-                if(useSl) game.portfolio[activeTargetBotId].stopLoss = parseFloat(document.getElementById('sl-slider').value);
-            }
-            showPopup(bot.ticker, `Kapital allokiert.`, 'info');
-            closeModal(); saveToBrowserStorage(); updateUI();
-        }
+                const bot = game.bots.find(b => b.id === activeTargetBotId);
+                const tokensPurchased = btcAmount / bot.tokenPriceInBtc;
+                const useTp = document.getElementById('tp-toggle').checked;
+                const useSl = document.getElementById('sl-toggle').checked;
 
-        function executeSellSharesLive(botId, bot, profitPct, triggerType) {
-            const asset = game.portfolio[botId]; if (!asset) return;
-            const currentBtcValue = asset.tokenCount * bot.tokenPriceInBtc;
-            const cleanNetProfitBtc = currentBtcValue - asset.initialInvestedBtc;
-            
-            game.balance += currentBtcValue; game.statExits += 1; game.statTotalProfitUsd += cleanNetProfitBtc * game.btcPrice;
-            
-            if (cleanNetProfitBtc > 0) {
-                game.xp += Math.floor(cleanNetProfitBtc * 1500) + 20;
-                if (game.xp >= game.xpNeeded) { game.level += 1; game.xp = 0; game.xpNeeded = Math.floor(game.xpNeeded * 1.6); }
+                game.portfolio[activeTargetBotId] = {
+                    botId: activeTargetBotId, tokenCount: tokensPurchased, initialInvestedBtc: btcAmount,
+                    takeProfit: useTp ? parseFloat(document.getElementById('tp-slider').value) : null,
+                    stopLoss: useSl ? parseFloat(document.getElementById('sl-slider').value) : null
+                };
+                showPopup(bot.ticker, "Bot erfolgreich gestartet.", "info");
             }
-            
-            const timestampStr = new Date().toLocaleTimeString();
-            game.logs.unshift(`[${timestampStr}] ${bot.ticker} geschlossen (${profitPct >= 0 ? '+' : ''}${profitPct.toFixed(1)}%)`);
-            delete game.portfolio[botId];
-            saveToBrowserStorage(); updateUI();
+            closeModal(); saveToBrowserStorage(); updateUI();
         }
 
         window.sellShares = function(botId) {
@@ -531,7 +588,78 @@
             const bot = game.bots.find(b => b.id == botId);
             const currentBtcValue = asset.tokenCount * bot.tokenPriceInBtc;
             const yourProfitPct = ((currentBtcValue - asset.initialInvestedBtc) / asset.initialInvestedBtc) * 100;
-            executeSellSharesLive(botId, bot, yourProfitPct, "MANUAL");
+            executeSellSharesLive(botId, yourProfitPct);
+        }
+
+        function executeSellSharesLive(botId, profitPct) {
+            const asset = game.portfolio[botId]; const bot = game.bots.find(b => b.id == botId);
+            const currentBtcValue = asset.tokenCount * bot.tokenPriceInBtc;
+            const cleanNetProfitBtc = currentBtcValue - asset.initialInvestedBtc;
+            
+            game.balance += currentBtcValue; game.statExits += 1; game.statTotalProfitUsd += cleanNetProfitBtc * game.btcPrice;
+            
+            if (cleanNetProfitBtc > 0) {
+                let xpGain = Math.floor(cleanNetProfitBtc * 1500 * (1 + (game.streak * 0.1))) + 20; // Streak Multiplier
+                game.xp += xpGain;
+                if (game.xp >= game.xpNeeded) { game.level += 1; game.xp = 0; game.xpNeeded = Math.floor(game.xpNeeded * 1.6); }
+            }
+            game.logs.unshift(`[Exit] ${bot.ticker} geschlossen (${profitPct >= 0 ? '+':''}${profitPct.toFixed(1)}%)`);
+            delete game.portfolio[botId];
+            saveToBrowserStorage(); updateUI();
+        }
+
+        window.exitFundInvestment = function(fundId) {
+            const asset = game.fundPortfolio[fundId]; if(!asset) return;
+            const fund = game.funds.find(f => f.id == fundId);
+            
+            // Simulierter ETF Profit basierend auf den darin enthaltenen Bots
+            let combinedProfitPct = 0;
+            fund.botIds.forEach(id => { combinedProfitPct += game.bots.find(b => b.id === id).alltimeProfitPct / 3; });
+            
+            let finalReturn = asset.initialInvestedBtc * (1 + (combinedProfitPct / 100));
+            // Abzug Verwaltungsgebühr
+            finalReturn -= finalReturn * fund.managementFee;
+
+            let netProfitBtc = finalReturn - asset.initialInvestedBtc;
+            game.balance += finalReturn;
+            game.statTotalProfitUsd += netProfitBtc * game.btcPrice;
+            game.statExits += 1;
+
+            game.logs.unshift(`[ETF Exit] ${fund.name} liquidiert.`);
+            delete game.fundPortfolio[fundId];
+            saveToBrowserStorage(); updateUI();
+        }
+
+        window.selectStakingTier = function(ticks, apy) {
+            selectedTicks = ticks; selectedApy = apy;
+            document.getElementById('staking-modal').classList.remove('hidden');
+        }
+
+        window.confirmStaking = function() {
+            const amount = parseFloat(document.getElementById('staking-amount-input').value);
+            if (amount <= 0 || amount > game.balance) { alert("Ungenügend Guthaben"); return; }
+            
+            game.balance -= amount;
+            game.staking.push({ amountInvested: amount, ticksLeft: selectedTicks, initialTicks: selectedTicks, apy: selectedApy, accumulatedYield: 0 });
+            document.getElementById('staking-modal').classList.add('hidden');
+            showPopup("STAKING", `${amount} BTC erfolgreich gesperrt!`, "success");
+            saveToBrowserStorage(); updateUI();
+        }
+
+        window.claimStaking = function(idx) {
+            const pos = game.staking[idx];
+            if (pos.ticksLeft > 0) {
+                // Strafgebühr von 5% auf den Principal bei vorzeitigem Abbruch
+                let penalty = pos.amountInvested * 0.05;
+                let payout = pos.amountInvested - penalty + pos.accumulatedYield;
+                game.balance += payout;
+                showPopup("STAKING", `Vorzeitiger Abbruch! 5% Strafgebühr bezahlt.`, "danger");
+            } else {
+                game.balance += pos.amountInvested + pos.accumulatedYield;
+                showPopup("STAKING", `Zinsen & Principal erfolgreich beansprucht!`, "success");
+            }
+            game.staking.splice(idx, 1);
+            saveToBrowserStorage(); updateUI();
         }
 
         function updateUI() {
@@ -541,31 +669,100 @@
             document.getElementById('manager-level').innerText = `LVL ${game.level}`;
             document.getElementById('xp-text').innerText = `${game.xp}/${game.xpNeeded}`;
             document.getElementById('stat-exits').innerText = game.statExits;
-            
+            document.getElementById('xp-bar').style.width = Math.min((game.xp / game.xpNeeded) * 100, 100) + "%";
+
             const profitEl = document.getElementById('stat-profit');
             profitEl.innerText = (game.statTotalProfitUsd >= 0 ? '+' : '') + game.statTotalProfitUsd.toLocaleString('en-US', {minimumFractionDigits: 2}) + " $";
             profitEl.className = "text-xs font-bold mono " + (game.statTotalProfitUsd >= 0 ? "text-emerald-400" : "text-rose-500");
-            document.getElementById('xp-bar').style.width = Math.min((game.xp / game.xpNeeded) * 100, 100) + "%";
 
             const logContainer = document.getElementById('log-container');
             logContainer.innerHTML = game.logs.map(log => `<div class="py-0.5 border-b border-slate-900 truncate">${log}</div>`).join('');
 
-            let sortedBots = [...game.bots].sort((a,b) => b.alltimeProfitPct - a.alltimeProfitPct);
-            
-            const top3Container = document.getElementById('top-3-container'); top3Container.innerHTML = '';
-            sortedBots.slice(0, 3).forEach((bot, rank) => {
-                top3Container.innerHTML += `<div class="bg-slate-900 border border-slate-800 rounded p-1 text-[11px]"><div class="font-bold text-slate-200">${bot.ticker}</div><div class="text-emerald-400 font-bold">+${bot.alltimeProfitPct.toFixed(1)}%</div></div>`;
+            // RENDER INDEX FUNDS MARKETPLACE
+            const fundsMarket = document.getElementById('funds-marketplace'); fundsMarket.innerHTML = '';
+            game.funds.forEach(fund => {
+                let currentAllocation = game.fundPortfolio[fund.id] ? `${game.fundPortfolio[fund.id].initialInvestedBtc.toFixed(3)} BTC` : "Keine";
+                fundsMarket.innerHTML += `
+                    <div class="bg-slate-900 border border-slate-800 p-3 rounded-xl flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start"><span class="text-xs font-bold text-slate-200">${fund.name}</span><span class="text-[9px] text-indigo-400 font-mono">Gebühr: ${(fund.managementFee*100).toFixed(2)}%</span></div>
+                            <p class="text-[10px] text-slate-500 mt-1">${fund.desc}</p>
+                            <div class="text-[9px] text-slate-400 mt-2 font-mono">Investiert: ${currentAllocation}</div>
+                        </div>
+                        <div class="flex gap-2 mt-3">
+                            <button onclick="openInvestModal(${fund.id}, 'fund')" class="flex-1 py-1 bg-indigo-600 text-white rounded text-[10px] font-bold uppercase">Investieren</button>
+                            ${game.fundPortfolio[fund.id] ? `<button onclick="exitFundInvestment(${fund.id})" class="px-2 py-1 bg-rose-950 text-rose-400 rounded text-[10px] font-bold border border-rose-500/20">Exit</button>` : ''}
+                        </div>
+                    </div>`;
             });
 
-            const bottom3Container = document.getElementById('bottom-3-container'); bottom3Container.innerHTML = '';
-            sortedBots.slice(-3).reverse().forEach((bot, rank) => {
-                bottom3Container.innerHTML += `<div class="bg-slate-900 border border-slate-800 rounded p-1 text-[11px]"><div class="font-bold text-slate-200">${bot.ticker}</div><div class="text-rose-400 font-bold">${bot.alltimeProfitPct.toFixed(1)}%</div></div>`;
-            });
+            // RENDER ACTIVE BOTS AND FUNDS IN PORTFOLIO
+            const portfolioContainer = document.getElementById('my-portfolio-container');
+            portfolioContainer.innerHTML = '';
+            const currentHoldings = Object.values(game.portfolio);
+            const currentFundsHoldings = Object.values(game.fundPortfolio);
 
+            if(currentHoldings.length === 0 && currentFundsHoldings.length === 0) {
+                portfolioContainer.innerHTML = `<div class="text-center text-xs text-slate-600 py-6">Keine aktiven Zuordnungen.</div>`;
+            } else {
+                currentHoldings.forEach(asset => {
+                    const bot = game.bots.find(b => b.id === asset.botId);
+                    const currentBtcValue = asset.tokenCount * bot.tokenPriceInBtc;
+                    const yourProfitPct = ((currentBtcValue - asset.initialInvestedBtc) / asset.initialInvestedBtc) * 100;
+                    let limitsStr = asset.takeProfit !== null || asset.stopLoss !== null ? `TP: +${asset.takeProfit || '-'}% | SL: ${asset.stopLoss || '-'}%` : 'Keine Limits';
+
+                    portfolioContainer.innerHTML += `
+                        <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-lg flex flex-col justify-between">
+                            <div class="flex justify-between items-start">
+                                <div><span class="text-xs font-bold text-slate-200">${bot.name}</span><div class="text-[9px] text-slate-500 font-mono">${limitsStr}</div></div>
+                                <span class="mono text-xs font-bold ${yourProfitPct >= 0 ? 'text-emerald-400':'text-rose-400'}">${yourProfitPct >= 0 ? '+':''}${yourProfitPct.toFixed(2)}%</span>
+                            </div>
+                            <button class="w-full mt-2 py-1 bg-rose-500/10 text-rose-400 text-[10px] rounded font-bold uppercase border border-rose-500/20" onclick="sellShares(${bot.id})">Verkaufen</button>
+                        </div>`;
+                });
+
+                currentFundsHoldings.forEach(asset => {
+                    const fund = game.funds.find(f => f.id === asset.fundId);
+                    let combinedProfitPct = 0;
+                    fund.botIds.forEach(id => { combinedProfitPct += game.bots.find(b => b.id === id).alltimeProfitPct / 3; });
+
+                    portfolioContainer.innerHTML += `
+                        <div class="bg-slate-900 border border-indigo-900/40 p-2.5 rounded-lg flex flex-col justify-between">
+                            <div class="flex justify-between items-start">
+                                <div><span class="text-xs font-bold text-indigo-300">📊 ${fund.name}</span><div class="text-[9px] text-slate-500 font-mono">Index ETF Basket</div></div>
+                                <span class="mono text-xs font-bold ${combinedProfitPct >= 0 ? 'text-emerald-400':'text-rose-400'}">${combinedProfitPct >= 0 ? '+':''}${combinedProfitPct.toFixed(2)}%</span>
+                            </div>
+                            <button class="w-full mt-2 py-1 bg-indigo-950 text-indigo-400 text-[10px] rounded font-bold uppercase border border-indigo-500/20" onclick="exitFundInvestment(${fund.id})">Index Liquidieren</button>
+                        </div>`;
+                });
+            }
+
+            // RENDER STAKING NODE
+            const stakingContainer = document.getElementById('staking-active-container'); stakingContainer.innerHTML = '';
+            if(game.staking.length === 0) {
+                stakingContainer.innerHTML = `<div class="text-center text-[10px] text-slate-600 py-2">Keine verriegelten Assets.</div>`;
+            } else {
+                game.staking.forEach((pos, idx) => {
+                    let pctDone = ((pos.initialTicks - pos.ticksLeft) / pos.initialTicks) * 100;
+                    stakingContainer.innerHTML += `
+                        <div class="bg-slate-900 border border-slate-800 p-2 rounded-xl text-xs flex justify-between items-center">
+                            <div>
+                                <div class="font-bold text-slate-300">${pos.amountInvested.toFixed(2)} BTC Locked</div>
+                                <div class="text-[9px] font-mono text-emerald-400">+${pos.accumulatedYield.toFixed(6)} BTC Ertrag</div>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-[9px] block text-slate-500 font-mono">${pos.ticksLeft} Ticks left</span>
+                                <button onclick="claimStaking(${idx})" class="mt-1 px-2 py-0.5 rounded text-[9px] font-bold ${pos.ticksLeft === 0 ? 'bg-emerald-600 text-white':'bg-rose-950 text-rose-400'}">${pos.ticksLeft === 0 ? 'Claim':'Unstake (5% Penalty)'}</button>
+                            </div>
+                        </div>`;
+                });
+            }
+
+            // MARKET REFRESH (BOTS TABLE)
             const searchVal = document.getElementById('market-search').value.toLowerCase();
             const riskFilter = document.getElementById('market-risk-filter').value;
-
             const marketTbody = document.getElementById('market-tbody'); marketTbody.innerHTML = '';
+
             game.bots.forEach(bot => {
                 if ((bot.name.toLowerCase().includes(searchVal) || bot.ticker.toLowerCase().includes(searchVal)) && (riskFilter === "All" || bot.risk === riskFilter)) {
                     marketTbody.innerHTML += `
@@ -575,55 +772,26 @@
                                 <div class="text-[9px] text-slate-500 font-normal">${bot.risk} • ${bot.strategy}</div>
                             </td>
                             <td class="py-2.5 px-2 text-right mono font-bold ${bot.alltimeProfitPct >= 0 ? 'text-emerald-400':'text-rose-400'}">${bot.alltimeProfitPct >= 0 ? '+':''}${bot.alltimeProfitPct.toFixed(2)}%</td>
-                            <td class="py-2.5 px-2 text-right mono">
-                                <div class="font-bold text-slate-300">${bot.tokenPriceInBtc.toFixed(4)}</div>
-                            </td>
-                            <td class="py-2.5 pl-2 pr-1 text-center">
-                                <button class="px-2 py-1 bg-indigo-600 text-white rounded text-[10px] font-bold uppercase" onclick="openInvestModal(${bot.id})">Buy</button>
-                            </td>
+                            <td class="py-2.5 px-2 text-right mono font-bold text-slate-300">${bot.tokenPriceInBtc.toFixed(4)}</td>
+                            <td class="py-2.5 pl-2 pr-1 text-center"><button class="px-2 py-1 bg-indigo-600 text-white rounded text-[10px] font-bold uppercase" onclick="openInvestModal(${bot.id}, 'bot')">Buy</button></td>
                         </tr>`;
                 }
             });
 
-            const portfolioContainer = document.getElementById('my-portfolio-container');
-            const currentHoldings = Object.values(game.portfolio);
-            if(currentHoldings.length === 0) {
-                portfolioContainer.innerHTML = `<div class="text-center text-xs text-slate-600 py-6">Keine aktiven Positionen.</div>`;
-            } else {
-                portfolioContainer.innerHTML = '';
-                currentHoldings.forEach(asset => {
-                    const bot = game.bots.find(b => b.id === asset.botId);
-                    if(!bot) return;
-                    const currentBtcValue = asset.tokenCount * bot.tokenPriceInBtc;
-                    const yourProfitPct = ((currentBtcValue - asset.initialInvestedBtc) / asset.initialInvestedBtc) * 100;
-
-                    // Erstelle den Info-String für die eingestellten P&L Limits
-                    let limitsStr = "Keine Limits";
-                    if (asset.takeProfit !== null || asset.stopLoss !== null) {
-                        let tpPart = asset.takeProfit !== null ? `TP: +${asset.takeProfit}%` : 'TP: -';
-                        let slPart = asset.stopLoss !== null ? `SL: ${asset.stopLoss}%` : 'SL: -';
-                        limitsStr = `${tpPart} | ${slPart}`;
-                    }
-
-                    portfolioContainer.innerHTML += `
-                        <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg flex flex-col justify-between">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <span class="text-xs font-bold text-slate-200">${bot.name}</span>
-                                    <div class="text-[9px] text-slate-500 font-mono mt-0.5">${limitsStr}</div>
-                                </div>
-                                <span class="mono text-xs font-bold ${yourProfitPct >= 0 ? 'text-emerald-400':'text-rose-400'}">${yourProfitPct >= 0 ? '+':''}${yourProfitPct.toFixed(2)}%</span>
-                            </div>
-                            <button class="w-full mt-2 py-1 bg-rose-500/10 text-rose-400 text-[10px] rounded font-bold uppercase border border-rose-500/20" onclick="sellShares(${bot.id})">Verkaufen</button>
-                        </div>`;
-                });
-            }
-            
+            // TOTAL NAV CALCULATIONS
             let totalPortfolioBtc = 0;
             Object.values(game.portfolio).forEach(p => { 
                 const b = game.bots.find(bot => bot.id === p.botId);
                 if(b) totalPortfolioBtc += p.tokenCount * b.tokenPriceInBtc; 
             });
+            Object.values(game.fundPortfolio).forEach(asset => {
+                const fund = game.funds.find(f => f.id === asset.fundId);
+                let combinedProfitPct = 0;
+                fund.botIds.forEach(id => { combinedProfitPct += game.bots.find(b => b.id === id).alltimeProfitPct / 3; });
+                totalPortfolioBtc += asset.initialInvestedBtc * (1 + (combinedProfitPct / 100));
+            });
+            game.staking.forEach(pos => { totalPortfolioBtc += pos.amountInvested + pos.accumulatedYield; });
+
             document.getElementById('total-nav').innerText = totalPortfolioBtc.toFixed(8) + " BTC";
             document.getElementById('total-nav-usd').innerText = "~ " + (totalPortfolioBtc * game.btcPrice).toLocaleString('en-US', {minimumFractionDigits: 2}) + " $";
         }
