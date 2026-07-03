@@ -340,18 +340,25 @@
 
         window.copySaveCode = function() {
             const stateString = btoa(JSON.stringify(game));
-            navigator.clipboard.writeText(stateString);
-            showPopup("SYSTEM", "Backup-Code kopiert!", "info");
+            navigator.clipboard.writeText(stateString).then(() => {
+                showPopup("SYSTEM", "Backup-Code in die Zwischenablage kopiert!", "success");
+            }).catch(() => {
+                alert("Code konnte nicht automatisch kopiert werden. Hier ist er:\n\n" + stateString);
+            });
         }
 
         window.promptLoadCode = function() {
-            const code = prompt("Backup-Code einfügen:");
+            const code = prompt("Füge deinen Base64 Backup-Code hier ein:");
             if (!code) return;
             try {
-                const parsed = JSON.parse(atob(code));
+                const parsed = JSON.parse(atob(code.trim()));
                 Object.assign(game, parsed);
-                saveToBrowserStorage(); window.location.reload();
-            } catch(e) { alert("Fehler."); }
+                saveToBrowserStorage(); 
+                showPopup("SYSTEM", "Backup erfolgreich geladen!", "success");
+                window.location.reload();
+            } catch(e) { 
+                showPopup("ERROR", "Ungültiger Backup-Code!", "danger"); 
+            }
         }
 
         async function fetchCustomBtcPrice() {
@@ -390,7 +397,6 @@
         }
 
         function executeStrategicBotDecisions() {
-            // Berechne die echte prozentuale Veränderung des Bitcoin-Kurses
             let btcChangePct = 0.0;
             if (game.lastBtcPrice > 0) {
                 btcChangePct = ((game.btcPrice - game.lastBtcPrice) / game.lastBtcPrice);
@@ -400,15 +406,11 @@
                 const baseDirection = Math.random() > 0.5 ? 1 : -1;
                 let randomVolatility = Math.random() * bot.vol;
                 
-                // NEU: Marktkopplung (Beta-Faktor je nach Risiko)
                 let beta = bot.risk === "Conservative" ? 0.05 : bot.risk === "Moderate" ? 0.3 : bot.risk === "Aggressive" ? 0.8 : 1.5;
-                
-                // Die finale Bewegung setzt sich aus Zufall + BTC-Trend zusammen
                 let marketImpact = btcChangePct * beta;
                 
-                // Sonderlogik für konservative Bots bei Krypto-Crashes (Hedging-Effekt)
                 if (btcChangePct < 0 && bot.risk === "Conservative") {
-                    marketImpact = Math.abs(marketImpact) * 0.2; // Nutzt Shorts, federt den Sturz ab
+                    marketImpact = Math.abs(marketImpact) * 0.2; 
                 }
 
                 let finalDirectionModifier = (baseDirection * randomVolatility) + marketImpact;
@@ -419,7 +421,6 @@
                 bot.alltimeProfitPct += finalDirectionModifier * 100;
             });
 
-            // Speichere den aktuellen Preis als alten Preis für den nächsten Zyklus
             game.lastBtcPrice = game.btcPrice;
         }
 
@@ -500,6 +501,8 @@
             } else {
                 game.portfolio[activeTargetBotId].tokenCount += tokensPurchased;
                 game.portfolio[activeTargetBotId].initialInvestedBtc += btcAmount;
+                if(useTp) game.portfolio[activeTargetBotId].takeProfit = parseFloat(document.getElementById('tp-slider').value);
+                if(useSl) game.portfolio[activeTargetBotId].stopLoss = parseFloat(document.getElementById('sl-slider').value);
             }
             showPopup(bot.ticker, `Kapital allokiert.`, 'info');
             closeModal(); saveToBrowserStorage(); updateUI();
@@ -594,10 +597,21 @@
                     const currentBtcValue = asset.tokenCount * bot.tokenPriceInBtc;
                     const yourProfitPct = ((currentBtcValue - asset.initialInvestedBtc) / asset.initialInvestedBtc) * 100;
 
+                    // Erstelle den Info-String für die eingestellten P&L Limits
+                    let limitsStr = "Keine Limits";
+                    if (asset.takeProfit !== null || asset.stopLoss !== null) {
+                        let tpPart = asset.takeProfit !== null ? `TP: +${asset.takeProfit}%` : 'TP: -';
+                        let slPart = asset.stopLoss !== null ? `SL: ${asset.stopLoss}%` : 'SL: -';
+                        limitsStr = `${tpPart} | ${slPart}`;
+                    }
+
                     portfolioContainer.innerHTML += `
                         <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg flex flex-col justify-between">
-                            <div class="flex justify-between">
-                                <span class="text-xs font-bold text-slate-200">${bot.name}</span>
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <span class="text-xs font-bold text-slate-200">${bot.name}</span>
+                                    <div class="text-[9px] text-slate-500 font-mono mt-0.5">${limitsStr}</div>
+                                </div>
                                 <span class="mono text-xs font-bold ${yourProfitPct >= 0 ? 'text-emerald-400':'text-rose-400'}">${yourProfitPct >= 0 ? '+':''}${yourProfitPct.toFixed(2)}%</span>
                             </div>
                             <button class="w-full mt-2 py-1 bg-rose-500/10 text-rose-400 text-[10px] rounded font-bold uppercase border border-rose-500/20" onclick="sellShares(${bot.id})">Verkaufen</button>
