@@ -16,7 +16,6 @@
         .mono {
             font-family: 'JetBrains Mono', monospace;
         }
-        /* Custom Scrollbar for Logs/Market */
         ::-webkit-scrollbar {
             width: 4px;
             height: 4px;
@@ -28,10 +27,6 @@
             background: #1e293b;
             border-radius: 99px;
         }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #334155;
-        }
-        /* Toast Popup Animations */
         @keyframes slideIn {
             from { transform: translateY(1rem); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
@@ -88,16 +83,13 @@
     <!-- MAIN DASHBOARD CONTENT -->
     <main class="max-w-7xl mx-auto px-4 mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        <!-- LEFT COLUMN: Portfolio & Overview (5 Cols) -->
+        <!-- LEFT COLUMN -->
         <section class="lg:col-span-5 flex flex-col gap-6">
             
             <!-- WALLET BALANCE WIDGET -->
             <div class="bg-gradient-to-b from-slate-950 to-slate-950/60 border border-slate-900 rounded-2xl p-5 shadow-xl relative overflow-hidden">
-                <div class="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
-                    <svg class="w-24 h-24 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
-                </div>
                 <h3 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Liquid Funds</h3>
-                <div id="user-balance" class="text-2xl font-black text-white tracking-tight mono mt-1">0.00000000 BTC</div>
+                <div id="user-balance" class="text-2xl font-black text-white tracking-tight mono mt-1">1.00000000 BTC</div>
                 <div id="user-balance-usd" class="text-xs font-medium text-emerald-400 mt-0.5">~ 0.00 $</div>
 
                 <div class="grid grid-cols-2 gap-4 mt-5 pt-4 border-t border-slate-900/80">
@@ -121,50 +113,43 @@
                     </div>
                 </div>
 
-                <!-- Backup & Restore Buttons -->
                 <div class="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-slate-900/40">
                     <button onclick="copySaveCode()" class="py-1 px-2 text-[9px] uppercase tracking-wider font-bold rounded bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-400 transition-all text-center">Export Backup</button>
                     <button onclick="promptLoadCode()" class="py-1 px-2 text-[9px] uppercase tracking-wider font-bold rounded bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-400 transition-all text-center">Import Backup</button>
                 </div>
             </div>
 
-            <!-- ACTIVE MANAGEMENT LICENSES (PORTFOLIO) -->
+            <!-- ACTIVE MANAGEMENT LICENSES -->
             <div class="bg-slate-950/40 border border-slate-900 rounded-2xl p-4 flex flex-col shadow-lg">
-                <div class="flex justify-between items-center mb-3">
-                    <h3 class="text-xs font-extrabold text-white uppercase tracking-wider flex items-center gap-2">
-                        <span class="h-1.5 w-1.5 rounded-full bg-indigo-500"></span>
-                        Active Direct Allocations
-                    </h3>
-                </div>
+                <h3 class="text-xs font-extrabold text-white uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <span class="h-1.5 w-1.5 rounded-full bg-indigo-500"></span>
+                    Active Direct Allocations
+                </h3>
                 <div id="my-portfolio-container" class="space-y-3 overflow-y-auto max-h-[360px] pr-1">
-                    <!-- Dynamic Portfolio Render -->
+                    <!-- Dynamic Portfolio -->
                 </div>
             </div>
 
             <!-- TOP MOVERS AND RISK BOTS -->
             <div class="grid grid-cols-2 gap-4">
                 <div class="bg-slate-950/40 border border-slate-900 p-3 rounded-xl flex flex-col gap-2">
-                    <h4 class="text-[10px] font-bold tracking-wider uppercase text-emerald-400 flex items-center gap-1">📈 Gainers (Top 3)</h4>
+                    <h4 class="text-[10px] font-bold tracking-wider uppercase text-emerald-400">📈 Gainers (Top 3)</h4>
                     <div id="top-3-container" class="grid grid-cols-1 gap-1.5 text-center"></div>
                 </div>
                 <div class="bg-slate-950/40 border border-slate-900 p-3 rounded-xl flex flex-col gap-2">
-                    <h4 class="text-[10px] font-bold tracking-wider uppercase text-rose-400 flex items-center gap-1">📉 Risk Vectors</h4>
+                    <h4 class="text-[10px] font-bold tracking-wider uppercase text-rose-400">📉 Risk Vectors</h4>
                     <div id="bottom-3-container" class="grid grid-cols-1 gap-1.5 text-center"></div>
                 </div>
             </div>
 
             <!-- LOGS PANEL -->
             <div class="bg-slate-950/60 border border-slate-900 rounded-2xl p-4 shadow-md">
-                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
-                    <span class="h-1 w-1 bg-slate-600 rounded-full animate-ping"></span> Telemetry Logs
-                </h3>
-                <div id="log-container" class="h-28 overflow-y-auto font-mono text-[10px] text-slate-500 space-y-0.5 bg-slate-950 border border-slate-900 rounded-xl p-2">
-                    <div class="text-slate-600 text-center py-2">Systemprotokoll bereit.</div>
-                </div>
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Telemetry Logs</h3>
+                <div id="log-container" class="h-28 overflow-y-auto font-mono text-[10px] text-slate-500 space-y-0.5 bg-slate-950 border border-slate-900 rounded-xl p-2"></div>
             </div>
         </section>
 
-        <!-- RIGHT COLUMN: Algorithmic Marketplace (7 Cols) -->
+        <!-- RIGHT COLUMN: ALGORITHMIC MARKETPLACE -->
         <section class="lg:col-span-7 flex flex-col gap-4 bg-slate-950/40 border border-slate-900 rounded-2xl p-4 shadow-xl">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-900 pb-4">
                 <div>
@@ -172,7 +157,6 @@
                     <p class="text-[10px] text-slate-500 mt-0.5">Deploy risk vectors across autonomous high-frequency models.</p>
                 </div>
 
-                <!-- Market Filters -->
                 <div class="flex items-center gap-2">
                     <input id="market-search" type="text" placeholder="Search bot..." oninput="updateUI()" class="bg-slate-900 border border-slate-800 text-xs px-2.5 py-1.5 rounded-lg text-slate-200 focus:outline-none focus:border-indigo-500 placeholder-slate-600 w-32 sm:w-40">
                     <select id="market-risk-filter" onchange="updateUI()" class="bg-slate-900 border border-slate-800 text-xs px-2 py-1.5 rounded-lg text-slate-300 focus:outline-none focus:border-indigo-500">
@@ -185,7 +169,6 @@
                 </div>
             </div>
 
-            <!-- Marketplace Grid / Table Wrapper -->
             <div class="overflow-x-auto overflow-y-auto max-h-[710px] pr-1">
                 <table class="w-full text-left border-collapse">
                     <thead>
@@ -197,57 +180,42 @@
                         </tr>
                     </thead>
                     <tbody id="market-tbody" class="divide-y divide-slate-900/40">
-                        <!-- Dynamic Bot Generation Rows -->
+                        <!-- Dynamic Rows -->
                     </tbody>
                 </table>
             </div>
         </section>
     </main>
 
-    <!-- GLOBAL NOTIFICATION POPUP CONTAINER -->
+    <!-- TOAST POPUPS -->
     <div id="popup-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 w-72 sm:w-80 pointer-events-none"></div>
 
     <!-- ONBOARDING MODAL -->
     <div id="onboarding-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-950 border border-slate-900 w-full max-w-sm rounded-2xl p-6 shadow-2xl">
-            <div class="flex justify-center mb-4">
-                <div class="h-10 w-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
-                    <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                </div>
-            </div>
             <h3 class="text-sm font-extrabold text-white text-center uppercase tracking-wider">Initialize Protocol License</h3>
-            <p class="text-xs text-slate-500 text-center mt-1">Establish your cryptographically mapped identity to boot terminal systems.</p>
-
             <div class="grid grid-cols-2 gap-2 mt-5 p-1 bg-slate-900 rounded-xl border border-slate-800">
-                <button id="tab-btn-new" onclick="switchOnboardingTab('new')" class="py-2 text-[10px] uppercase font-bold tracking-wider rounded-lg bg-indigo-600 text-white transition-all">New Node</button>
-                <button id="tab-btn-load" onclick="switchOnboardingTab('load')" class="py-2 text-[10px] uppercase font-bold tracking-wider rounded-lg text-slate-400 transition-all">Restore Sync</button>
+                <button id="tab-btn-new" onclick="switchOnboardingTab('new')" class="py-2 text-[10px] uppercase font-bold tracking-wider rounded-lg bg-indigo-600 text-white">New Node</button>
+                <button id="tab-btn-load" onclick="switchOnboardingTab('load')" class="py-2 text-[10px] uppercase font-bold tracking-wider rounded-lg text-slate-400">Restore Sync</button>
             </div>
-
-            <!-- View: Create New Account -->
             <div id="onboarding-view-new" class="mt-4 flex flex-col gap-3">
-                <label class="text-[10px] uppercase font-bold tracking-wider text-slate-500">Moniker / Callsign</label>
-                <input id="nickname-input" type="text" placeholder="e.g. Satoshi_Alpha" maxlength="15" class="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
-                <button onclick="saveOnboarding()" class="w-full mt-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-2.5 rounded-lg shadow-lg shadow-indigo-600/20 uppercase tracking-wider">Synchronize Core</button>
+                <input id="nickname-input" type="text" placeholder="e.g. Satoshi_Alpha" maxlength="15" class="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none">
+                <button onclick="saveOnboarding()" class="w-full bg-indigo-600 text-white font-bold text-xs py-2.5 rounded-lg uppercase tracking-wider">Synchronize Core</button>
             </div>
-
-            <!-- View: Restore Account -->
             <div id="onboarding-view-load" class="mt-4 flex flex-col gap-3 hidden">
-                <label class="text-[10px] uppercase font-bold tracking-wider text-slate-500">Encryption Backup Key</label>
-                <textarea id="onboarding-load-input" rows="4" placeholder="Paste base64 code here..." class="bg-slate-900 border border-slate-800 rounded-lg p-2 text-[10px] text-slate-300 font-mono focus:outline-none focus:border-emerald-500 resize-none"></textarea>
-                <button onclick="executeOnboardingLoad()" class="w-full mt-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2.5 rounded-lg shadow-lg shadow-emerald-600/20 uppercase tracking-wider">Decrypt & Load</button>
+                <textarea id="onboarding-load-input" rows="4" placeholder="Paste base64 code here..." class="bg-slate-900 border border-slate-800 rounded-lg p-2 text-[10px] text-slate-300 font-mono resize-none"></textarea>
+                <button onclick="executeOnboardingLoad()" class="w-full bg-emerald-600 text-white font-bold text-xs py-2.5 rounded-lg uppercase tracking-wider">Decrypt & Load</button>
             </div>
         </div>
     </div>
 
-    <!-- INVEST / DEPLOY ALLOCATION MODAL -->
+    <!-- INVEST MODAL -->
     <div id="invest-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-950 border border-slate-900 w-full max-w-md rounded-2xl p-5 shadow-2xl">
             <div class="flex justify-between items-center border-b border-slate-900 pb-3 mb-4">
-                <h3 id="modal-title" class="text-xs font-extrabold text-white uppercase tracking-wider">Deploy Framework Allocation</h3>
-                <button onclick="closeModal()" class="text-slate-500 hover:text-white transition-colors text-xs">✕</button>
+                <h3 id="modal-title" class="text-xs font-extrabold text-white uppercase tracking-wider">Deploy Allocation</h3>
+                <button onclick="closeModal()" class="text-slate-500 hover:text-white text-xs">✕</button>
             </div>
-
-            <!-- Investment Amount Configuration -->
             <div class="flex flex-col gap-2 mb-4">
                 <div class="flex justify-between items-center">
                     <label class="text-[10px] uppercase font-bold tracking-wider text-slate-500">Allocation Principal</label>
@@ -258,49 +226,40 @@
                     <span id="modal-btc-val" class="text-sm font-black font-mono text-white">0.0010 BTC</span>
                 </div>
             </div>
-
-            <!-- Parameter Configuration Limits (TP / SL) -->
             <div class="space-y-3">
-                <label class="text-[10px] uppercase font-bold tracking-wider text-slate-500 block">Algorithmic Risk Overrides</label>
-                
-                <!-- Take Profit Parameter -->
                 <div class="bg-slate-900/50 border border-slate-900 p-3 rounded-xl flex flex-col gap-2">
                     <div class="flex justify-between items-center">
                         <div class="flex items-center gap-2">
-                            <input id="tp-toggle" type="checkbox" onchange="toggleParamSliders()" class="w-3.5 h-3.5 rounded bg-slate-950 border-slate-800 text-indigo-600 focus:ring-0 cursor-pointer">
+                            <input id="tp-toggle" type="checkbox" onchange="toggleParamSliders()" class="w-3.5 h-3.5 rounded bg-slate-950 border-slate-800 text-indigo-600">
                             <span class="text-[11px] font-bold text-slate-300">Target Take-Profit</span>
                         </div>
                         <span id="tp-val" class="text-xs font-extrabold text-emerald-400 mono">+10%</span>
                     </div>
-                    <div id="tp-slider-container" class="transition-opacity duration-200">
-                        <input id="tp-slider" type="range" min="5" max="300" step="5" value="25" oninput="updateModalValues()" class="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500">
+                    <div id="tp-slider-container">
+                        <input id="tp-slider" type="range" min="5" max="300" step="5" value="25" oninput="updateModalValues()" class="w-full h-1 bg-slate-800 rounded-lg appearance-none accent-emerald-500">
                     </div>
                 </div>
-
-                <!-- Stop Loss Parameter -->
                 <div class="bg-slate-900/50 border border-slate-900 p-3 rounded-xl flex flex-col gap-2">
                     <div class="flex justify-between items-center">
                         <div class="flex items-center gap-2">
-                            <input id="sl-toggle" type="checkbox" onchange="toggleParamSliders()" class="w-3.5 h-3.5 rounded bg-slate-950 border-slate-800 text-indigo-600 focus:ring-0 cursor-pointer">
+                            <input id="sl-toggle" type="checkbox" onchange="toggleParamSliders()" class="w-3.5 h-3.5 rounded bg-slate-950 border-slate-800 text-indigo-600">
                             <span class="text-[11px] font-bold text-slate-300">Trigger Stop-Loss</span>
                         </div>
                         <span id="sl-val" class="text-xs font-extrabold text-rose-400 mono">-10%</span>
                     </div>
-                    <div id="sl-slider-container" class="transition-opacity duration-200">
-                        <input id="sl-slider" type="range" min="-90" max="-5" step="5" value="-15" oninput="updateModalValues()" class="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-rose-500">
+                    <div id="sl-slider-container">
+                        <input id="sl-slider" type="range" min="-90" max="-5" step="5" value="-15" oninput="updateModalValues()" class="w-full h-1 bg-slate-800 rounded-lg appearance-none accent-rose-500">
                     </div>
                 </div>
             </div>
-
-            <!-- Finalize System Deployment -->
             <div class="grid grid-cols-2 gap-3 mt-5">
-                <button onclick="closeModal()" class="py-2 text-xs font-bold uppercase tracking-wider rounded-lg border border-slate-800 bg-slate-900/50 text-slate-400 hover:text-white transition-all">Cancel</button>
-                <button onclick="confirmInvestment()" class="py-2 text-xs font-bold uppercase tracking-wider rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-600/10 transition-all">Deploy Order</button>
+                <button onclick="closeModal()" class="py-2 text-xs font-bold uppercase tracking-wider rounded-lg border border-slate-800 bg-slate-900/50 text-slate-400">Cancel</button>
+                <button onclick="confirmInvestment()" class="py-2 text-xs font-bold uppercase tracking-wider rounded-lg bg-indigo-600 text-white">Deploy Order</button>
             </div>
         </div>
     </div>
 
-    <!-- GLOBAL CONTROLLER APPLICATION SCRIPT -->
+    <!-- CONTROLLER SCRIPT -->
     <script>
         let game = {
             nickname: "", balance: 1.00000000, 
@@ -321,14 +280,13 @@
         window.addEventListener('load', () => {
             initGameData();
             loadFromBrowserStorage();
-            fetchGlobalLeaderboard(); 
             
             setInterval(engineCycle7s, 7000);
-            setInterval(fetchGlobalLeaderboard, 28000);
             fetchCustomBtcPrice();
         });
 
         function initGameData() {
+            game.bots = [];
             for (let i = 1; i <= 50; i++) {
                 let pIdx = (i * 3) % prefix.length;
                 let sIdx = (i * 7) % suffix.length;
@@ -339,7 +297,6 @@
                 const ticker = bName.split(' ').map(w => w[0]).join('').replace('#','').substring(0,3) + i;
                 const risk = risks[rIdx];
                 
-                // Balancierte Basis-Volatilität pro Zyklus (gedämpft für realistischere Bewegungen)
                 let baseVol = risk === "Conservative" ? 0.01 : risk === "Moderate" ? 0.025 : risk === "Aggressive" ? 0.05 : 0.09;
 
                 game.bots.push({
@@ -360,77 +317,9 @@
                 const parsed = JSON.parse(rawSave);
                 Object.assign(game, parsed);
                 document.getElementById('user-nickname').innerText = game.nickname;
-                
-                if (game.lastSavedTimestamp > 0) {
-                    processOfflineSimulation();
-                }
             } else {
                 document.getElementById('onboarding-modal').classList.remove('hidden');
             }
-        }
-
-        function processOfflineSimulation() {
-            const msPassed = Date.now() - game.lastSavedTimestamp;
-            const cyclesPassed = Math.floor(msPassed / 7000);
-            
-            if (cyclesPassed < 2) return; 
-            
-            // Begrenzung der Offline-Schritte, um Überhitzung zu vermeiden
-            const simulationSteps = Math.min(cyclesPassed, 400);
-            let offlineExitsTriggered = 0;
-            const tempBtcUsd = game.btcPrice || 64000;
-
-            for (let step = 0; step < simulationSteps; step++) {
-                executeStrategicBotDecisions();
-
-                Object.keys(game.portfolio).forEach(botId => {
-                    const asset = game.portfolio[botId];
-                    const bot = game.bots.find(b => b.id == botId);
-                    if(!bot) return;
-
-                    const currentBtcValue = asset.tokenCount * bot.tokenPriceInBtc;
-                    const yourProfitPct = ((currentBtcValue - asset.initialInvestedBtc) / asset.initialInvestedBtc) * 100;
-
-                    if (asset.takeProfit !== null && yourProfitPct >= asset.takeProfit) {
-                        executeOfflineLiquidation(botId, bot, currentBtcValue, asset, yourProfitPct, "TAKE-PROFIT", tempBtcUsd);
-                        offlineExitsTriggered++;
-                    } else if (asset.stopLoss !== null && yourProfitPct <= asset.stopLoss) {
-                        executeOfflineLiquidation(botId, bot, currentBtcValue, asset, yourProfitPct, "STOP-LOSS", tempBtcUsd);
-                        offlineExitsTriggered++;
-                    }
-                });
-            }
-
-            if (offlineExitsTriggered > 0) {
-                setTimeout(() => {
-                    showPopup("CORE RECOVERY", `${offlineExitsTriggered} Limits im Offline-Modus ausgelöst.`, "info");
-                }, 1500);
-            }
-            saveToBrowserStorage();
-        }
-
-        function executeOfflineLiquidation(botId, bot, currentBtcValue, asset, profitPct, triggerType, btcUsd) {
-            const rawNetProfitBtc = currentBtcValue - asset.initialInvestedBtc;
-            let finalBtcPayout = currentBtcValue;
-
-            if (rawNetProfitBtc > 0) finalBtcPayout -= (rawNetProfitBtc * 0.1); 
-            const cleanNetProfitBtc = finalBtcPayout - asset.initialInvestedBtc;
-            
-            game.balance += finalBtcPayout; 
-            game.statExits += 1; 
-            game.statTotalProfitUsd += cleanNetProfitBtc * btcUsd;
-            
-            if (cleanNetProfitBtc > 0) {
-                game.xp += Math.floor(cleanNetProfitBtc * 1500) + 20;
-                if (game.xp >= game.xpNeeded) { game.level += 1; game.xp = 0; game.xpNeeded = Math.floor(game.xpNeeded * 1.6); }
-            }
-
-            const timestampStr = new Date().toLocaleTimeString();
-            const logMsg = `[${timestampStr}] 🤖 ${bot.ticker} über Offline-${triggerType} geschlossen (${profitPct >= 0 ? '+' : ''}${profitPct.toFixed(1)}%)`;
-            game.logs.unshift(logMsg);
-            if (game.logs.length > 25) game.logs.pop();
-
-            delete game.portfolio[botId];
         }
 
         window.switchOnboardingTab = function(tab) {
@@ -439,23 +328,23 @@
             const viewNew = document.getElementById('onboarding-view-new');
             const viewLoad = document.getElementById('onboarding-view-load');
             if(tab === 'new') {
-                tabNew.className = "py-2 text-[10px] uppercase font-bold tracking-wider rounded-lg bg-indigo-600 text-white transition-all";
-                tabLoad.className = "py-2 text-[10px] uppercase font-bold tracking-wider rounded-lg text-slate-400 transition-all";
+                tabNew.className = "py-2 text-[10px] uppercase font-bold tracking-wider rounded-lg bg-indigo-600 text-white";
+                tabLoad.className = "py-2 text-[10px] uppercase font-bold tracking-wider rounded-lg text-slate-400";
                 viewNew.classList.remove('hidden'); viewLoad.classList.add('hidden');
             } else {
-                tabLoad.className = "py-2 text-[10px] uppercase font-bold tracking-wider rounded-lg bg-emerald-600 text-white transition-all";
-                tabNew.className = "py-2 text-[10px] uppercase font-bold tracking-wider rounded-lg text-slate-400 transition-all";
+                tabLoad.className = "py-2 text-[10px] uppercase font-bold tracking-wider rounded-lg bg-emerald-600 text-white";
+                tabNew.className = "py-2 text-[10px] uppercase font-bold tracking-wider rounded-lg text-slate-400";
                 viewLoad.classList.remove('hidden'); viewNew.classList.add('hidden');
             }
         }
 
         window.saveOnboarding = function() {
             const input = document.getElementById('nickname-input').value.trim().replace(/[^a-zA-Z0-9_]/g, '');
-            if(input.length < 3) { alert('Moniker must be at least 3 chars'); return; }
+            if(input.length < 3) return;
             game.nickname = input;
             document.getElementById('user-nickname').innerText = game.nickname;
             document.getElementById('onboarding-modal').classList.add('hidden');
-            saveToBrowserStorage(); syncScoreToCloud();
+            saveToBrowserStorage();
         }
 
         window.executeOnboardingLoad = function() {
@@ -465,58 +354,23 @@
                 const parsed = JSON.parse(atob(code));
                 Object.assign(game, parsed);
                 saveToBrowserStorage(); window.location.reload();
-            } catch(e) { alert("Failed to decrypt string."); }
+            } catch(e) { alert("Error."); }
         }
 
         window.copySaveCode = function() {
             const stateString = btoa(JSON.stringify(game));
             navigator.clipboard.writeText(stateString);
-            showPopup("SYSTEM", "Backup-Code in die Zwischenablage kopiert!", "info");
+            showPopup("SYSTEM", "Backup-Code kopiert!", "info");
         }
 
         window.promptLoadCode = function() {
-            const code = prompt("Backup-Code hier einfügen:");
+            const code = prompt("Backup-Code einfügen:");
             if (!code) return;
             try {
                 const parsed = JSON.parse(atob(code));
                 Object.assign(game, parsed);
                 saveToBrowserStorage(); window.location.reload();
-            } catch(e) { alert("Ungültiger Code."); }
-        }
-
-        async function fetchGlobalLeaderboard() {
-            try {
-                const res = await fetch(CLOUD_URL);
-                if (!res.ok) throw new Error();
-                let board = await res.json();
-                board.sort((a,b) => b.exits - a.exits);
-                renderLeaderboardUI(board.slice(0, 5));
-                document.getElementById('cloud-status').innerText = "🟢 Online";
-            } catch (err) {
-                document.getElementById('cloud-status').innerText = "⚠️ Local Mode";
-                renderLeaderboardUI([{name: "Satoshi_Core", exits: 99}, {name: "QuantWhale", exits: 45}]);
-            }
-        }
-
-        async function syncScoreToCloud() {
-            if (!game.nickname) return;
-            try {
-                let currentBoard = [];
-                try {
-                    const res = await fetch(CLOUD_URL);
-                    if (res.ok) currentBoard = await res.json();
-                } catch(e){}
-                let myEntry = currentBoard.find(e => e.name === game.nickname);
-                if (myEntry) { if (game.statExits > myEntry.exits) myEntry.exits = game.statExits; } 
-                else { currentBoard.push({ name: game.nickname, exits: game.statExits }); }
-                currentBoard.sort((a,b) => b.exits - a.exits);
-                await fetch(CLOUD_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(currentBoard.slice(0, 20)) });
-                fetchGlobalLeaderboard();
-            } catch (err) {}
-        }
-
-        function renderLeaderboardUI(board) {
-            // Falls in der UI ein Highscore-Panel existiert, wird hier gerendert
+            } catch(e) { alert("Fehler."); }
         }
 
         async function fetchCustomBtcPrice() {
@@ -527,16 +381,12 @@
                 const parsedPrice = parseFloat(cleanText);
                 
                 if (!isNaN(parsedPrice) && parsedPrice > 0) {
-                    if (game.btcPrice !== parsedPrice) {
-                        if (game.btcPrice === 0) game.btcPrice = parsedPrice;
-                        game.lastBtcPrice = game.btcPrice; 
-                        game.btcPrice = parsedPrice;
-                    }
+                    game.btcPrice = parsedPrice;
                     document.getElementById('api-status').innerText = "Live (USD)";
                 }
             } catch (error) {
-                if (game.btcPrice === 0) game.btcPrice = 61508.34;
-                document.getElementById('api-status').innerText = "Sync Error";
+                if (game.btcPrice === 0) game.btcPrice = 65000.00;
+                document.getElementById('api-status').innerText = "Local Mode";
             } finally { 
                 updateUI(); 
             }
@@ -545,40 +395,25 @@
         function engineCycle7s() {
             fetchCustomBtcPrice();
             executeStrategicBotDecisions();
-            if (game.btcPrice > 0) {
-                checkAutomatedOrders();
-            }
+            checkAutomatedOrders();
             updateUI();
             saveToBrowserStorage();
         }
 
-        // KORRIGIERTE BOT-LOGIK: Echte zweiseitige Volatilität (Zufallsverteilung)
         function executeStrategicBotDecisions() {
             game.bots.forEach(bot => {
-                // 50/50 Chance auf positive oder negative Grundstimmung
                 const direction = Math.random() > 0.5 ? 1 : -1;
-                
-                // Berechnet eine echte Schwankung basierend auf der maximalen Bot-Volatilität
                 let changePercent = Math.random() * bot.vol;
                 let directionModifier = direction * changePercent;
 
-                // Anti-Explosions-Bremse: Wenn ein Bot über +300% Alltime-Profit schießt,
-                // erhöht sich die Wahrscheinlichkeit für Gewinnmitnahmen (Kursabfall) drastisch.
-                if (bot.alltimeProfitPct > 300) {
-                    if (Math.random() > 0.2) directionModifier = -Math.abs(directionModifier) * 1.5;
-                }
-
                 bot.tokenPriceInBtc += bot.tokenPriceInBtc * directionModifier;
-                
-                // Verhindert, dass der Wert komplett auf Null sinkt
-                if(bot.tokenPriceInBtc < 0.0005) bot.tokenPriceInBtc = 0.0005; 
+                if(bot.tokenPriceInBtc < 0.0001) bot.tokenPriceInBtc = 0.0001; 
                 
                 bot.alltimeProfitPct += directionModifier * 100;
             });
         }
 
         function checkAutomatedOrders() {
-            let changes = false;
             Object.keys(game.portfolio).forEach(botId => {
                 const asset = game.portfolio[botId];
                 const bot = game.bots.find(b => b.id == botId);
@@ -590,14 +425,11 @@
                 if (asset.takeProfit !== null && yourProfitPct >= asset.takeProfit) {
                     showPopup(bot.ticker, `🎯 TAKE-PROFIT AUSGELÖST! (+${yourProfitPct.toFixed(1)}%)`, 'success');
                     executeSellSharesLive(botId, bot, yourProfitPct, "TAKE-PROFIT"); 
-                    changes = true;
                 } else if (asset.stopLoss !== null && yourProfitPct <= asset.stopLoss) {
                     showPopup(bot.ticker, `🛑 STOP-LOSS AUSGELÖST! (${yourProfitPct.toFixed(1)}%)`, 'danger');
                     executeSellSharesLive(botId, bot, yourProfitPct, "STOP-LOSS"); 
-                    changes = true;
                 }
             });
-            if(changes) saveToBrowserStorage();
         }
 
         function showPopup(title, message, type = 'info') {
@@ -608,14 +440,6 @@
             popup.innerHTML = `<div class="flex justify-between items-center border-b border-white/10 pb-1 mb-1"><span class="text-xs font-bold font-mono uppercase">${title}</span><button onclick="this.parentElement.parentElement.remove()" class="text-[10px] opacity-50">✕</button></div><p class="text-[11px] font-medium">${message}</p>`;
             container.appendChild(popup);
             setTimeout(() => { if(popup.parentNode) popup.remove(); }, 5000);
-        }
-
-        function gainXp(amount) {
-            game.xp += amount;
-            if (game.xp >= game.xpNeeded) {
-                game.level += 1; game.xp = 0; game.xpNeeded = Math.floor(game.xpNeeded * 1.6);
-                showPopup("✨ RANK UP", `Operations Level ${game.level}!`, 'info');
-            }
         }
 
         window.openInvestModal = function(botId) {
@@ -666,32 +490,27 @@
             } else {
                 game.portfolio[activeTargetBotId].tokenCount += tokensPurchased;
                 game.portfolio[activeTargetBotId].initialInvestedBtc += btcAmount;
-                game.portfolio[activeTargetBotId].takeProfit = useTp ? parseFloat(document.getElementById('tp-slider').value) : null;
-                game.portfolio[activeTargetBotId].stopLoss = useSl ? parseFloat(document.getElementById('sl-slider').value) : null;
             }
-            showPopup(bot.ticker, `Kapital erfolgreich allokiert.`, 'info');
+            showPopup(bot.ticker, `Kapital allokiert.`, 'info');
             closeModal(); saveToBrowserStorage(); updateUI();
         }
 
         function executeSellSharesLive(botId, bot, profitPct, triggerType) {
             const asset = game.portfolio[botId]; if (!asset) return;
             const currentBtcValue = asset.tokenCount * bot.tokenPriceInBtc;
-            const rawNetProfitBtc = currentBtcValue - asset.initialInvestedBtc;
-            let finalBtcPayout = currentBtcValue;
-
-            if (rawNetProfitBtc > 0) finalBtcPayout -= (rawNetProfitBtc * 0.1); 
-            const cleanNetProfitBtc = finalBtcPayout - asset.initialInvestedBtc;
+            const cleanNetProfitBtc = currentBtcValue - asset.initialInvestedBtc;
             
-            game.balance += finalBtcPayout; game.statExits += 1; game.statTotalProfitUsd += cleanNetProfitBtc * game.btcPrice;
-            if (cleanNetProfitBtc > 0) gainXp(Math.floor(cleanNetProfitBtc * 1500) + 20);
+            game.balance += currentBtcValue; game.statExits += 1; game.statTotalProfitUsd += cleanNetProfitBtc * game.btcPrice;
+            
+            if (cleanNetProfitBtc > 0) {
+                game.xp += Math.floor(cleanNetProfitBtc * 1500) + 20;
+                if (game.xp >= game.xpNeeded) { game.level += 1; game.xp = 0; game.xpNeeded = Math.floor(game.xpNeeded * 1.6); }
+            }
             
             const timestampStr = new Date().toLocaleTimeString();
-            const logMsg = `[${timestampStr}] 🎯 ${bot.ticker} verkauft via Live-${triggerType} (${profitPct >= 0 ? '+' : ''}${profitPct.toFixed(1)}%)`;
-            game.logs.unshift(logMsg);
-            if (game.logs.length > 25) game.logs.pop();
-
+            game.logs.unshift(`[${timestampStr}] ${bot.ticker} geschlossen (${profitPct >= 0 ? '+' : ''}${profitPct.toFixed(1)}%)`);
             delete game.portfolio[botId];
-            saveToBrowserStorage(); syncScoreToCloud(); updateUI();
+            saveToBrowserStorage(); updateUI();
         }
 
         window.sellShares = function(botId) {
@@ -699,7 +518,6 @@
             const bot = game.bots.find(b => b.id == botId);
             const currentBtcValue = asset.tokenCount * bot.tokenPriceInBtc;
             const yourProfitPct = ((currentBtcValue - asset.initialInvestedBtc) / asset.initialInvestedBtc) * 100;
-            
             executeSellSharesLive(botId, bot, yourProfitPct, "MANUAL");
         }
 
@@ -713,40 +531,22 @@
             
             const profitEl = document.getElementById('stat-profit');
             profitEl.innerText = (game.statTotalProfitUsd >= 0 ? '+' : '') + game.statTotalProfitUsd.toLocaleString('en-US', {minimumFractionDigits: 2}) + " $";
-            profitEl.className = "text-base font-bold mono mt-0.5 " + (game.statTotalProfitUsd >= 0 ? "text-emerald-400" : "text-rose-500");
+            profitEl.className = "text-xs font-bold mono " + (game.statTotalProfitUsd >= 0 ? "text-emerald-400" : "text-rose-500");
             document.getElementById('xp-bar').style.width = Math.min((game.xp / game.xpNeeded) * 100, 100) + "%";
 
             const logContainer = document.getElementById('log-container');
-            if (game.logs.length === 0) {
-                logContainer.innerHTML = `<div class="text-slate-600 text-center py-2">Systemprotokoll bereit.</div>`;
-            } else {
-                logContainer.innerHTML = game.logs.map(log => `<div class="py-0.5 border-b border-slate-900 truncate">${log}</div>`).join('');
-            }
+            logContainer.innerHTML = game.logs.map(log => `<div class="py-0.5 border-b border-slate-900 truncate">${log}</div>`).join('');
 
             let sortedBots = [...game.bots].sort((a,b) => b.alltimeProfitPct - a.alltimeProfitPct);
             
             const top3Container = document.getElementById('top-3-container'); top3Container.innerHTML = '';
             sortedBots.slice(0, 3).forEach((bot, rank) => {
-                top3Container.innerHTML += `
-                    <div class="bg-slate-950/90 border-2 border-emerald-500/80 rounded-lg p-2 flex flex-col justify-between items-center shadow-[0_0_12px_rgba(16,185,129,0.15)]">
-                        <span class="text-[9px] text-emerald-400/70 font-bold uppercase tracking-widest">Rank #${rank+1}</span>
-                        <div class="text-slate-100 font-bold text-xs truncate max-w-full my-1">${bot.ticker}</div>
-                        <div class="bg-emerald-500 text-slate-950 font-bold text-[10px] px-1.5 py-0.5 rounded shadow-sm w-full truncate leading-tight">
-                            +${bot.alltimeProfitPct.toFixed(1)}%
-                        </div>
-                    </div>`;
+                top3Container.innerHTML += `<div class="bg-slate-900 border border-slate-800 rounded p-1 text-[11px]"><div class="font-bold text-slate-200">${bot.ticker}</div><div class="text-emerald-400 font-bold">+${bot.alltimeProfitPct.toFixed(1)}%</div></div>`;
             });
 
             const bottom3Container = document.getElementById('bottom-3-container'); bottom3Container.innerHTML = '';
             sortedBots.slice(-3).reverse().forEach((bot, rank) => {
-                bottom3Container.innerHTML += `
-                    <div class="bg-slate-950/90 border-2 border-rose-500/80 rounded-lg p-2 flex flex-col justify-between items-center shadow-[0_0_12px_rgba(239,68,68,0.15)]">
-                        <span class="text-[9px] text-rose-400/70 font-bold uppercase tracking-widest">Risk #${rank+1}</span>
-                        <div class="text-slate-100 font-bold text-xs truncate max-w-full my-1">${bot.ticker}</div>
-                        <div class="bg-rose-500 text-white font-bold text-[10px] px-1.5 py-0.5 rounded shadow-sm w-full truncate leading-tight">
-                            ${bot.alltimeProfitPct.toFixed(1)}%
-                        </div>
-                    </div>`;
+                bottom3Container.innerHTML += `<div class="bg-slate-900 border border-slate-800 rounded p-1 text-[11px]"><div class="font-bold text-slate-200">${bot.ticker}</div><div class="text-rose-400 font-bold">${bot.alltimeProfitPct.toFixed(1)}%</div></div>`;
             });
 
             const searchVal = document.getElementById('market-search').value.toLowerCase();
@@ -754,24 +554,19 @@
 
             const marketTbody = document.getElementById('market-tbody'); marketTbody.innerHTML = '';
             game.bots.forEach(bot => {
-                const matchesSearch = bot.name.toLowerCase().includes(searchVal) || bot.ticker.toLowerCase().includes(searchVal) || bot.strategy.toLowerCase().includes(searchVal);
-                const matchesRisk = riskFilter === "All" || bot.risk === riskFilter;
-
-                if (matchesSearch && matchesRisk) {
-                    const isInvested = game.portfolio[bot.id] !== undefined;
+                if ((bot.name.toLowerCase().includes(searchVal) || bot.ticker.toLowerCase().includes(searchVal)) && (riskFilter === "All" || bot.risk === riskFilter)) {
                     marketTbody.innerHTML += `
-                        <tr class="hover:bg-slate-900/30 text-[11px] sm:text-xs border-b border-slate-900/80 transition-colors ${isInvested ? 'bg-indigo-950/10 border-l-2 border-l-indigo-500' : ''}">
+                        <tr class="hover:bg-slate-900/30 text-xs border-b border-slate-900/80">
                             <td class="py-2.5 pr-2 pl-1 font-semibold">
-                                <div class="text-slate-200 truncate max-w-[110px] sm:max-w-[150px]">${bot.name}</div>
+                                <div class="text-slate-200">${bot.name}</div>
                                 <div class="text-[9px] text-slate-500 font-normal">${bot.risk} • ${bot.strategy}</div>
                             </td>
                             <td class="py-2.5 px-2 text-right mono font-bold ${bot.alltimeProfitPct >= 0 ? 'text-emerald-400':'text-rose-400'}">${bot.alltimeProfitPct >= 0 ? '+':''}${bot.alltimeProfitPct.toFixed(2)}%</td>
                             <td class="py-2.5 px-2 text-right mono">
                                 <div class="font-bold text-slate-300">${bot.tokenPriceInBtc.toFixed(4)}</div>
-                                <div class="text-[9px] text-slate-500">~${(bot.tokenPriceInBtc * game.btcPrice).toFixed(1)}$</div>
                             </td>
                             <td class="py-2.5 pl-2 pr-1 text-center">
-                                <button class="px-2.5 py-1.5 sm:py-1 bg-indigo-600 text-white rounded text-[10px] font-bold uppercase shadow-sm" onclick="openInvestModal(${bot.id})">Buy</button>
+                                <button class="px-2 py-1 bg-indigo-600 text-white rounded text-[10px] font-bold uppercase" onclick="openInvestModal(${bot.id})">Buy</button>
                             </td>
                         </tr>`;
                 }
@@ -780,7 +575,7 @@
             const portfolioContainer = document.getElementById('my-portfolio-container');
             const currentHoldings = Object.values(game.portfolio);
             if(currentHoldings.length === 0) {
-                portfolioContainer.innerHTML = `<div class="text-center text-xs text-slate-600 py-12 border border-dashed border-slate-800 rounded-xl">Keine aktiven Lizenzen.</div>`;
+                portfolioContainer.innerHTML = `<div class="text-center text-xs text-slate-600 py-6">Keine aktiven Positionen.</div>`;
             } else {
                 portfolioContainer.innerHTML = '';
                 currentHoldings.forEach(asset => {
@@ -788,21 +583,14 @@
                     if(!bot) return;
                     const currentBtcValue = asset.tokenCount * bot.tokenPriceInBtc;
                     const yourProfitPct = ((currentBtcValue - asset.initialInvestedBtc) / asset.initialInvestedBtc) * 100;
-                    let limitBadges = "";
-                    if(asset.takeProfit) limitBadges += `<span class="text-[9px] bg-emerald-950/80 border border-emerald-800/60 px-1 py-0.5 rounded text-emerald-400 font-bold">TP: +${asset.takeProfit}%</span>`;
-                    if(asset.stopLoss) limitBadges += `<span class="text-[9px] bg-rose-950/80 border border-rose-800/60 px-1 py-0.5 rounded text-rose-400 font-bold ${asset.takeProfit?'ml-1':''}">SL: ${asset.stopLoss}%</span>`;
 
                     portfolioContainer.innerHTML += `
-                        <div class="bg-slate-950/80 border border-slate-800 p-3 rounded-lg flex flex-col justify-between border-l-4 ${yourProfitPct >= 0 ? 'border-l-emerald-500' : 'border-l-rose-500'}">
-                            <div class="flex justify-between items-start">
-                                <div class="max-w-[70%]">
-                                    <h4 class="text-xs font-bold text-slate-200 truncate">${bot.name}</h4>
-                                    <div class="mt-1 flex flex-wrap gap-1">${limitBadges === "" ? '<span class="text-[9px] text-slate-600">Keine Limits</span>' : limitBadges}</div>
-                                </div>
-                                <div class="mono text-xs font-bold text-right ${yourProfitPct >= 0 ? 'text-emerald-400':'text-rose-400'}">${yourProfitPct >= 0 ? '+':''}${yourProfitPct.toFixed(2)}%</div>
+                        <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg flex flex-col justify-between">
+                            <div class="flex justify-between">
+                                <span class="text-xs font-bold text-slate-200">${bot.name}</span>
+                                <span class="mono text-xs font-bold ${yourProfitPct >= 0 ? 'text-emerald-400':'text-rose-400'}">${yourProfitPct >= 0 ? '+':''}${yourProfitPct.toFixed(2)}%</span>
                             </div>
-                            <div class="flex justify-between text-[11px] mono mt-2 border-t border-slate-900 pt-2 text-slate-400"><span>NAV: ${currentBtcValue.toFixed(4)} BTC</span><span class="text-cyan-400">~ ${(currentBtcValue * game.btcPrice).toFixed(1)} $</span></div>
-                            <button class="w-full mt-2.5 py-2 bg-rose-500/10 text-rose-400 text-[10px] rounded font-bold uppercase border border-rose-500/20 shadow-sm" onclick="sellShares(${bot.id})">Position auflösen</button>
+                            <button class="w-full mt-2 py-1 bg-rose-500/10 text-rose-400 text-[10px] rounded font-bold uppercase border border-rose-500/20" onclick="sellShares(${bot.id})">Verkaufen</button>
                         </div>`;
                 });
             }
