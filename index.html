@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QuantCorp Tycoon</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap');
@@ -38,7 +37,6 @@
 </head>
 <body class="text-slate-300 min-h-screen selection:bg-indigo-500/30 selection:text-indigo-200 antialiased pb-8">
 
-    <!-- TOP HEADER BAR -->
     <header class="border-b border-slate-900 bg-slate-950/80 backdrop-blur-md sticky top-0 z-40 px-4 py-3">
         <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
             <div class="flex items-center gap-3">
@@ -55,7 +53,6 @@
                 </div>
             </div>
 
-            <!-- BTC Tracker -->
             <div class="flex items-center gap-4 bg-slate-900/60 border border-slate-800/80 px-3 py-1.5 rounded-xl">
                 <div class="text-[10px] uppercase font-bold tracking-wider text-slate-500">Index Price</div>
                 <div class="flex items-center gap-1.5">
@@ -64,7 +61,6 @@
                 </div>
             </div>
             
-            <!-- Account Information -->
             <div class="flex items-center gap-3">
                 <div class="text-right">
                     <div id="user-nickname" class="text-xs font-bold text-slate-200">QuantumTrader</div>
@@ -80,13 +76,10 @@
         </div>
     </header>
 
-    <!-- MAIN DASHBOARD CONTENT -->
     <main class="max-w-7xl mx-auto px-4 mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        <!-- LEFT COLUMN -->
         <section class="lg:col-span-5 flex flex-col gap-6">
             
-            <!-- WALLET BALANCE WIDGET -->
             <div class="bg-gradient-to-b from-slate-950 to-slate-950/60 border border-slate-900 rounded-2xl p-5 shadow-xl relative overflow-hidden">
                 <h3 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Liquid Funds</h3>
                 <div id="user-balance" class="text-2xl font-black text-white tracking-tight mono mt-1">1.00000000 BTC</div>
@@ -119,18 +112,15 @@
                 </div>
             </div>
 
-            <!-- ACTIVE MANAGEMENT LICENSES -->
             <div class="bg-slate-950/40 border border-slate-900 rounded-2xl p-4 flex flex-col shadow-lg">
                 <h3 class="text-xs font-extrabold text-white uppercase tracking-wider mb-3 flex items-center gap-2">
                     <span class="h-1.5 w-1.5 rounded-full bg-indigo-500"></span>
                     Active Direct Allocations
                 </h3>
                 <div id="my-portfolio-container" class="space-y-3 overflow-y-auto max-h-[360px] pr-1">
-                    <!-- Dynamic Portfolio -->
-                </div>
+                    </div>
             </div>
 
-            <!-- TOP MOVERS AND RISK BOTS -->
             <div class="grid grid-cols-2 gap-4">
                 <div class="bg-slate-950/40 border border-slate-900 p-3 rounded-xl flex flex-col gap-2">
                     <h4 class="text-[10px] font-bold tracking-wider uppercase text-emerald-400">📈 Gainers (Top 3)</h4>
@@ -142,14 +132,12 @@
                 </div>
             </div>
 
-            <!-- LOGS PANEL -->
             <div class="bg-slate-950/60 border border-slate-900 rounded-2xl p-4 shadow-md">
                 <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Telemetry Logs</h3>
                 <div id="log-container" class="h-28 overflow-y-auto font-mono text-[10px] text-slate-500 space-y-0.5 bg-slate-950 border border-slate-900 rounded-xl p-2"></div>
             </div>
         </section>
 
-        <!-- RIGHT COLUMN: ALGORITHMIC MARKETPLACE -->
         <section class="lg:col-span-7 flex flex-col gap-4 bg-slate-950/40 border border-slate-900 rounded-2xl p-4 shadow-xl">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-900 pb-4">
                 <div>
@@ -180,17 +168,14 @@
                         </tr>
                     </thead>
                     <tbody id="market-tbody" class="divide-y divide-slate-900/40">
-                        <!-- Dynamic Rows -->
-                    </tbody>
+                        </tbody>
                 </table>
             </div>
         </section>
     </main>
 
-    <!-- TOAST POPUPS -->
     <div id="popup-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 w-72 sm:w-80 pointer-events-none"></div>
 
-    <!-- ONBOARDING MODAL -->
     <div id="onboarding-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-950 border border-slate-900 w-full max-w-sm rounded-2xl p-6 shadow-2xl">
             <h3 class="text-sm font-extrabold text-white text-center uppercase tracking-wider">Initialize Protocol License</h3>
@@ -209,7 +194,6 @@
         </div>
     </div>
 
-    <!-- INVEST MODAL -->
     <div id="invest-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-950 border border-slate-900 w-full max-w-md rounded-2xl p-5 shadow-2xl">
             <div class="flex justify-between items-center border-b border-slate-900 pb-3 mb-4">
@@ -259,7 +243,6 @@
         </div>
     </div>
 
-    <!-- CONTROLLER SCRIPT -->
     <script>
         let game = {
             nickname: "", balance: 1.00000000, 
@@ -269,13 +252,11 @@
             bots: [], portfolio: {}, logs: [], lastSavedTimestamp: 0
         };
 
-        const CLOUD_URL = "https://kvdb.io/MNY7g6C6j5E8bWwz6fK78w/tycoon_global_leaderboard";
-        let activeTargetBotId = null;
-
         const prefix = ["Apex", "Quantum", "Hyper", "Vortex", "Satoshi", "Cyber", "Aegis", "Alpha", "Zero", "Nexus", "Neural", "Vector"];
         const suffix = ["Fund", "Core", "Matrix", "Pool", "Systems", "Protocol", "Yield", "Quant"];
         const strategies = ["Scalping", "Leverage", "Grid DCA", "Momentum", "Arbitrage"];
         const risks = ["Conservative", "Moderate", "Aggressive", "Degen"];
+        let activeTargetBotId = null;
 
         window.addEventListener('load', () => {
             initGameData();
@@ -297,7 +278,8 @@
                 const ticker = bName.split(' ').map(w => w[0]).join('').replace('#','').substring(0,3) + i;
                 const risk = risks[rIdx];
                 
-                let baseVol = risk === "Conservative" ? 0.01 : risk === "Moderate" ? 0.025 : risk === "Aggressive" ? 0.05 : 0.09;
+                // KORREKTUR: Stark gedämpfte Volatilitäten pro Zyklus für realistischere Bewegungen
+                let baseVol = risk === "Conservative" ? 0.0015 : risk === "Moderate" ? 0.004 : risk === "Aggressive" ? 0.008 : 0.015;
 
                 game.bots.push({
                     id: i, name: bName, ticker: ticker, strategy: strategies[stIdx],
@@ -409,6 +391,7 @@
                 bot.tokenPriceInBtc += bot.tokenPriceInBtc * directionModifier;
                 if(bot.tokenPriceInBtc < 0.0001) bot.tokenPriceInBtc = 0.0001; 
                 
+                // Aktualisiere das P&L des Bots akkurat basierend auf dem prozentualen Sprung
                 bot.alltimeProfitPct += directionModifier * 100;
             });
         }
