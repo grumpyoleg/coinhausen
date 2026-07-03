@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>QuantCorp Tycoon - Persistence Engine</title>
+    <title>QuantCorp Tycoon - Strategic Matrix</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -113,19 +113,29 @@
                 <div class="text-[9px] text-slate-500 mono" id="total-nav-usd">~0.00 $</div>
             </div>
             <div id="btc-card" class="bg-slate-900/90 border border-slate-800/60 p-3 rounded-xl col-span-2 sm:col-span-1">
-                <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider flex items-center justify-between"><span>Live Market Feed (7s)</span><span id="api-status" class="text-[9px] text-cyan-400 font-mono">Syncing...</span></div>
+                <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider flex items-center justify-between"><span>Live Market Feed</span><span id="api-status" class="text-[9px] text-cyan-400 font-mono">Syncing...</span></div>
                 <div class="text-sm font-bold mono text-blue-400 mt-0.5" id="btc-price">Loading...</div>
             </div>
         </header>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div class="bg-emerald-950/20 border border-emerald-900/40 p-3 rounded-xl">
-                <div class="text-[10px] uppercase font-bold tracking-wider text-emerald-400 mb-2">🔥 Top 3 Algos (Best Performing)</div>
-                <div id="top-3-container" class="grid grid-cols-3 gap-2 text-center text-xs font-mono"></div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+            <div class="bg-gradient-to-r from-emerald-950/60 to-slate-900/80 border border-emerald-500/40 rounded-xl p-4 shadow-lg backdrop-blur-sm">
+                <div class="flex justify-between items-center mb-2.5">
+                    <span class="text-xs uppercase font-bold tracking-wider text-emerald-400 flex items-center">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 mr-2 animate-pulse"></span>🔥 Top 3 Alpha Systems (Bullish)
+                    </span>
+                    <span class="text-[9px] font-mono bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-500/30 uppercase tracking-widest font-bold">Outperforming</span>
+                </div>
+                <div id="top-3-container" class="grid grid-cols-3 gap-2.5 text-center font-mono"></div>
             </div>
-            <div class="bg-rose-950/20 border border-rose-900/40 p-3 rounded-xl">
-                <div class="text-[10px] uppercase font-bold tracking-wider text-rose-400 mb-2">❄️ Bottom 3 Algos (Worst Performing)</div>
-                <div id="bottom-3-container" class="grid grid-cols-3 gap-2 text-center text-xs font-mono"></div>
+            <div class="bg-gradient-to-r from-rose-950/60 to-slate-900/80 border border-rose-500/40 rounded-xl p-4 shadow-lg backdrop-blur-sm">
+                <div class="flex justify-between items-center mb-2.5">
+                    <span class="text-xs uppercase font-bold tracking-wider text-rose-400 flex items-center">
+                        <span class="w-2 h-2 rounded-full bg-rose-400 mr-2 animate-pulse"></span>❄️ Bottom 3 Beta Systems (Bearish)
+                    </span>
+                    <span class="text-[9px] font-mono bg-rose-500/20 text-rose-300 px-1.5 py-0.5 rounded border border-rose-500/30 uppercase tracking-widest font-bold">Risk Exposure</span>
+                </div>
+                <div id="bottom-3-container" class="grid grid-cols-3 gap-2.5 text-center font-mono"></div>
             </div>
         </div>
 
@@ -175,7 +185,7 @@
             <div class="lg:col-span-7 order-1 lg:order-2">
                 <div class="bg-slate-900/40 border border-slate-800 p-4 rounded-xl shadow-lg backdrop-blur-md space-y-3">
                     <div class="flex flex-wrap items-center justify-between border-b border-slate-800 pb-2.5 gap-2">
-                        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300">Global Algo Market (Realtime 1s)</h2>
+                        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300">Global Algo Market (Decision Cycle 7s)</h2>
                         
                         <div class="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
                             <input type="text" id="market-search" placeholder="Search..." oninput="updateUI()" class="bg-slate-950 border border-slate-800 text-slate-300 rounded px-2 py-1 text-[10px] font-mono focus:outline-none focus:border-indigo-500 w-24 sm:w-32">
@@ -229,9 +239,9 @@
             loadFromBrowserStorage();
             fetchGlobalLeaderboard(); 
             
-            setInterval(fetchCustomBtcPrice, 7000);
-            setInterval(engineLoop, 1000);
-            setInterval(fetchGlobalLeaderboard, 20000);
+            // Core Engine Cycle runs precisely at 7-second bounds synchronized with feed
+            setInterval(engineCycle7s, 7000);
+            setInterval(fetchGlobalLeaderboard, 28000);
             fetchCustomBtcPrice();
         });
 
@@ -242,31 +252,32 @@
                 let stIdx = (i * 2) % strategies.length;
                 let rIdx = (i * 11) % risks.length;
 
-                const bName = prefix[pIdx] + " " + suffix[sIdx] + " #" + i;
+                const bName = prefix[pIdx] + " " + suffix[sIdx] + " #"+i;
                 const ticker = bName.split(' ').map(w => w[0]).join('').replace('#','').substring(0,3) + i;
                 const risk = risks[rIdx];
-                let baseVolatility = risk === "Conservative" ? 0.001 : risk === "Moderate" ? 0.003 : risk === "Aggressive" ? 0.008 : 0.02;
+                
+                // Fine-tuned risk variance caps (lower volatility to ensure strategies feel reasoned)
+                let baseVol = risk === "Conservative" ? 0.015 : risk === "Moderate" ? 0.035 : risk === "Aggressive" ? 0.07 : 0.14;
 
                 game.bots.push({
                     id: i, name: bName, ticker: ticker, strategy: strategies[stIdx],
-                    risk: risk, vol: baseVolatility, alltimeProfitPct: 0.0, tokenPriceInBtc: 0.01 
+                    risk: risk, vol: baseVol, alltimeProfitPct: 0.0, tokenPriceInBtc: 0.01 
                 });
             }
         }
 
         function saveToBrowserStorage() {
             game.lastSavedTimestamp = Date.now();
-            localStorage.setItem('quantcorp_save_v6', JSON.stringify(game));
+            localStorage.setItem('quantcorp_save_v7', JSON.stringify(game));
         }
 
         function loadFromBrowserStorage() {
-            const rawSave = localStorage.getItem('quantcorp_save_v6');
+            const rawSave = localStorage.getItem('quantcorp_save_v7');
             if (rawSave) {
                 const parsed = JSON.parse(rawSave);
                 Object.assign(game, parsed);
                 document.getElementById('user-nickname').innerText = game.nickname;
                 
-                // EXECUTE OFFLINE TIME SIMULATION LOOP
                 if (game.lastSavedTimestamp > 0) {
                     processOfflineSimulation();
                 }
@@ -277,27 +288,18 @@
 
         function processOfflineSimulation() {
             const msPassed = Date.now() - game.lastSavedTimestamp;
-            const secondsPassed = Math.floor(msPassed / 1000);
+            // 7-second strategic decision cycles passed offline
+            const cyclesPassed = Math.floor(msPassed / 7000);
             
-            if (secondsPassed < 5) return; // Ignore very small page refreshes
+            if (cyclesPassed < 2) return; 
             
-            // Limit simulation steps to prevent crashes if user returns after months (Max 5000 fast-ticks)
-            const simulationSteps = Math.min(secondsPassed, 5000);
+            const simulationSteps = Math.min(cyclesPassed, 800);
             let offlineExitsTriggered = 0;
-
-            // Pre-load temporary backup price anchor for USD calculation
-            const tempBtcUsd = game.btcPrice || 62000;
+            const tempBtcUsd = game.btcPrice || 64000;
 
             for (let step = 0; step < simulationSteps; step++) {
-                // 1. Move the autonomous bots 1 step forward
-                game.bots.forEach(bot => {
-                    const changePct = (Math.random() * 2 - 1) * bot.vol;
-                    bot.tokenPriceInBtc += bot.tokenPriceInBtc * changePct;
-                    if(bot.tokenPriceInBtc < 0.0001) bot.tokenPriceInBtc = 0.0001;
-                    bot.alltimeProfitPct += changePct * 100;
-                });
+                executeStrategicBotDecisions();
 
-                // 2. Check if active portfolio items hit target bounds
                 Object.keys(game.portfolio).forEach(botId => {
                     const asset = game.portfolio[botId];
                     const bot = game.bots.find(b => b.id == botId);
@@ -318,7 +320,7 @@
 
             if (offlineExitsTriggered > 0) {
                 setTimeout(() => {
-                    showPopup("OFFLINE CORE", `${offlineExitsTriggered} automated orders triggered while you were away! Check logs.`, "info");
+                    showPopup("CORE RECOVERY", `${offlineExitsTriggered} tactical limits triggered offline. Logs compiled.`, "info");
                 }, 1500);
             }
             saveToBrowserStorage();
@@ -328,7 +330,7 @@
             const rawNetProfitBtc = currentBtcValue - asset.initialInvestedBtc;
             let finalBtcPayout = currentBtcValue;
 
-            if (rawNetProfitBtc > 0) finalBtcPayout -= (rawNetProfitBtc * 0.1); // Fee
+            if (rawNetProfitBtc > 0) finalBtcPayout -= (rawNetProfitBtc * 0.1); 
             const cleanNetProfitBtc = finalBtcPayout - asset.initialInvestedBtc;
             
             game.balance += finalBtcPayout; 
@@ -340,11 +342,10 @@
                 if (game.xp >= game.xpNeeded) { game.level += 1; game.xp = 0; game.xpNeeded = Math.floor(game.xpNeeded * 1.6); }
             }
 
-            // Write into persistent history tracking log matrix
             const timestampStr = new Date().toLocaleTimeString();
-            const logMsg = `[${timestampStr}] 🤖 ${bot.ticker} sold via Offline ${triggerType} (${profitPct >= 0 ? '+' : ''}${profitPct.toFixed(1)}%)`;
+            const logMsg = `[${timestampStr}] 🤖 ${bot.ticker} liquidated via Offline ${triggerType} (${profitPct >= 0 ? '+' : ''}${profitPct.toFixed(1)}%)`;
             game.logs.unshift(logMsg);
-            if (game.logs.length > 30) game.logs.pop();
+            if (game.logs.length > 25) game.logs.pop();
 
             delete game.portfolio[botId];
         }
@@ -457,25 +458,46 @@
             } catch (error) {
                 if (game.btcPrice === 0) game.btcPrice = 61508.34;
                 document.getElementById('api-status').innerText = "Sync Error";
-            } finally { updateUI(); }
+            } finally { 
+                // Synchronize frontend updates on API load
+                updateUI(); 
+            }
         }
 
-        function engineLoop() {
-            calculateAutonomousBotTicks();
+        // 7-SECOND STRATEGIC CYCLE: Run calculations and automation check precisely at the price feed speed
+        function engineCycle7s() {
+            fetchCustomBtcPrice();
+            
+            // 1. Bots pause and rethink their position over the 7s cycle
+            executeStrategicBotDecisions();
+            
+            // 2. Automations check values instantly against the consolidated strategy bounds
             if (game.btcPrice > 0) {
                 checkAutomatedOrders();
             }
+            
             updateUI();
-            // Automatically update tracking markers for persistence safety
             saveToBrowserStorage();
         }
 
-        function calculateAutonomousBotTicks() {
+        function executeStrategicBotDecisions() {
             game.bots.forEach(bot => {
-                const changePct = (Math.random() * 2 - 1) * bot.vol;
-                bot.tokenPriceInBtc += bot.tokenPriceInBtc * changePct;
+                // Bots rethink strategy: Roll a decision probability weight matrix
+                const strategicRoll = Math.random();
+                let directionModifier = 0;
+
+                // 65% chance to maintain tactical direction, 35% chance to invert or scale down positions
+                if (strategicRoll > 0.35) {
+                    // Stay or go higher: calculates drift scaling by risk volatility boundaries
+                    directionModifier = (Math.random() * 1.1) * bot.vol;
+                } else {
+                    // Consolidate or partial sell-off drop
+                    directionModifier = -(Math.random() * 0.9) * bot.vol;
+                }
+
+                bot.tokenPriceInBtc += bot.tokenPriceInBtc * directionModifier;
                 if(bot.tokenPriceInBtc < 0.0001) bot.tokenPriceInBtc = 0.0001; 
-                bot.alltimeProfitPct += changePct * 100;
+                bot.alltimeProfitPct += directionModifier * 100;
             });
         }
 
@@ -490,11 +512,11 @@
                 const yourProfitPct = ((currentBtcValue - asset.initialInvestedBtc) / asset.initialInvestedBtc) * 100;
 
                 if (asset.takeProfit !== null && yourProfitPct >= asset.takeProfit) {
-                    showPopup(bot.ticker, `🎯 TAKE-PROFIT TRIGGERED! (+${yourProfitPct.toFixed(1)}%)`, 'success');
+                    showPopup(bot.ticker, `🎯 TAKE-PROFIT AUTOMATION EXECUTED! (+${yourProfitPct.toFixed(1)}%)`, 'success');
                     executeSellSharesLive(botId, bot, yourProfitPct, "TAKE-PROFIT"); 
                     changes = true;
                 } else if (asset.stopLoss !== null && yourProfitPct <= asset.stopLoss) {
-                    showPopup(bot.ticker, `🛑 STOP-LOSS TRIGGERED! (${yourProfitPct.toFixed(1)}%)`, 'danger');
+                    showPopup(bot.ticker, `🛑 STOP-LOSS AUTOMATION EXECUTED! (${yourProfitPct.toFixed(1)}%)`, 'danger');
                     executeSellSharesLive(botId, bot, yourProfitPct, "STOP-LOSS"); 
                     changes = true;
                 }
@@ -587,11 +609,10 @@
             game.balance += finalBtcPayout; game.statExits += 1; game.statTotalProfitUsd += cleanNetProfitBtc * game.btcPrice;
             if (cleanNetProfitBtc > 0) gainXp(Math.floor(cleanNetProfitBtc * 1500) + 20);
             
-            // Add into log view
             const timestampStr = new Date().toLocaleTimeString();
-            const logMsg = `[${timestampStr}] 🎯 ${bot.ticker} sold via Live ${triggerType} (${profitPct >= 0 ? '+' : ''}${profitPct.toFixed(1)}%)`;
+            const logMsg = `[${timestampStr}] 🎯 ${bot.ticker} liquidated via Live ${triggerType} (${profitPct >= 0 ? '+' : ''}${profitPct.toFixed(1)}%)`;
             game.logs.unshift(logMsg);
-            if (game.logs.length > 30) game.logs.pop();
+            if (game.logs.length > 25) game.logs.pop();
 
             delete game.portfolio[botId];
             saveToBrowserStorage(); syncScoreToCloud(); updateUI();
@@ -620,7 +641,7 @@
             profitEl.className = "text-base font-bold mono mt-0.5 " + (game.statTotalProfitUsd >= 0 ? "text-emerald-400" : "text-rose-500");
             document.getElementById('xp-bar').style.width = Math.min((game.xp / game.xpNeeded) * 100, 100) + "%";
 
-            // RENDER RECOVERY LOG VIEW
+            // LOG CONTAINER RENDERING
             const logContainer = document.getElementById('log-container');
             if (game.logs.length === 0) {
                 logContainer.innerHTML = `<div class="text-slate-600 text-center py-2">System logs initialized. No historic triggers.</div>`;
@@ -628,24 +649,30 @@
                 logContainer.innerHTML = game.logs.map(log => `<div class="py-0.5 border-b border-slate-900 truncate">${log}</div>`).join('');
             }
 
-            // CALCULATE LIVE TOP 3 & BOTTOM 3 SORTS
+            // REDESIGNED PERFORMANCE CARDS: VIBRANT GLOW MATRIX (HIGHLY IDENTIFIABLE)
             let sortedBots = [...game.bots].sort((a,b) => b.alltimeProfitPct - a.alltimeProfitPct);
             
             const top3Container = document.getElementById('top-3-container'); top3Container.innerHTML = '';
-            sortedBots.slice(0, 3).forEach(bot => {
+            sortedBots.slice(0, 3).forEach((bot, rank) => {
                 top3Container.innerHTML += `
-                    <div class="bg-emerald-950/40 border border-emerald-800/40 p-1.5 rounded">
-                        <div class="text-slate-400 font-bold text-[10px] truncate">${bot.ticker}</div>
-                        <div class="text-emerald-400 font-bold text-[11px]">${bot.alltimeProfitPct >= 0 ? '+':''}${bot.alltimeProfitPct.toFixed(2)}%</div>
+                    <div class="bg-slate-950/90 border-2 border-emerald-500/80 rounded-lg p-2 flex flex-col justify-between items-center shadow-[0_0_12px_rgba(16,185,129,0.15)]">
+                        <span class="text-[9px] text-emerald-400/70 font-bold uppercase tracking-widest">Rank #${rank+1}</span>
+                        <div class="text-slate-100 font-bold text-xs truncate max-w-full my-1">${bot.ticker}</div>
+                        <div class="bg-emerald-500 text-slate-950 font-bold text-[10px] px-1.5 py-0.5 rounded shadow-sm w-full truncate leading-tight">
+                            +${bot.alltimeProfitPct.toFixed(1)}%
+                        </div>
                     </div>`;
             });
 
             const bottom3Container = document.getElementById('bottom-3-container'); bottom3Container.innerHTML = '';
-            sortedBots.slice(-3).reverse().forEach(bot => {
+            sortedBots.slice(-3).reverse().forEach((bot, rank) => {
                 bottom3Container.innerHTML += `
-                    <div class="bg-rose-950/40 border border-rose-800/40 p-1.5 rounded">
-                        <div class="text-slate-400 font-bold text-[10px] truncate">${bot.ticker}</div>
-                        <div class="text-rose-400 font-bold text-[11px]">${bot.alltimeProfitPct >= 0 ? '+':''}${bot.alltimeProfitPct.toFixed(2)}%</div>
+                    <div class="bg-slate-950/90 border-2 border-rose-500/80 rounded-lg p-2 flex flex-col justify-between items-center shadow-[0_0_12px_rgba(239,68,68,0.15)]">
+                        <span class="text-[9px] text-rose-400/70 font-bold uppercase tracking-widest">Risk #${rank+1}</span>
+                        <div class="text-slate-100 font-bold text-xs truncate max-w-full my-1">${bot.ticker}</div>
+                        <div class="bg-rose-500 text-white font-bold text-[10px] px-1.5 py-0.5 rounded shadow-sm w-full truncate leading-tight">
+                            ${bot.alltimeProfitPct.toFixed(1)}%
+                        </div>
                     </div>`;
             });
 
