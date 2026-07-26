@@ -1,800 +1,630 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuantCorp Tycoon Pro</title>
+    <title>Stacklytics Pro | Pure HTML</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        slate: { 850: '#151e2e' }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap'); 
+        body { font-family: 'Inter', sans-serif; transition: background-color 0.3s, color 0.3s; }
+        /* Custom Scrollbar für die Tabelle */
+        ::-webkit-scrollbar { height: 8px; width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        .dark ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #030712;
-        }
-        .mono {
-            font-family: 'JetBrains Mono', monospace;
-        }
-        ::-webkit-scrollbar {
-            width: 4px;
-            height: 4px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #090d16;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #1e293b;
-            border-radius: 99px;
-        }
-        @keyframes slideIn {
-            from { transform: translateY(1rem); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        .toast-popup {
-            animation: slideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
+        /* Table Sort Arrows */
+        .sort-icon { display: inline-block; width: 0.8em; height: 0.8em; margin-left: 0.25rem; opacity: 0.3; transition: opacity 0.2s; }
+        th:hover .sort-icon { opacity: 0.7; }
+        .sort-active .sort-icon { opacity: 1; }
+        .sort-asc .sort-icon { transform: rotate(180deg); }
     </style>
 </head>
-<body class="text-slate-300 min-h-screen selection:bg-indigo-500/30 selection:text-indigo-200 antialiased pb-8">
-
-    <header class="border-b border-slate-900 bg-slate-950/80 backdrop-blur-md sticky top-0 z-40 px-4 py-3">
-        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
+<body class="min-h-screen bg-slate-50 dark:bg-[#020617] text-slate-900 dark:text-slate-100 selection:bg-orange-500 selection:text-white pb-12 transition-colors duration-200">
+    
+    <header class="sticky top-0 z-50 bg-white/80 dark:bg-[#020617]/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors duration-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div class="h-8 w-8 bg-gradient-to-tr from-indigo-600 to-violet-500 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/20">
-                    <span class="text-white font-extrabold text-sm tracking-tighter">Q</span>
+                <div class="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center shadow-lg shadow-orange-500/20">
+                    <i data-lucide="activity" class="w-5 h-5 text-white"></i>
                 </div>
-                <div>
-                    <h1 class="text-sm font-extrabold text-white tracking-wider uppercase">QuantCorp Terminal v8</h1>
-                    <div class="text-[10px] text-slate-500 flex items-center gap-2 mt-0.5">
-                        <span id="cloud-status">⚪ Syncing...</span>
-                        <span>•</span>
-                        <span id="api-status">⚪ Connecting...</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 px-3 py-1.5 rounded-xl">
-                <span class="text-lg">🔥</span>
-                <div class="text-left">
-                    <div class="text-[9px] uppercase font-bold tracking-wider text-amber-400">Daily Streak</div>
-                    <div id="streak-counter" class="text-xs font-black text-white font-mono">1 Tag</div>
-                </div>
-            </div>
-
-            <div class="flex items-center gap-4 bg-slate-900/60 border border-slate-800/80 px-3 py-1.5 rounded-xl">
-                <div class="text-[10px] uppercase font-bold tracking-wider text-slate-500">Index Price</div>
-                <div class="flex items-center gap-1.5">
-                    <span class="text-amber-500 font-bold text-xs mono">⚡ BTC:</span>
-                    <span id="btc-price" class="text-white font-bold text-xs mono">0.00 $</span>
-                </div>
+                <h1 class="font-bold text-xl tracking-tight">Stacklytics <span class="text-orange-500">Pro</span></h1>
             </div>
             
-            <div class="flex items-center gap-3">
-                <div class="text-right">
-                    <div id="user-nickname" class="text-xs font-bold text-slate-200">QuantumTrader</div>
-                    <div class="flex items-center gap-1.5 justify-end mt-0.5">
-                        <span id="manager-level" class="text-[9px] bg-indigo-500/20 text-indigo-300 px-1 py-0.5 rounded font-extrabold">LVL 1</span>
-                        <span id="xp-text" class="text-[9px] font-bold text-slate-500 mono">0/100</span>
-                    </div>
+            <div class="flex items-center gap-4">
+                <div id="status-badge" class="px-3 py-1 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full text-xs font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-2 transition-colors duration-200">
+                    <div class="w-2 h-2 rounded-full bg-green-500"></div> Bereit
                 </div>
-                <div class="w-20 bg-slate-900 h-2 rounded-full overflow-hidden border border-slate-800">
-                    <div id="xp-bar" class="h-full bg-gradient-to-r from-indigo-500 to-violet-500 transition-all duration-300" style="width: 0%"></div>
-                </div>
+                <button id="theme-toggle" class="p-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-orange-500 transition-colors">
+                    <i data-lucide="sun" id="theme-icon-sun" class="w-5 h-5 hidden"></i>
+                    <i data-lucide="moon" id="theme-icon-moon" class="w-5 h-5"></i>
+                </button>
             </div>
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-4 mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         
-        <section class="lg:col-span-5 flex flex-col gap-6">
+        <!-- Intro -->
+        <div>
+            <h2 class="text-3xl font-bold mb-2">Analysiere deine Zahlen.</h2>
+            <p class="text-slate-500 dark:text-slate-400 max-w-2xl">
+                Gib eine beliebige Substack-URL ein, um sofort ein detailliertes Analytics-Dashboard zu generieren. 100% Client-Side.
+            </p>
+        </div>
+
+        <form id="search-form" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm mb-8 space-y-4 transition-colors duration-200">
+            <div class="flex flex-col md:flex-row gap-4">
+                <div class="flex-1">
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">Substack Handle (z.B. lenny)</label>
+                    <div class="relative">
+                        <i data-lucide="search" class="absolute left-3 top-3 w-5 h-5 text-slate-400"></i>
+                        <input type="text" id="handle-input" value="unknownlegends" required
+                            class="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-orange-500 outline-none transition-all"
+                            placeholder="z.B. pragmaticengineer">
+                    </div>
+                </div>
+                <div class="w-full md:w-48">
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">Post Limit</label>
+                    <select id="limit-input" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-orange-500 outline-none appearance-none transition-all">
+                        <option value="50">50 Posts</option>
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <button type="submit" id="analyze-btn" class="w-full md:w-auto px-8 py-3 bg-orange-600 hover:bg-orange-500 text-white font-bold rounded-xl transition-all disabled:opacity-70 flex items-center justify-center gap-2">
+                        <i data-lucide="activity" class="w-5 h-5"></i> <span id="btn-text">Analysieren</span>
+                    </button>
+                </div>
+            </div>
+            <div class="pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center gap-2">
+                <i data-lucide="settings" class="w-4 h-4 text-slate-400"></i>
+                <input type="text" id="proxy-input" value="https://super-band-9b33.oliverio-alessandro.workers.dev/" 
+                    placeholder="Cloudflare Worker URL" class="flex-1 bg-transparent border-none text-xs text-slate-500 focus:outline-none w-full">
+            </div>
+        </form>
+
+        <div id="error-container" class="hidden p-4 rounded-xl bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 flex items-center gap-2 mb-6"></div>
+
+        <div id="results-container" class="hidden space-y-8 animate-[fadeIn_0.5s_ease-out]">
             
-            <div class="bg-gradient-to-b from-slate-950 to-slate-950/60 border border-slate-900 rounded-2xl p-5 shadow-xl relative overflow-hidden">
-                <h3 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Liquid Funds</h3>
-                <div id="user-balance" class="text-2xl font-black text-white tracking-tight mono mt-1">1.00000000 BTC</div>
-                <div id="user-balance-usd" class="text-xs font-medium text-emerald-400 mt-0.5">~ 0.00 $</div>
+            <!-- Best Post Card Placeholder -->
+            <div id="best-post-container"></div>
 
-                <div class="grid grid-cols-2 gap-4 mt-5 pt-4 border-t border-slate-900/80">
+            <!-- KPI Grid -->
+            <h3 class="text-xl font-bold text-slate-900 dark:text-white">Übersicht</h3>
+            <div id="kpi-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                <!-- Wird per JS gefüllt -->
+            </div>
+
+            <!-- Charts Row 1 -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col transition-colors duration-200 shadow-sm">
+                    <h3 class="text-lg font-bold mb-1 text-slate-900 dark:text-white">Posts über Zeit</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Wann wurde wie viel veröffentlicht?</p>
+                    <div class="flex-1 min-h-[300px] relative w-full h-full"><canvas id="timelineChart"></canvas></div>
+                </div>
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col transition-colors duration-200 shadow-sm">
+                    <h3 class="text-lg font-bold mb-1 text-slate-900 dark:text-white">Engagement Verlauf</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Reaktionen und Kommentare pro Post.</p>
+                    <div class="flex-1 min-h-[300px] relative w-full h-full"><canvas id="engagementChart"></canvas></div>
+                </div>
+            </div>
+
+            <!-- Charts Row 2 -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col transition-colors duration-200 shadow-sm">
+                    <h3 class="text-lg font-bold mb-1 text-slate-900 dark:text-white">Wortanzahl Verteilung</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Wie lang sind deine Posts typischerweise?</p>
+                    <div class="flex-1 min-h-[300px] relative w-full h-full"><canvas id="wordCountChart"></canvas></div>
+                </div>
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col transition-colors duration-200 shadow-sm">
+                    <h3 class="text-lg font-bold mb-1 text-slate-900 dark:text-white">Veröffentlichungstage</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">An welchen Wochentagen postest du am meisten?</p>
+                    <div class="flex-1 min-h-[300px] relative w-full h-full"><canvas id="dayOfWeekChart"></canvas></div>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden flex flex-col transition-colors duration-200 shadow-sm">
+                <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
                     <div>
-                        <div class="text-[9px] font-bold text-slate-500 uppercase tracking-wider">In Flight (NAV)</div>
-                        <div id="total-nav" class="text-xs font-bold text-slate-300 mt-0.5 mono">0.00000000 BTC</div>
-                        <div id="total-nav-usd" class="text-[10px] text-slate-500 mt-0.5">~ 0.00 $</div>
-                    </div>
-                    <div class="border-l border-slate-900 pl-4">
-                        <div class="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Total Operations</div>
-                        <div class="flex gap-3 mt-0.5">
-                            <div>
-                                <div class="text-[9px] text-slate-500">Exits</div>
-                                <div id="stat-exits" class="text-xs font-bold text-slate-300 mono">0</div>
-                            </div>
-                            <div>
-                                <div class="text-[9px] text-slate-500">P&L (Gross)</div>
-                                <div id="stat-profit" class="text-xs font-bold text-emerald-400 mono">+0.00 $</div>
-                            </div>
-                        </div>
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white">Top Performing Posts</h3>
+                        <p class="text-sm text-slate-500 dark:text-slate-400">Deine besten Artikel (Klicke auf die Spaltenköpfe zum Sortieren).</p>
                     </div>
                 </div>
-
-                <div class="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-slate-900/40">
-                    <button onclick="copySaveCode()" class="py-1 px-2 text-[9px] uppercase tracking-wider font-bold rounded bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-400 transition-all text-center">Export Backup</button>
-                    <button onclick="promptLoadCode()" class="py-1 px-2 text-[9px] uppercase tracking-wider font-bold rounded bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-400 transition-all text-center">Import Backup</button>
-                </div>
-            </div>
-
-            <div class="bg-slate-950/40 border border-slate-900 rounded-2xl p-4 flex flex-col shadow-lg">
-                <h3 class="text-xs font-extrabold text-white uppercase tracking-wider mb-3 flex items-center gap-2">
-                    <span class="h-1.5 w-1.5 rounded-full bg-indigo-500"></span>
-                    Active Allocations & Index Funds
-                </h3>
-                <div id="my-portfolio-container" class="space-y-3 overflow-y-auto max-h-[300px] pr-1">
-                    </div>
-            </div>
-
-            <div class="bg-slate-950/40 border border-slate-900 rounded-2xl p-4 shadow-lg">
-                <h3 class="text-xs font-extrabold text-amber-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                    <span>🏦</span> Sovereign Staking Protokoll
-                </h3>
-                <div class="grid grid-cols-3 gap-2 mb-3">
-                    <button onclick="selectStakingTier(30, 4.5)" class="p-2 bg-slate-900 border border-slate-800 rounded-xl text-center hover:border-amber-500/40 transition-all">
-                        <div class="text-[10px] font-bold text-slate-400">30 Ticks</div>
-                        <div class="text-xs font-black text-amber-400 mono">4.5% APY</div>
-                    </button>
-                    <button onclick="selectStakingTier(60, 8.0)" class="p-2 bg-slate-900 border border-slate-800 rounded-xl text-center hover:border-amber-500/40 transition-all">
-                        <div class="text-[10px] font-bold text-slate-400">60 Ticks</div>
-                        <div class="text-xs font-black text-amber-400 mono">8.0% APY</div>
-                    </button>
-                    <button onclick="selectStakingTier(90, 14.5)" class="p-2 bg-slate-900 border border-slate-800 rounded-xl text-center hover:border-amber-500/40 transition-all">
-                        <div class="text-[10px] font-bold text-slate-400">90 Ticks</div>
-                        <div class="text-xs font-black text-amber-400 mono">14.5% APY</div>
-                    </button>
-                </div>
-                <div id="staking-active-container" class="space-y-2">
-                    </div>
-            </div>
-
-            <div class="bg-slate-950/60 border border-slate-900 rounded-2xl p-4 shadow-md">
-                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Telemetry Logs</h3>
-                <div id="log-container" class="h-24 overflow-y-auto font-mono text-[10px] text-slate-500 space-y-0.5 bg-slate-950 border border-slate-900 rounded-xl p-2"></div>
-            </div>
-        </section>
-
-        <section class="lg:col-span-7 flex flex-col gap-6">
-            
-            <div class="bg-slate-950/40 border border-slate-900 rounded-2xl p-4 shadow-xl">
-                <h2 class="text-sm font-extrabold text-white uppercase tracking-wider mb-1">Diversified Index Funds</h2>
-                <p class="text-[10px] text-slate-500 mb-3">Investiere in gebündelte Asset-Klassen mit automatischer Neugewichtung.</p>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="funds-marketplace">
-                    </div>
-            </div>
-
-            <div class="bg-slate-950/40 border border-slate-900 rounded-2xl p-4 shadow-xl flex flex-col gap-4">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-900 pb-4">
-                    <div>
-                        <h2 class="text-sm font-extrabold text-white uppercase tracking-wider">Algorithmic Modules</h2>
-                        <p class="text-[10px] text-slate-500 mt-0.5">Einzeltaktische Hochfrequenz-Modelle managen.</p>
-                    </div>
-
-                    <div class="flex items-center gap-2">
-                        <input id="market-search" type="text" placeholder="Search bot..." oninput="updateUI()" class="bg-slate-900 border border-slate-800 text-xs px-2.5 py-1.5 rounded-lg text-slate-200 focus:outline-none focus:border-indigo-500 placeholder-slate-600 w-32 sm:w-40">
-                        <select id="market-risk-filter" onchange="updateUI()" class="bg-slate-900 border border-slate-800 text-xs px-2 py-1.5 rounded-lg text-slate-300 focus:outline-none focus:border-indigo-500">
-                            <option value="All">All Risks</option>
-                            <option value="Conservative">Conservative</option>
-                            <option value="Moderate">Moderate</option>
-                            <option value="Aggressive">Aggressive</option>
-                            <option value="Degen">Degen</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="overflow-x-auto overflow-y-auto max-h-[380px] pr-1">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="text-[10px] uppercase font-bold text-slate-500 tracking-wider border-b border-slate-900">
-                                <th class="py-2 pr-2 pl-1">Bot Config / Framework</th>
-                                <th class="py-2 px-2 text-right">All-Time P&L</th>
-                                <th class="py-2 px-2 text-right">NAV (BTC)</th>
-                                <th class="py-2 pl-2 pr-1 text-center">Action</th>
+                <div class="overflow-x-auto w-full">
+                    <table class="w-full text-left text-sm whitespace-nowrap">
+                        <thead class="bg-slate-50 dark:bg-slate-950/50 text-slate-500 dark:text-slate-400 uppercase text-xs border-b border-slate-200 dark:border-slate-800 select-none">
+                            <tr>
+                                <th class="px-6 py-4 font-semibold">Rank</th>
+                                <th class="px-6 py-4 font-semibold w-full">Titel</th>
+                                <th class="px-6 py-4 font-semibold cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 sort-header" data-sort="date">
+                                    Datum <i data-lucide="chevron-down" class="sort-icon inline-block w-4 h-4"></i>
+                                </th>
+                                <th class="px-6 py-4 font-semibold cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 sort-header sort-active sort-desc" data-sort="reactions">
+                                    Reaktionen <i data-lucide="chevron-down" class="sort-icon inline-block w-4 h-4"></i>
+                                </th>
+                                <th class="px-6 py-4 font-semibold cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 sort-header" data-sort="comments">
+                                    Kommentare <i data-lucide="chevron-down" class="sort-icon inline-block w-4 h-4"></i>
+                                </th>
+                                <th class="px-6 py-4 font-semibold cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 sort-header" data-sort="words">
+                                    Wörter <i data-lucide="chevron-down" class="sort-icon inline-block w-4 h-4"></i>
+                                </th>
                             </tr>
                         </thead>
-                        <tbody id="market-tbody" class="divide-y divide-slate-900/40">
-                            </tbody>
+                        <tbody id="posts-table-body" class="divide-y divide-slate-100 dark:divide-slate-800/60 transition-colors duration-200">
+                            <!-- Wird per JS gefüllt -->
+                        </tbody>
                     </table>
                 </div>
             </div>
-        </section>
+        </div>
     </main>
 
-    <div id="popup-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 w-72 sm:w-80 pointer-events-none"></div>
-
-    <div id="onboarding-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-slate-950 border border-slate-900 w-full max-w-sm rounded-2xl p-6 shadow-2xl">
-            <h3 class="text-sm font-extrabold text-white text-center uppercase tracking-wider">Initialize Protocol License</h3>
-            <div class="grid grid-cols-2 gap-2 mt-5 p-1 bg-slate-900 rounded-xl border border-slate-800">
-                <button id="tab-btn-new" onclick="switchOnboardingTab('new')" class="py-2 text-[10px] uppercase font-bold tracking-wider rounded-lg bg-indigo-600 text-white">New Node</button>
-                <button id="tab-btn-load" onclick="switchOnboardingTab('load')" class="py-2 text-[10px] uppercase font-bold tracking-wider rounded-lg text-slate-400">Restore Sync</button>
-            </div>
-            <div id="onboarding-view-new" class="mt-4 flex flex-col gap-3">
-                <input id="nickname-input" type="text" placeholder="e.g. Satoshi_Alpha" maxlength="15" class="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none">
-                <button onclick="saveOnboarding()" class="w-full bg-indigo-600 text-white font-bold text-xs py-2.5 rounded-lg uppercase tracking-wider">Synchronize Core</button>
-            </div>
-            <div id="onboarding-view-load" class="mt-4 flex flex-col gap-3 hidden">
-                <textarea id="onboarding-load-input" rows="4" placeholder="Paste base64 code here..." class="bg-slate-900 border border-slate-800 rounded-lg p-2 text-[10px] text-slate-300 font-mono resize-none"></textarea>
-                <button onclick="executeOnboardingLoad()" class="w-full bg-emerald-600 text-white font-bold text-xs py-2.5 rounded-lg uppercase tracking-wider">Decrypt & Load</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="invest-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-slate-950 border border-slate-900 w-full max-w-md rounded-2xl p-5 shadow-2xl">
-            <div class="flex justify-between items-center border-b border-slate-900 pb-3 mb-4">
-                <h3 id="modal-title" class="text-xs font-extrabold text-white uppercase tracking-wider">Deploy Allocation</h3>
-                <button onclick="closeModal()" class="text-slate-500 hover:text-white text-xs">✕</button>
-            </div>
-            <div class="flex flex-col gap-2 mb-4">
-                <div class="flex justify-between items-center">
-                    <label class="text-[10px] uppercase font-bold tracking-wider text-slate-500">Allocation Principal</label>
-                    <span id="modal-max-label" class="text-[9px] font-bold text-indigo-400">Max Cap: 0.00 BTC</span>
-                </div>
-                <div class="bg-slate-900 border border-slate-800 p-3 rounded-xl flex items-center justify-between">
-                    <input id="modal-btc-slider" type="range" min="0.001" max="1.0" step="0.001" oninput="updateModalValues()" class="w-2/3 h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500">
-                    <span id="modal-btc-val" class="text-sm font-black font-mono text-white">0.0010 BTC</span>
-                </div>
-            </div>
-            <div id="modal-params-wrapper" class="space-y-3">
-                <div class="bg-slate-900/50 border border-slate-900 p-3 rounded-xl flex flex-col gap-2">
-                    <div class="flex justify-between items-center">
-                        <div class="flex items-center gap-2">
-                            <input id="tp-toggle" type="checkbox" onchange="toggleParamSliders()" class="w-3.5 h-3.5 rounded bg-slate-950 border-slate-800 text-indigo-600">
-                            <span class="text-[11px] font-bold text-slate-300">Target Take-Profit</span>
-                        </div>
-                        <span id="tp-val" class="text-xs font-extrabold text-emerald-400 mono">+10%</span>
-                    </div>
-                    <div id="tp-slider-container">
-                        <input id="tp-slider" type="range" min="5" max="300" step="5" value="25" oninput="updateModalValues()" class="w-full h-1 bg-slate-800 rounded-lg appearance-none accent-emerald-500">
-                    </div>
-                </div>
-                <div class="bg-slate-900/50 border border-slate-900 p-3 rounded-xl flex flex-col gap-2">
-                    <div class="flex justify-between items-center">
-                        <div class="flex items-center gap-2">
-                            <input id="sl-toggle" type="checkbox" onchange="toggleParamSliders()" class="w-3.5 h-3.5 rounded bg-slate-950 border-slate-800 text-indigo-600">
-                            <span class="text-[11px] font-bold text-slate-300">Trigger Stop-Loss</span>
-                        </div>
-                        <span id="sl-val" class="text-xs font-extrabold text-rose-400 mono">-10%</span>
-                    </div>
-                    <div id="sl-slider-container">
-                        <input id="sl-slider" type="range" min="-90" max="-5" step="5" value="-15" oninput="updateModalValues()" class="w-full h-1 bg-slate-800 rounded-lg appearance-none accent-rose-500">
-                    </div>
-                </div>
-            </div>
-            <div class="grid grid-cols-2 gap-3 mt-5">
-                <button onclick="closeModal()" class="py-2 text-xs font-bold uppercase tracking-wider rounded-lg border border-slate-800 bg-slate-900/50 text-slate-400">Cancel</button>
-                <button id="modal-confirm-btn" onclick="confirmInvestment()" class="py-2 text-xs font-bold uppercase tracking-wider rounded-lg bg-indigo-600 text-white">Deploy Order</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="staking-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-slate-950 border border-slate-900 w-full max-w-sm rounded-2xl p-5 shadow-2xl">
-            <h3 class="text-xs font-extrabold text-white uppercase tracking-wider mb-4">Sovereign Staking Lock</h3>
-            <div class="text-[11px] text-slate-400 mb-2">Betrag in den Smart Contract einzahlen:</div>
-            <input id="staking-amount-input" type="number" step="0.01" min="0.01" value="0.10" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 font-mono text-white text-sm focus:outline-none mb-4">
-            <div class="grid grid-cols-2 gap-3">
-                <button onclick="document.getElementById('staking-modal').classList.add('hidden')" class="py-2 text-xs font-bold uppercase tracking-wider rounded-lg bg-slate-900 border border-slate-800 text-slate-400">Cancel</button>
-                <button onclick="confirmStaking()" class="py-2 text-xs font-bold uppercase tracking-wider rounded-lg bg-amber-500 text-black">Lock Funds</button>
-            </div>
-        </div>
-    </div>
-
     <script>
-        let game = {
-            nickname: "", balance: 1.00000000, 
-            btcPrice: 0.0, lastBtcPrice: 0.0,
-            level: 1, xp: 0, xpNeeded: 100,
-            statExits: 0, statTotalProfitUsd: 0, 
-            bots: [], portfolio: {}, logs: [], lastSavedTimestamp: 0,
-            // NEW SPECIFIC PROTOCOLS
-            funds: [], fundPortfolio: {},
-            staking: [], 
-            streak: 1, lastLoginDate: ""
-        };
+        // Icons initialisieren
+        lucide.createIcons();
 
-        let selectedTicks = 30; let selectedApy = 4.5;
-        let activeTargetType = "bot"; // "bot" or "fund"
-        let activeTargetBotId = null;
+        // Theme Handling
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const themeIconSun = document.getElementById('theme-icon-sun');
+        const themeIconMoon = document.getElementById('theme-icon-moon');
+        const htmlElement = document.documentElement;
 
-        const prefix = ["Apex", "Quantum", "Hyper", "Vortex", "Satoshi", "Cyber", "Aegis", "Alpha", "Zero", "Nexus", "Neural", "Vector"];
-        const suffix = ["Fund", "Core", "Matrix", "Pool", "Systems", "Protocol", "Yield", "Quant"];
-        const strategies = ["Scalping", "Leverage", "Grid DCA", "Momentum", "Arbitrage"];
-        const risks = ["Conservative", "Moderate", "Aggressive", "Degen"];
+        // Check local storage or system preference
+        if (localStorage.getItem('theme') === 'light' || (!('theme' in localStorage) && !window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            htmlElement.classList.remove('dark');
+            themeIconSun.classList.add('hidden');
+            themeIconMoon.classList.remove('hidden');
+        } else {
+            htmlElement.classList.add('dark');
+            themeIconMoon.classList.add('hidden');
+            themeIconSun.classList.remove('hidden');
+        }
 
-        window.addEventListener('load', () => {
-            initGameData();
-            loadFromBrowserStorage();
-            processStreakLogic();
-            
-            setInterval(engineCycle7s, 7000);
-            fetchCustomBtcPrice();
+        themeToggleBtn.addEventListener('click', () => {
+            htmlElement.classList.toggle('dark');
+            if (htmlElement.classList.contains('dark')) {
+                localStorage.setItem('theme', 'dark');
+                themeIconMoon.classList.add('hidden');
+                themeIconSun.classList.remove('hidden');
+            } else {
+                localStorage.setItem('theme', 'light');
+                themeIconSun.classList.add('hidden');
+                themeIconMoon.classList.remove('hidden');
+            }
+            updateChartColors(); // Update charts when theme changes
         });
 
-        function initGameData() {
-            game.bots = [];
-            for (let i = 1; i <= 30; i++) {
-                let pIdx = (i * 3) % prefix.length;
-                let sIdx = (i * 7) % suffix.length;
-                let stIdx = (i * 2) % strategies.length;
-                let rIdx = (i * 11) % risks.length;
-                const bName = prefix[pIdx] + " " + suffix[sIdx] + " #"+i;
-                const ticker = bName.split(' ').map(w => w[0]).join('').replace('#','').substring(0,3) + i;
-                const risk = risks[rIdx];
-                let baseVol = risk === "Conservative" ? 0.0015 : risk === "Moderate" ? 0.004 : risk === "Aggressive" ? 0.008 : 0.015;
-                game.bots.push({
-                    id: i, name: bName, ticker: ticker, strategy: strategies[stIdx],
-                    risk: risk, vol: baseVol, alltimeProfitPct: 0.0, tokenPriceInBtc: 0.01 
-                });
-            }
+        // Globaler State für Tabellen-Sortierung
+        let currentPostsData = [];
+        let currentSort = { key: 'reactions', dir: 'desc' };
 
-            // Init predefined Index Funds
-            game.funds = [
-                { id: 101, name: "Alpha Yield ETF", desc: "Konservative & Moderate Bots gemischt.", botIds: [1, 5, 9], managementFee: 0.001 },
-                { id: 102, name: "Horizon Degen Basket", desc: "Aggressive & High-Volatility Degen-Klasse.", botIds: [4, 12, 28], managementFee: 0.0025 }
-            ];
-        }
+        // Chart Instanzen speichern
+        let chartTimeline = null;
+        let chartEngagement = null;
+        let chartWordCount = null;
+        let chartDayOfWeek = null;
 
-        function processStreakLogic() {
-            const todayStr = new Date().toISOString().split('T')[0];
-            if (!game.lastLoginDate) {
-                game.lastLoginDate = todayStr;
-                game.streak = 1;
-            } else {
-                const lastDate = new Date(game.lastLoginDate);
-                const currentDate = new Date(todayStr);
-                const diffTime = Math.abs(currentDate - lastDate);
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        // Hilfsfunktionen
+        const formatNum = (num) => {
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+            return num.toString();
+        };
 
-                if (diffDays === 1) {
-                    game.streak += 1;
-                    showPopup("🔥 STREAK UP!", `Du bist seit ${game.streak} Tagen aktiv! XP-Boost aktiv.`, "success");
-                } else if (diffDays > 1) {
-                    game.streak = 1;
-                    showPopup("💔 STREAK RESET", "Du warst gestern inaktiv. Streak neu gestartet.", "danger");
+        const formatDate = (dateString) => {
+            if (!dateString) return '';
+            const d = new Date(dateString);
+            return d.toLocaleDateString('de-DE', { day: '2-digit', month: 'short', year: 'numeric' });
+        };
+
+        const getChartColors = () => {
+            const isDark = document.documentElement.classList.contains('dark');
+            return {
+                text: isDark ? '#94a3b8' : '#64748b',
+                grid: isDark ? '#1e293b' : '#e2e8f0',
+                tooltipBg: isDark ? '#1e293b' : '#ffffff',
+                tooltipBorder: isDark ? '#334155' : '#cbd5e1',
+                tooltipText: isDark ? '#ffffff' : '#0f172a'
+            };
+        };
+
+        const updateChartColors = () => {
+            const colors = getChartColors();
+            Chart.defaults.color = colors.text;
+            Chart.defaults.borderColor = colors.grid;
+            
+            [chartTimeline, chartEngagement, chartWordCount, chartDayOfWeek].forEach(chart => {
+                if (chart) {
+                    chart.options.scales.y.grid.color = colors.grid;
+                    if(chart.options.scales.x) chart.options.scales.x.grid.color = colors.grid;
+                    if(chart.options.plugins.tooltip) {
+                        chart.options.plugins.tooltip.backgroundColor = colors.tooltipBg;
+                        chart.options.plugins.tooltip.titleColor = colors.tooltipText;
+                        chart.options.plugins.tooltip.bodyColor = colors.tooltipText;
+                        chart.options.plugins.tooltip.borderColor = colors.tooltipBorder;
+                    }
+                    chart.update();
                 }
-                game.lastLoginDate = todayStr;
-            }
-            document.getElementById('streak-counter').innerText = `${game.streak} ${game.streak === 1 ? 'Tag':'Tage'}`;
-        }
-
-        function saveToBrowserStorage() {
-            game.lastSavedTimestamp = Date.now();
-            localStorage.setItem('quantcorp_save_v8', JSON.stringify(game));
-        }
-
-        function loadFromBrowserStorage() {
-            const rawSave = localStorage.getItem('quantcorp_save_v8');
-            if (rawSave) {
-                const parsed = JSON.parse(rawSave);
-                Object.assign(game, parsed);
-                document.getElementById('user-nickname').innerText = game.nickname;
-            } else {
-                document.getElementById('onboarding-modal').classList.remove('hidden');
-            }
-        }
-
-        window.switchOnboardingTab = function(tab) {
-            const tabNew = document.getElementById('tab-btn-new');
-            const tabLoad = document.getElementById('tab-btn-load');
-            const viewNew = document.getElementById('onboarding-view-new');
-            const viewLoad = document.getElementById('onboarding-view-load');
-            if(tab === 'new') {
-                tabNew.className = "py-2 text-[10px] uppercase font-bold tracking-wider rounded-lg bg-indigo-600 text-white";
-                tabLoad.className = "py-2 text-[10px] uppercase font-bold tracking-wider rounded-lg text-slate-400";
-                viewNew.classList.remove('hidden'); viewLoad.classList.add('hidden');
-            } else {
-                tabLoad.className = "py-2 text-[10px] uppercase font-bold tracking-wider rounded-lg bg-emerald-600 text-white";
-                tabNew.className = "py-2 text-[10px] uppercase font-bold tracking-wider rounded-lg text-slate-400";
-                viewLoad.classList.remove('hidden'); viewNew.classList.add('hidden');
-            }
-        }
-
-        window.saveOnboarding = function() {
-            const input = document.getElementById('nickname-input').value.trim().replace(/[^a-zA-Z0-9_]/g, '');
-            if(input.length < 3) return;
-            game.nickname = input;
-            document.getElementById('user-nickname').innerText = game.nickname;
-            document.getElementById('onboarding-modal').classList.add('hidden');
-            saveToBrowserStorage();
-        }
-
-        window.executeOnboardingLoad = function() {
-            const code = document.getElementById('onboarding-load-input').value.trim();
-            if(!code) return;
-            try {
-                const parsed = JSON.parse(atob(code));
-                Object.assign(game, parsed);
-                saveToBrowserStorage(); window.location.reload();
-            } catch(e) { alert("Error."); }
-        }
-
-        window.copySaveCode = function() {
-            const stateString = btoa(JSON.stringify(game));
-            navigator.clipboard.writeText(stateString).then(() => {
-                showPopup("SYSTEM", "Backup-Code in die Zwischenablage kopiert!", "success");
             });
-        }
+        };
 
-        window.promptLoadCode = function() {
-            const code = prompt("Backup-Code einfügen:");
-            if (!code) return;
-            try {
-                const parsed = JSON.parse(atob(code.trim()));
-                Object.assign(game, parsed);
-                saveToBrowserStorage(); window.location.reload();
-            } catch(e) { showPopup("ERROR", "Ungültiger Code!", "danger"); }
-        }
+        // Main Fetch Logic
+        document.getElementById('search-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const handle = document.getElementById('handle-input').value.trim();
+            const proxy = document.getElementById('proxy-input').value.trim();
+            const limit = parseInt(document.getElementById('limit-input').value);
+            const btnText = document.getElementById('btn-text');
+            const btn = document.getElementById('analyze-btn');
+            const errorContainer = document.getElementById('error-container');
+            const resultsContainer = document.getElementById('results-container');
+            const statusBadge = document.getElementById('status-badge');
 
-        async function fetchCustomBtcPrice() {
+            if (!handle) return;
+
+            // UI Reset & Loading State
+            btn.disabled = true;
+            btnText.textContent = "Lade Daten...";
+            errorContainer.classList.add('hidden');
+            resultsContainer.classList.add('hidden');
+            statusBadge.innerHTML = `<i data-lucide="loader-2" class="w-3 h-3 animate-spin"></i> Lade...`;
+            lucide.createIcons();
+
+            let allPosts = [];
+            let offset = 0;
+            const batchSize = 50;
+            
+            // Clean Subdomain
+            let subdomain = handle.replace(/^@/, '');
+            if (subdomain.startsWith('http')) {
+                try { subdomain = new URL(subdomain).hostname.split('.')[0]; } 
+                catch (e) { subdomain = handle; }
+            } else {
+                subdomain = subdomain.replace(/\.substack\.com.*$/i, '').replace(/\/.*$/, '');
+            }
+
             try {
-                const response = await fetch('https://api.thingspeak.com/apps/thinghttp/send_request?api_key=CTGCF12NZVUTAYCG');
-                const rawText = await response.text();
-                let cleanText = rawText.replace(/\./g, '').replace(',', '.');     
-                const parsedPrice = parseFloat(cleanText);
-                if (!isNaN(parsedPrice) && parsedPrice > 0) {
-                    game.lastBtcPrice = game.btcPrice > 0 ? game.btcPrice : parsedPrice;
-                    game.btcPrice = parsedPrice;
-                    document.getElementById('api-status').innerText = "Live (USD)";
+                // Fetch Loop
+                while (allPosts.length < limit) {
+                    const fetchLimit = Math.min(batchSize, limit - allPosts.length);
+                    btnText.textContent = `Lade ${allPosts.length}/${limit}...`;
+                    
+                    const targetUrl = `https://${subdomain}.substack.com/api/v1/posts?sort=new&offset=${offset}&limit=${fetchLimit}`;
+                    const finalUrl = proxy ? `${proxy.replace(/\/$/, '')}?url=${encodeURIComponent(targetUrl)}` : targetUrl;
+                    
+                    const response = await fetch(finalUrl);
+                    if (!response.ok) throw new Error(`Fehler beim Abrufen der Daten vom Proxy (Status ${response.status}).`);
+                    
+                    const data = await response.json();
+                    const items = Array.isArray(data) ? data : (data.posts || []);
+                    
+                    if (items.length === 0) break;
+
+                    allPosts = [...allPosts, ...items];
+                    offset += items.length;
+
+                    if (items.length < fetchLimit) break;
+                    await new Promise(r => setTimeout(r, 200)); // Rate Limit Protection
                 }
-            } catch (error) {
-                if (game.btcPrice === 0) { game.btcPrice = 68000.00; game.lastBtcPrice = 68000.00; }
-                document.getElementById('api-status').innerText = "Local Mode";
-            } finally { updateUI(); }
-        }
 
-        function engineCycle7s() {
-            fetchCustomBtcPrice();
-            executeStrategicBotDecisions();
-            processStakingEngine();
-            checkAutomatedOrders();
-            updateUI();
-            saveToBrowserStorage();
-        }
+                if (allPosts.length === 0) throw new Error("Keine Posts gefunden oder ungültiger Handle.");
 
-        function executeStrategicBotDecisions() {
-            let btcChangePct = game.lastBtcPrice > 0 ? ((game.btcPrice - game.lastBtcPrice) / game.lastBtcPrice) : 0.0;
+                // Daten verarbeiten
+                const normalizedData = allPosts.map(p => {
+                    let words = p.wordcount || p.word_count || 0;
+                    if (!words && p.reading_time) words = Math.round(p.reading_time * 200);
+                    
+                    return {
+                        id: p.id,
+                        title: p.title || 'Untitled',
+                        date: new Date(p.post_date || p.createdAt || Date.now()),
+                        reactions: p.reaction_count || 0,
+                        comments: p.comment_count || 0,
+                        words: words,
+                        url: p.canonical_url || `https://${subdomain}.substack.com/p/${p.slug}`,
+                        audience: p.audience === 'only_paid' ? 'Paid' : 'Free'
+                    };
+                });
 
-            game.bots.forEach(bot => {
-                const baseDirection = Math.random() > 0.5 ? 1 : -1;
-                let randomVolatility = Math.random() * bot.vol;
-                let beta = bot.risk === "Conservative" ? 0.05 : bot.risk === "Moderate" ? 0.3 : bot.risk === "Aggressive" ? 0.8 : 1.5;
-                let marketImpact = btcChangePct * beta;
+                currentPostsData = normalizedData;
+                renderDashboard(normalizedData);
                 
-                if (btcChangePct < 0 && bot.risk === "Conservative") marketImpact = Math.abs(marketImpact) * 0.2; 
-
-                let finalDirectionModifier = (baseDirection * randomVolatility) + marketImpact;
-                bot.tokenPriceInBtc += bot.tokenPriceInBtc * finalDirectionModifier;
-                if(bot.tokenPriceInBtc < 0.0001) bot.tokenPriceInBtc = 0.0001; 
-                bot.alltimeProfitPct += finalDirectionModifier * 100;
-            });
-            game.lastBtcPrice = game.btcPrice;
-        }
-
-        function processStakingEngine() {
-            game.staking.forEach((position, index) => {
-                if (position.ticksLeft > 0) {
-                    position.ticksLeft--;
-                    // Berechne Zins-Tick-Ertrag
-                    let tickReward = position.amountInvested * (position.apy / 100 / 365 / 24 / 60); 
-                    position.accumulatedYield += tickReward;
-                }
-            });
-        }
-
-        function checkAutomatedOrders() {
-            Object.keys(game.portfolio).forEach(botId => {
-                const asset = game.portfolio[botId];
-                const bot = game.bots.find(b => b.id == botId);
-                if(!bot) return;
-                const currentBtcValue = asset.tokenCount * bot.tokenPriceInBtc;
-                const yourProfitPct = ((currentBtcValue - asset.initialInvestedBtc) / asset.initialInvestedBtc) * 100;
-
-                if (asset.takeProfit !== null && yourProfitPct >= asset.takeProfit) {
-                    showPopup(bot.ticker, `🎯 TAKE-PROFIT! (+${yourProfitPct.toFixed(1)}%)`, 'success');
-                    executeSellSharesLive(botId, yourProfitPct); 
-                } else if (asset.stopLoss !== null && yourProfitPct <= asset.stopLoss) {
-                    showPopup(bot.ticker, `🛑 STOP-LOSS! (${yourProfitPct.toFixed(1)}%)`, 'danger');
-                    executeSellSharesLive(botId, yourProfitPct); 
-                }
-            });
-        }
-
-        function showPopup(title, message, type = 'info') {
-            const container = document.getElementById('popup-container');
-            const popup = document.createElement('div');
-            let bgClass = type === 'success' ? "bg-emerald-950/95 border-emerald-500 text-emerald-200" : type === 'danger' ? "bg-rose-950/95 border-rose-500 text-rose-200" : "bg-indigo-950/95 border-indigo-500 text-indigo-200";
-            popup.className = `toast-popup p-3 rounded-xl border shadow-2xl backdrop-blur-md flex flex-col pointer-events-auto ${bgClass}`;
-            popup.innerHTML = `<div class="flex justify-between items-center border-b border-white/10 pb-1 mb-1"><span class="text-xs font-bold font-mono uppercase">${title}</span><button onclick="this.parentElement.parentElement.remove()" class="text-[10px] opacity-50">✕</button></div><p class="text-[11px] font-medium">${message}</p>`;
-            container.appendChild(popup);
-            setTimeout(() => { if(popup.parentNode) popup.remove(); }, 5000);
-        }
-
-        window.openInvestModal = function(id, type = "bot") {
-            activeTargetType = type;
-            activeTargetBotId = id;
-            const maxInvestmentBtc = Math.min(game.balance, game.level * 0.25);
-            
-            document.getElementById('modal-btc-slider').max = maxInvestmentBtc;
-            document.getElementById('modal-btc-slider').value = (maxInvestmentBtc * 0.5).toFixed(3);
-            document.getElementById('modal-max-label').innerText = `Max Cap: ${maxInvestmentBtc.toFixed(3)} BTC`;
-
-            if (type === "fund") {
-                const fund = game.funds.find(f => f.id === id);
-                document.getElementById('modal-title').innerText = `INVEST: ${fund.name}`;
-                document.getElementById('modal-params-wrapper').classList.add('hidden');
-            } else {
-                const bot = game.bots.find(b => b.id === id);
-                document.getElementById('modal-title').innerText = `DEPLOY: $${bot.ticker}`;
-                document.getElementById('modal-params-wrapper').classList.remove('hidden');
+                // Success State
+                resultsContainer.classList.remove('hidden');
+                statusBadge.innerHTML = `<div class="w-2 h-2 rounded-full bg-green-500"></div> Fertig`;
+                
+            } catch (err) {
+                errorContainer.innerHTML = `<i data-lucide="alert-triangle" class="w-5 h-5"></i> <span>${err.message}</span>`;
+                errorContainer.classList.remove('hidden');
+                statusBadge.innerHTML = `<div class="w-2 h-2 rounded-full bg-red-500"></div> Fehler`;
+            } finally {
+                btn.disabled = false;
+                btnText.textContent = "Analysieren";
+                lucide.createIcons();
             }
-            document.getElementById('invest-modal').classList.remove('hidden');
-            updateModalValues();
+        });
+
+        function renderDashboard(posts) {
+            // Stats kalkulieren
+            let totalReactions = 0, totalComments = 0, totalWords = 0;
+            posts.forEach(p => {
+                totalReactions += p.reactions;
+                totalComments += p.comments;
+                totalWords += p.words;
+            });
+            
+            const bestPost = [...posts].sort((a, b) => b.reactions - a.reactions)[0];
+            const avgWords = Math.round(totalWords / posts.length) || 0;
+            const avgReactions = Math.round(totalReactions / posts.length) || 0;
+            const avgComments = Math.round(totalComments / posts.length) || 0;
+
+            // Best Post Card Rendern
+            const bestPostHtml = bestPost ? `
+                <div class="bg-gradient-to-r from-orange-600 to-amber-500 rounded-2xl p-6 text-white shadow-lg flex flex-col md:flex-row justify-between items-center gap-6 mb-8">
+                    <div>
+                        <div class="text-orange-100 text-sm font-semibold uppercase tracking-wider mb-2 flex items-center gap-2">
+                            <i data-lucide="award" class="w-5 h-5"></i> Bester Post
+                        </div>
+                        <h3 class="text-2xl font-bold mb-2 line-clamp-1"><a href="${bestPost.url}" target="_blank" class="hover:underline">${bestPost.title}</a></h3>
+                        <p class="text-orange-100 text-sm">${formatDate(bestPost.date)} • ${bestPost.audience}</p>
+                    </div>
+                    <div class="flex gap-6">
+                        <div class="text-center"><div class="text-3xl font-bold">${formatNum(bestPost.reactions)}</div><div class="text-orange-200 text-xs uppercase">Reaktionen</div></div>
+                        <div class="text-center"><div class="text-3xl font-bold">${formatNum(bestPost.comments)}</div><div class="text-orange-200 text-xs uppercase">Kommentare</div></div>
+                    </div>
+                </div>
+            ` : '';
+            document.getElementById('best-post-container').innerHTML = bestPostHtml;
+
+            // KPI Grid Rendern
+            const kpiData = [
+                { title: "Total Posts", val: posts.length, icon: "file-text", color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-100 dark:bg-blue-900/30" },
+                { title: "Total Reaktionen", val: formatNum(totalReactions), icon: "activity", color: "text-orange-600 dark:text-orange-400", bg: "bg-orange-100 dark:bg-orange-900/30" },
+                { title: "Total Kommentare", val: formatNum(totalComments), icon: "message-circle", color: "text-green-600 dark:text-green-400", bg: "bg-green-100 dark:bg-green-900/30" },
+                { title: "Total Wörter", val: formatNum(totalWords), icon: "hash", color: "text-purple-600 dark:text-purple-400", bg: "bg-purple-100 dark:bg-purple-900/30" },
+                { title: "Avg Reaktionen/Post", val: formatNum(avgReactions), icon: "trending-up", color: "text-slate-600 dark:text-slate-400", bg: "bg-slate-100 dark:bg-slate-800" },
+                { title: "Avg Wörter/Post", val: formatNum(avgWords), icon: "align-left", color: "text-slate-600 dark:text-slate-400", bg: "bg-slate-100 dark:bg-slate-800" }
+            ];
+
+            document.getElementById('kpi-grid').innerHTML = kpiData.map(kpi => `
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm transition-colors duration-200">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">${kpi.title}</span>
+                        <div class="p-2 rounded-lg ${kpi.bg} ${kpi.color}"><i data-lucide="${kpi.icon}" class="w-4 h-4"></i></div>
+                    </div>
+                    <div class="text-2xl font-bold text-slate-900 dark:text-white mb-1">${kpi.val}</div>
+                </div>
+            `).join('');
+
+            // Chart.js Setup
+            const colors = getChartColors();
+            Chart.defaults.color = colors.text;
+            Chart.defaults.borderColor = colors.grid;
+            Chart.defaults.font.family = 'Inter';
+
+            // Common Chart Options
+            const commonOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { 
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: colors.tooltipBg,
+                        titleColor: colors.tooltipText,
+                        bodyColor: colors.tooltipText,
+                        borderColor: colors.tooltipBorder,
+                        borderWidth: 1,
+                        padding: 10,
+                        cornerRadius: 8
+                    }
+                }
+            };
+
+            // Chart 1: Timeline (Wann wurde gepostet)
+            const timelineData = [...posts].reverse(); // Älteste zuerst
+            const dates = timelineData.map(p => formatDate(p.date));
+            const wordsData = timelineData.map(p => p.words);
+            const freeData = timelineData.map(p => p.audience === 'Free' ? p.words : 0);
+            const paidData = timelineData.map(p => p.audience === 'Paid' ? p.words : 0);
+
+            if (chartTimeline) chartTimeline.destroy();
+            const ctx1 = document.getElementById('timelineChart').getContext('2d');
+            chartTimeline = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: dates,
+                    datasets: [
+                        { label: 'Free (Wörter)', data: freeData, backgroundColor: '#10b981', borderRadius: {topLeft: 4, topRight: 4}, stacked: true },
+                        { label: 'Paid (Wörter)', data: paidData, backgroundColor: '#f59e0b', borderRadius: {topLeft: 4, topRight: 4}, stacked: true }
+                    ]
+                },
+                options: {
+                    ...commonOptions,
+                    plugins: { ...commonOptions.plugins, legend: { display: true, position: 'top', align: 'end', labels: { boxWidth: 12, usePointStyle: true } } },
+                    scales: {
+                        x: { display: false, stacked: true }, 
+                        y: { beginAtZero: true, stacked: true, grid: { color: colors.grid } }
+                    }
+                }
+            });
+
+            // Chart 2: Engagement
+            const reactionData = timelineData.map(p => p.reactions);
+            const commentData = timelineData.map(p => p.comments);
+
+            if (chartEngagement) chartEngagement.destroy();
+            const ctx2 = document.getElementById('engagementChart').getContext('2d');
+            chartEngagement = new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [
+                        { label: 'Reaktionen', data: reactionData, borderColor: '#ea580c', backgroundColor: 'rgba(234, 88, 12, 0.1)', fill: true, tension: 0.4, borderWidth: 2 },
+                        { label: 'Kommentare', data: commentData, borderColor: '#3b82f6', backgroundColor: 'transparent', tension: 0.4, borderWidth: 2 }
+                    ]
+                },
+                options: {
+                    ...commonOptions,
+                    plugins: { ...commonOptions.plugins, legend: { display: true, position: 'top', align: 'end', labels: { boxWidth: 12, usePointStyle: true } } },
+                    scales: {
+                        x: { display: false },
+                        y: { beginAtZero: true, grid: { color: colors.grid } }
+                    },
+                    elements: { point: { radius: 0, hitRadius: 10, hoverRadius: 4 } },
+                    interaction: { mode: 'index', intersect: false }
+                }
+            });
+
+            // Chart 3: Word Count Distribution
+            const buckets = { '< 500': 0, '500-1K': 0, '1K-2K': 0, '2K-3.5K': 0, '> 3.5K': 0 };
+            posts.forEach(p => {
+                if (p.words <= 500) buckets['< 500']++;
+                else if (p.words <= 1000) buckets['500-1K']++;
+                else if (p.words <= 2000) buckets['1K-2K']++;
+                else if (p.words <= 3500) buckets['2K-3.5K']++;
+                else buckets['> 3.5K']++;
+            });
+
+            if (chartWordCount) chartWordCount.destroy();
+            const ctx3 = document.getElementById('wordCountChart').getContext('2d');
+            chartWordCount = new Chart(ctx3, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(buckets),
+                    datasets: [{
+                        label: 'Anzahl Posts',
+                        data: Object.values(buckets),
+                        backgroundColor: '#6366f1',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    ...commonOptions,
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { beginAtZero: true, grid: { color: colors.grid } }
+                    }
+                }
+            });
+
+            // Chart 4: Day of Week
+            const days = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+            const dayCounts = [0, 0, 0, 0, 0, 0, 0];
+            posts.forEach(p => dayCounts[p.date.getDay()]++);
+            
+            // Shift to start with Monday
+            const shiftedCounts = [...dayCounts.slice(1), dayCounts[0]];
+            const shiftedDays = [...days.slice(1), days[0]];
+
+            if (chartDayOfWeek) chartDayOfWeek.destroy();
+            const ctx4 = document.getElementById('dayOfWeekChart').getContext('2d');
+            chartDayOfWeek = new Chart(ctx4, {
+                type: 'bar',
+                data: {
+                    labels: shiftedDays,
+                    datasets: [{
+                        label: 'Veröffentlichte Posts',
+                        data: shiftedCounts,
+                        backgroundColor: '#14b8a6',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    ...commonOptions,
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { beginAtZero: true, grid: { color: colors.grid }, ticks: { stepSize: 1 } }
+                    }
+                }
+            });
+
+            // Init Table Rendern
+            renderTable();
+            lucide.createIcons();
         }
 
-        window.closeModal = function() { document.getElementById('invest-modal').classList.add('hidden'); }
+        // Tabellen Rendering und Sortierungs-Logik
+        function renderTable() {
+            if (!currentPostsData.length) return;
 
-        window.toggleParamSliders = function() {
-            const tpActive = document.getElementById('tp-toggle').checked;
-            document.getElementById('tp-slider-container').style.opacity = tpActive ? "1" : "0.3";
-            const slActive = document.getElementById('sl-toggle').checked;
-            document.getElementById('sl-slider-container').style.opacity = slActive ? "1" : "0.3";
+            const tbody = document.getElementById('posts-table-body');
+            
+            // Daten sortieren
+            const sortedData = [...currentPostsData].sort((a, b) => {
+                let valA = a[currentSort.key];
+                let valB = b[currentSort.key];
+                
+                // Für Datums-Sortierung
+                if (currentSort.key === 'date') {
+                    valA = a.date.getTime();
+                    valB = b.date.getTime();
+                }
+
+                if (valA < valB) return currentSort.dir === 'asc' ? -1 : 1;
+                if (valA > valB) return currentSort.dir === 'asc' ? 1 : -1;
+                return 0;
+            }).slice(0, 50); // Max 50 Posts anzeigen
+
+            tbody.innerHTML = sortedData.map((p, i) => `
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <td class="px-6 py-4 text-slate-500">#${i + 1}</td>
+                    <td class="px-6 py-4 font-medium text-slate-900 dark:text-slate-100 whitespace-normal min-w-[250px]">
+                        <a href="${p.url}" target="_blank" class="hover:text-orange-500 transition-colors">${p.title}</a>
+                        <div class="text-xs text-slate-500 mt-1">${p.audience}</div>
+                    </td>
+                    <td class="px-6 py-4 text-slate-500">${formatDate(p.date)}</td>
+                    <td class="px-6 py-4 font-medium text-orange-600 dark:text-orange-400">${formatNum(p.reactions)}</td>
+                    <td class="px-6 py-4 font-medium text-blue-600 dark:text-blue-400">${formatNum(p.comments)}</td>
+                    <td class="px-6 py-4 text-slate-500">${formatNum(p.words)}</td>
+                </tr>
+            `).join('');
+
+            // Sortier-Icons aktualisieren
+            document.querySelectorAll('.sort-header').forEach(header => {
+                header.classList.remove('sort-active', 'sort-asc', 'sort-desc');
+                if (header.dataset.sort === currentSort.key) {
+                    header.classList.add('sort-active', `sort-${currentSort.dir}`);
+                }
+            });
         }
 
-        window.updateModalValues = function() {
-            const btcVal = parseFloat(document.getElementById('modal-btc-slider').value);
-            document.getElementById('modal-btc-val').innerText = btcVal.toFixed(4) + " BTC";
-            document.getElementById('tp-val').innerText = "+" + document.getElementById('tp-slider').value + "%";
-            document.getElementById('sl-val').innerText = document.getElementById('sl-slider').value + "%";
-        }
-
-        window.confirmInvestment = function() {
-            const btcAmount = parseFloat(document.getElementById('modal-btc-slider').value);
-            if (btcAmount <= 0 || btcAmount > game.balance) return;
-
-            game.balance -= btcAmount;
-
-            if (activeTargetType === "fund") {
-                if (!game.fundPortfolio[activeTargetBotId]) {
-                    game.fundPortfolio[activeTargetBotId] = { fundId: activeTargetBotId, initialInvestedBtc: btcAmount, currentBtcValue: btcAmount };
+        // Event Listeners für Tabellen-Sortierung
+        document.querySelectorAll('.sort-header').forEach(header => {
+            header.addEventListener('click', () => {
+                const key = header.dataset.sort;
+                if (currentSort.key === key) {
+                    // Richtung umkehren
+                    currentSort.dir = currentSort.dir === 'asc' ? 'desc' : 'asc';
                 } else {
-                    game.fundPortfolio[activeTargetBotId].initialInvestedBtc += btcAmount;
-                    game.fundPortfolio[activeTargetBotId].currentBtcValue += btcAmount;
+                    // Neuen Key setzen, Standard absteigend
+                    currentSort.key = key;
+                    currentSort.dir = 'desc';
                 }
-                showPopup("INDEX", "Kapital im ETF allokiert.", "success");
-            } else {
-                const bot = game.bots.find(b => b.id === activeTargetBotId);
-                const tokensPurchased = btcAmount / bot.tokenPriceInBtc;
-                const useTp = document.getElementById('tp-toggle').checked;
-                const useSl = document.getElementById('sl-toggle').checked;
-
-                game.portfolio[activeTargetBotId] = {
-                    botId: activeTargetBotId, tokenCount: tokensPurchased, initialInvestedBtc: btcAmount,
-                    takeProfit: useTp ? parseFloat(document.getElementById('tp-slider').value) : null,
-                    stopLoss: useSl ? parseFloat(document.getElementById('sl-slider').value) : null
-                };
-                showPopup(bot.ticker, "Bot erfolgreich gestartet.", "info");
-            }
-            closeModal(); saveToBrowserStorage(); updateUI();
-        }
-
-        window.sellShares = function(botId) {
-            const asset = game.portfolio[botId]; if (!asset) return;
-            const bot = game.bots.find(b => b.id == botId);
-            const currentBtcValue = asset.tokenCount * bot.tokenPriceInBtc;
-            const yourProfitPct = ((currentBtcValue - asset.initialInvestedBtc) / asset.initialInvestedBtc) * 100;
-            executeSellSharesLive(botId, yourProfitPct);
-        }
-
-        function executeSellSharesLive(botId, profitPct) {
-            const asset = game.portfolio[botId]; const bot = game.bots.find(b => b.id == botId);
-            const currentBtcValue = asset.tokenCount * bot.tokenPriceInBtc;
-            const cleanNetProfitBtc = currentBtcValue - asset.initialInvestedBtc;
-            
-            game.balance += currentBtcValue; game.statExits += 1; game.statTotalProfitUsd += cleanNetProfitBtc * game.btcPrice;
-            
-            if (cleanNetProfitBtc > 0) {
-                let xpGain = Math.floor(cleanNetProfitBtc * 1500 * (1 + (game.streak * 0.1))) + 20; // Streak Multiplier
-                game.xp += xpGain;
-                if (game.xp >= game.xpNeeded) { game.level += 1; game.xp = 0; game.xpNeeded = Math.floor(game.xpNeeded * 1.6); }
-            }
-            game.logs.unshift(`[Exit] ${bot.ticker} geschlossen (${profitPct >= 0 ? '+':''}${profitPct.toFixed(1)}%)`);
-            delete game.portfolio[botId];
-            saveToBrowserStorage(); updateUI();
-        }
-
-        window.exitFundInvestment = function(fundId) {
-            const asset = game.fundPortfolio[fundId]; if(!asset) return;
-            const fund = game.funds.find(f => f.id == fundId);
-            
-            // Simulierter ETF Profit basierend auf den darin enthaltenen Bots
-            let combinedProfitPct = 0;
-            fund.botIds.forEach(id => { combinedProfitPct += game.bots.find(b => b.id === id).alltimeProfitPct / 3; });
-            
-            let finalReturn = asset.initialInvestedBtc * (1 + (combinedProfitPct / 100));
-            // Abzug Verwaltungsgebühr
-            finalReturn -= finalReturn * fund.managementFee;
-
-            let netProfitBtc = finalReturn - asset.initialInvestedBtc;
-            game.balance += finalReturn;
-            game.statTotalProfitUsd += netProfitBtc * game.btcPrice;
-            game.statExits += 1;
-
-            game.logs.unshift(`[ETF Exit] ${fund.name} liquidiert.`);
-            delete game.fundPortfolio[fundId];
-            saveToBrowserStorage(); updateUI();
-        }
-
-        window.selectStakingTier = function(ticks, apy) {
-            selectedTicks = ticks; selectedApy = apy;
-            document.getElementById('staking-modal').classList.remove('hidden');
-        }
-
-        window.confirmStaking = function() {
-            const amount = parseFloat(document.getElementById('staking-amount-input').value);
-            if (amount <= 0 || amount > game.balance) { alert("Ungenügend Guthaben"); return; }
-            
-            game.balance -= amount;
-            game.staking.push({ amountInvested: amount, ticksLeft: selectedTicks, initialTicks: selectedTicks, apy: selectedApy, accumulatedYield: 0 });
-            document.getElementById('staking-modal').classList.add('hidden');
-            showPopup("STAKING", `${amount} BTC erfolgreich gesperrt!`, "success");
-            saveToBrowserStorage(); updateUI();
-        }
-
-        window.claimStaking = function(idx) {
-            const pos = game.staking[idx];
-            if (pos.ticksLeft > 0) {
-                // Strafgebühr von 5% auf den Principal bei vorzeitigem Abbruch
-                let penalty = pos.amountInvested * 0.05;
-                let payout = pos.amountInvested - penalty + pos.accumulatedYield;
-                game.balance += payout;
-                showPopup("STAKING", `Vorzeitiger Abbruch! 5% Strafgebühr bezahlt.`, "danger");
-            } else {
-                game.balance += pos.amountInvested + pos.accumulatedYield;
-                showPopup("STAKING", `Zinsen & Principal erfolgreich beansprucht!`, "success");
-            }
-            game.staking.splice(idx, 1);
-            saveToBrowserStorage(); updateUI();
-        }
-
-        function updateUI() {
-            document.getElementById('user-balance').innerText = game.balance.toFixed(8) + " BTC";
-            document.getElementById('user-balance-usd').innerText = "~ " + (game.balance * game.btcPrice).toLocaleString('en-US', {minimumFractionDigits: 2}) + " $";
-            document.getElementById('btc-price').innerText = game.btcPrice > 0 ? game.btcPrice.toLocaleString('en-US', {minimumFractionDigits: 2}) + " $" : "Syncing...";
-            document.getElementById('manager-level').innerText = `LVL ${game.level}`;
-            document.getElementById('xp-text').innerText = `${game.xp}/${game.xpNeeded}`;
-            document.getElementById('stat-exits').innerText = game.statExits;
-            document.getElementById('xp-bar').style.width = Math.min((game.xp / game.xpNeeded) * 100, 100) + "%";
-
-            const profitEl = document.getElementById('stat-profit');
-            profitEl.innerText = (game.statTotalProfitUsd >= 0 ? '+' : '') + game.statTotalProfitUsd.toLocaleString('en-US', {minimumFractionDigits: 2}) + " $";
-            profitEl.className = "text-xs font-bold mono " + (game.statTotalProfitUsd >= 0 ? "text-emerald-400" : "text-rose-500");
-
-            const logContainer = document.getElementById('log-container');
-            logContainer.innerHTML = game.logs.map(log => `<div class="py-0.5 border-b border-slate-900 truncate">${log}</div>`).join('');
-
-            // RENDER INDEX FUNDS MARKETPLACE
-            const fundsMarket = document.getElementById('funds-marketplace'); fundsMarket.innerHTML = '';
-            game.funds.forEach(fund => {
-                let currentAllocation = game.fundPortfolio[fund.id] ? `${game.fundPortfolio[fund.id].initialInvestedBtc.toFixed(3)} BTC` : "Keine";
-                fundsMarket.innerHTML += `
-                    <div class="bg-slate-900 border border-slate-800 p-3 rounded-xl flex flex-col justify-between">
-                        <div>
-                            <div class="flex justify-between items-start"><span class="text-xs font-bold text-slate-200">${fund.name}</span><span class="text-[9px] text-indigo-400 font-mono">Gebühr: ${(fund.managementFee*100).toFixed(2)}%</span></div>
-                            <p class="text-[10px] text-slate-500 mt-1">${fund.desc}</p>
-                            <div class="text-[9px] text-slate-400 mt-2 font-mono">Investiert: ${currentAllocation}</div>
-                        </div>
-                        <div class="flex gap-2 mt-3">
-                            <button onclick="openInvestModal(${fund.id}, 'fund')" class="flex-1 py-1 bg-indigo-600 text-white rounded text-[10px] font-bold uppercase">Investieren</button>
-                            ${game.fundPortfolio[fund.id] ? `<button onclick="exitFundInvestment(${fund.id})" class="px-2 py-1 bg-rose-950 text-rose-400 rounded text-[10px] font-bold border border-rose-500/20">Exit</button>` : ''}
-                        </div>
-                    </div>`;
+                renderTable();
             });
+        });
 
-            // RENDER ACTIVE BOTS AND FUNDS IN PORTFOLIO
-            const portfolioContainer = document.getElementById('my-portfolio-container');
-            portfolioContainer.innerHTML = '';
-            const currentHoldings = Object.values(game.portfolio);
-            const currentFundsHoldings = Object.values(game.fundPortfolio);
-
-            if(currentHoldings.length === 0 && currentFundsHoldings.length === 0) {
-                portfolioContainer.innerHTML = `<div class="text-center text-xs text-slate-600 py-6">Keine aktiven Zuordnungen.</div>`;
-            } else {
-                currentHoldings.forEach(asset => {
-                    const bot = game.bots.find(b => b.id === asset.botId);
-                    const currentBtcValue = asset.tokenCount * bot.tokenPriceInBtc;
-                    const yourProfitPct = ((currentBtcValue - asset.initialInvestedBtc) / asset.initialInvestedBtc) * 100;
-                    let limitsStr = asset.takeProfit !== null || asset.stopLoss !== null ? `TP: +${asset.takeProfit || '-'}% | SL: ${asset.stopLoss || '-'}%` : 'Keine Limits';
-
-                    portfolioContainer.innerHTML += `
-                        <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-lg flex flex-col justify-between">
-                            <div class="flex justify-between items-start">
-                                <div><span class="text-xs font-bold text-slate-200">${bot.name}</span><div class="text-[9px] text-slate-500 font-mono">${limitsStr}</div></div>
-                                <span class="mono text-xs font-bold ${yourProfitPct >= 0 ? 'text-emerald-400':'text-rose-400'}">${yourProfitPct >= 0 ? '+':''}${yourProfitPct.toFixed(2)}%</span>
-                            </div>
-                            <button class="w-full mt-2 py-1 bg-rose-500/10 text-rose-400 text-[10px] rounded font-bold uppercase border border-rose-500/20" onclick="sellShares(${bot.id})">Verkaufen</button>
-                        </div>`;
-                });
-
-                currentFundsHoldings.forEach(asset => {
-                    const fund = game.funds.find(f => f.id === asset.fundId);
-                    let combinedProfitPct = 0;
-                    fund.botIds.forEach(id => { combinedProfitPct += game.bots.find(b => b.id === id).alltimeProfitPct / 3; });
-
-                    portfolioContainer.innerHTML += `
-                        <div class="bg-slate-900 border border-indigo-900/40 p-2.5 rounded-lg flex flex-col justify-between">
-                            <div class="flex justify-between items-start">
-                                <div><span class="text-xs font-bold text-indigo-300">📊 ${fund.name}</span><div class="text-[9px] text-slate-500 font-mono">Index ETF Basket</div></div>
-                                <span class="mono text-xs font-bold ${combinedProfitPct >= 0 ? 'text-emerald-400':'text-rose-400'}">${combinedProfitPct >= 0 ? '+':''}${combinedProfitPct.toFixed(2)}%</span>
-                            </div>
-                            <button class="w-full mt-2 py-1 bg-indigo-950 text-indigo-400 text-[10px] rounded font-bold uppercase border border-indigo-500/20" onclick="exitFundInvestment(${fund.id})">Index Liquidieren</button>
-                        </div>`;
-                });
-            }
-
-            // RENDER STAKING NODE
-            const stakingContainer = document.getElementById('staking-active-container'); stakingContainer.innerHTML = '';
-            if(game.staking.length === 0) {
-                stakingContainer.innerHTML = `<div class="text-center text-[10px] text-slate-600 py-2">Keine verriegelten Assets.</div>`;
-            } else {
-                game.staking.forEach((pos, idx) => {
-                    let pctDone = ((pos.initialTicks - pos.ticksLeft) / pos.initialTicks) * 100;
-                    stakingContainer.innerHTML += `
-                        <div class="bg-slate-900 border border-slate-800 p-2 rounded-xl text-xs flex justify-between items-center">
-                            <div>
-                                <div class="font-bold text-slate-300">${pos.amountInvested.toFixed(2)} BTC Locked</div>
-                                <div class="text-[9px] font-mono text-emerald-400">+${pos.accumulatedYield.toFixed(6)} BTC Ertrag</div>
-                            </div>
-                            <div class="text-right">
-                                <span class="text-[9px] block text-slate-500 font-mono">${pos.ticksLeft} Ticks left</span>
-                                <button onclick="claimStaking(${idx})" class="mt-1 px-2 py-0.5 rounded text-[9px] font-bold ${pos.ticksLeft === 0 ? 'bg-emerald-600 text-white':'bg-rose-950 text-rose-400'}">${pos.ticksLeft === 0 ? 'Claim':'Unstake (5% Penalty)'}</button>
-                            </div>
-                        </div>`;
-                });
-            }
-
-            // MARKET REFRESH (BOTS TABLE)
-            const searchVal = document.getElementById('market-search').value.toLowerCase();
-            const riskFilter = document.getElementById('market-risk-filter').value;
-            const marketTbody = document.getElementById('market-tbody'); marketTbody.innerHTML = '';
-
-            game.bots.forEach(bot => {
-                if ((bot.name.toLowerCase().includes(searchVal) || bot.ticker.toLowerCase().includes(searchVal)) && (riskFilter === "All" || bot.risk === riskFilter)) {
-                    marketTbody.innerHTML += `
-                        <tr class="hover:bg-slate-900/30 text-xs border-b border-slate-900/80">
-                            <td class="py-2.5 pr-2 pl-1 font-semibold">
-                                <div class="text-slate-200">${bot.name}</div>
-                                <div class="text-[9px] text-slate-500 font-normal">${bot.risk} • ${bot.strategy}</div>
-                            </td>
-                            <td class="py-2.5 px-2 text-right mono font-bold ${bot.alltimeProfitPct >= 0 ? 'text-emerald-400':'text-rose-400'}">${bot.alltimeProfitPct >= 0 ? '+':''}${bot.alltimeProfitPct.toFixed(2)}%</td>
-                            <td class="py-2.5 px-2 text-right mono font-bold text-slate-300">${bot.tokenPriceInBtc.toFixed(4)}</td>
-                            <td class="py-2.5 pl-2 pr-1 text-center"><button class="px-2 py-1 bg-indigo-600 text-white rounded text-[10px] font-bold uppercase" onclick="openInvestModal(${bot.id}, 'bot')">Buy</button></td>
-                        </tr>`;
-                }
-            });
-
-            // TOTAL NAV CALCULATIONS
-            let totalPortfolioBtc = 0;
-            Object.values(game.portfolio).forEach(p => { 
-                const b = game.bots.find(bot => bot.id === p.botId);
-                if(b) totalPortfolioBtc += p.tokenCount * b.tokenPriceInBtc; 
-            });
-            Object.values(game.fundPortfolio).forEach(asset => {
-                const fund = game.funds.find(f => f.id === asset.fundId);
-                let combinedProfitPct = 0;
-                fund.botIds.forEach(id => { combinedProfitPct += game.bots.find(b => b.id === id).alltimeProfitPct / 3; });
-                totalPortfolioBtc += asset.initialInvestedBtc * (1 + (combinedProfitPct / 100));
-            });
-            game.staking.forEach(pos => { totalPortfolioBtc += pos.amountInvested + pos.accumulatedYield; });
-
-            document.getElementById('total-nav').innerText = totalPortfolioBtc.toFixed(8) + " BTC";
-            document.getElementById('total-nav-usd').innerText = "~ " + (totalPortfolioBtc * game.btcPrice).toLocaleString('en-US', {minimumFractionDigits: 2}) + " $";
-        }
     </script>
+    <style>.pt-4.border-t.border-slate-200.dark\:border-slate-800.flex.items-center.gap-2 {
+        display: none;
+    }</style>
 </body>
 </html>
