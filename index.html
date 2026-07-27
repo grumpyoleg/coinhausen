@@ -222,10 +222,27 @@
         let chartWordCount = null;
         let chartDayOfWeek = null;
 
-        // Obfuscated Proxy Endpoint (Base64 Encoded to prevent plain text exposure)
+        // Obfuscated Primary Proxy Endpoint (Base64 Encoded)
         const _px = 'aHR0cHM6Ly9zdXBlci1iYW5kLTliMzMub2xpdmVyaW8tYWxlc3NhbmRyby53b3JrZXJzLmRldi8=';
-        const getProxyUrl = () => {
-            try { return atob(_px); } catch (e) { return ''; }
+        
+        // Proxy Rotation List to bypass IP-based rate limiting (Status 429)
+        const PROXY_LIST = [
+            (target) => {
+                try {
+                    const base = atob(_px);
+                    return base ? `${base.replace(/\/$/, '')}?url=${encodeURIComponent(target)}` : target;
+                } catch(e) { return target; }
+            },
+            (target) => `https://corsproxy.io/?${encodeURIComponent(target)}`,
+            (target) => `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`
+        ];
+
+        let activeProxyIdx = 0;
+
+        const fetchWithProxyRotation = async (targetUrl, proxyIdx) => {
+            const resolver = PROXY_LIST[proxyIdx % PROXY_LIST.length];
+            const url = resolver(targetUrl);
+            return await fetch(url);
         };
 
         // Helper Functions
@@ -314,52 +331,47 @@
 
             if (cachedData) {
                 try {
-                    const parsed = JSON.parse(cachedData);
-                    if (Date.now() - parsed.timestamp < CACHE_TTL) {
-                        const restoredPosts = parsed.data.map(p => ({
-                            ...p,
-                            date: new Date(p.date)
-                        }));
-                        currentPostsData = restoredPosts;
-                        renderDashboard(restoredPosts);
-                        
-                        resultsContainer.classList.remove('hidden');
-                        statusBadge.innerHTML = `<div class="w-2 h-2 rounded-full bg-green-500"></div> Cached (24h)`;
-                        btn.disabled = false;
-                        btnText.textContent = "Analyze";
-                        lucide.createIcons();
-                        return;
-                    }
-                } catch (e) {
-                    localStorage.removeItem(cacheKey);
-                }
-            }
-
-            try {
-                // Fetch Loop with 429 Retry & Increased Delay
                 let retries = 0;
+                const maxRetries = 5;
+
                 while (allPosts.length < limit) {
                     const fetchLimit = Math.min(batchSize, limit - allPosts.length);
                     btnText.textContent = `Loading ${allPosts.length}/${limit}...`;
                     
                     const targetUrl = `https://${subdomain}.substack.com/api/v1/posts?sort=new&offset=${offset}&limit=${fetchLimit}`;
-                    const finalUrl = proxy ? `${proxy.replace(/\/$/, '')}?url=${encodeURIComponent(targetUrl)}` : targetUrl;
                     
-                    const response = await fetch(finalUrl);
+                    let response;
+                    try {
+                        response = await fetchWithProxyRotation(targetUrl, activeProxyIdx);
+                    } catch (e) {
+                        // Network error on active proxy, immediately try next proxy
+                        activeProxyIdx = (activeProxyIdx + 1) % PROXY_LIST.length;
+                        response = await fetchWithProxyRotation(targetUrl, activeProxyIdx);
+                    }
 
-                    // Exponential Backoff Retry on 429 Too Many Requests
+                    // Exponential Backoff Retry & Proxy Rotation on 429 Too Many Requests
                     if (response.status === 429) {
-                        if (retries < 3) {
+                        if (retries < maxRetries) {
                             retries++;
-                            const delaySec = retries * 3;
-                            btnText.textContent = `Rate limited (429). Retrying in ${delaySec}s...`;
-                            await new Promise(r => setTimeout(r, delaySec * 1000));
+                            // Rotate proxy on each 429 error to use a fresh outbound IP address
+                            activeProxyIdx = (activeProxyIdx + 1) % PROXY_LIST.length;
+                            
+                            // Parse Retry-After header or compute exponential delay with jitter
+                            const retryAfter = response.headers.get('Retry-After');
+                            let delaySec = retryAfter ? parseInt(retryAfter, 10) : (Math.pow(2, retries) * 2 + Math.floor(Math.random() * 3));
+                            if (isNaN(delaySec) || delaySec <= 0) delaySec = 4;
+
+                            // Countdown visual feedback for the user
+                            for (let sec = delaySec; sec > 0; sec--) {
+                                btnText.textContent = `Rate limited. Retrying in ${sec}s (Attempt ${retries}/${maxRetries})...`;
+                                await new Promise(r => setTimeout(r, 1000));
+                            }
                             continue;
                         } else {
-                            throw new Error("Rate limit exceeded (Status 429). Please wait a minute and try again.");
+                            throw new Error("Rate limit exceeded by Substack (Status 429). Please wait 1-2 minutes before trying again.");
                         }
                     }
-                    retries = 0; // Reset on success
+                    retries = 0; // Reset retries on successful request
 
                     if (!response.ok) throw new Error(`Error fetching data via proxy (Status ${response.status}).`);
                     
@@ -372,8 +384,8 @@
                     offset += items.length;
 
                     if (items.length < fetchLimit) break;
-                    // 1 Second delay between batch requests to respect rate limits
-                    await new Promise(r => setTimeout(r, 1000));
+                    // 1.2 Second delay between batch requests to respect rate limits
+                    await new Promise(r => setTimeout(r, 1200));
                 }
 
                 if (allPosts.length === 0) throw new Error("No posts found or invalid handle provided.");
