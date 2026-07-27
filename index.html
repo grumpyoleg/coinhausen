@@ -72,7 +72,7 @@
         <form id="search-form" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm mb-8 space-y-4 transition-colors duration-200">
             <div class="flex flex-col md:flex-row gap-4">
                 <div class="flex-1">
-                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">Substack @Name</label>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">Substack Handle (e.g. lenny)</label>
                     <div class="relative">
                         <i data-lucide="search" class="absolute left-3 top-3 w-5 h-5 text-slate-400"></i>
                         <input type="text" id="handle-input" value="unknownlegends" required
@@ -212,6 +212,10 @@
         let currentPostsData = [];
         let currentSort = { key: 'reactions', dir: 'desc' };
 
+        // 24-Hour Cache Config
+        const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 Hours in ms
+        const CACHE_PREFIX = 'lm_cache_';
+
         // Chart Instances
         let chartTimeline = null;
         let chartEngagement = null;
@@ -304,8 +308,36 @@
                 subdomain = subdomain.replace(/\.substack\.com.*$/i, '').replace(/\/.*$/, '');
             }
 
+            // --- Check 24-Hour Local Storage Cache ---
+            const cacheKey = `${CACHE_PREFIX}${subdomain.toLowerCase()}_${limit}`;
+            const cachedData = localStorage.getItem(cacheKey);
+
+            if (cachedData) {
+                try {
+                    const parsed = JSON.parse(cachedData);
+                    if (Date.now() - parsed.timestamp < CACHE_TTL) {
+                        const restoredPosts = parsed.data.map(p => ({
+                            ...p,
+                            date: new Date(p.date)
+                        }));
+                        currentPostsData = restoredPosts;
+                        renderDashboard(restoredPosts);
+                        
+                        resultsContainer.classList.remove('hidden');
+                        statusBadge.innerHTML = `<div class="w-2 h-2 rounded-full bg-green-500"></div> Cached (24h)`;
+                        btn.disabled = false;
+                        btnText.textContent = "Analyze";
+                        lucide.createIcons();
+                        return;
+                    }
+                } catch (e) {
+                    localStorage.removeItem(cacheKey);
+                }
+            }
+
             try {
-                // Fetch Loop
+                // Fetch Loop with 429 Retry & Increased Delay
+                let retries = 0;
                 while (allPosts.length < limit) {
                     const fetchLimit = Math.min(batchSize, limit - allPosts.length);
                     btnText.textContent = `Loading ${allPosts.length}/${limit}...`;
@@ -314,6 +346,21 @@
                     const finalUrl = proxy ? `${proxy.replace(/\/$/, '')}?url=${encodeURIComponent(targetUrl)}` : targetUrl;
                     
                     const response = await fetch(finalUrl);
+
+                    // Exponential Backoff Retry on 429 Too Many Requests
+                    if (response.status === 429) {
+                        if (retries < 3) {
+                            retries++;
+                            const delaySec = retries * 3;
+                            btnText.textContent = `Rate limited (429). Retrying in ${delaySec}s...`;
+                            await new Promise(r => setTimeout(r, delaySec * 1000));
+                            continue;
+                        } else {
+                            throw new Error("Rate limit exceeded (Status 429). Please wait a minute and try again.");
+                        }
+                    }
+                    retries = 0; // Reset on success
+
                     if (!response.ok) throw new Error(`Error fetching data via proxy (Status ${response.status}).`);
                     
                     const data = await response.json();
@@ -325,7 +372,8 @@
                     offset += items.length;
 
                     if (items.length < fetchLimit) break;
-                    await new Promise(r => setTimeout(r, 200)); // Rate Limit Protection
+                    // 1 Second delay between batch requests to respect rate limits
+                    await new Promise(r => setTimeout(r, 1000));
                 }
 
                 if (allPosts.length === 0) throw new Error("No posts found or invalid handle provided.");
@@ -358,6 +406,16 @@
                         tags: tags
                     };
                 });
+
+                // Save to 24-Hour Cache
+                try {
+                    localStorage.setItem(cacheKey, JSON.stringify({
+                        timestamp: Date.now(),
+                        data: normalizedData
+                    }));
+                } catch (e) {
+                    // LocalStorage quota fallback
+                }
 
                 currentPostsData = normalizedData;
                 renderDashboard(normalizedData);
