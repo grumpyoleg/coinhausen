@@ -294,7 +294,6 @@
             e.preventDefault();
             
             const handle = document.getElementById('handle-input').value.trim();
-            const proxy = getProxyUrl();
             const limit = parseInt(document.getElementById('limit-input').value);
             const btnText = document.getElementById('btn-text');
             const btn = document.getElementById('analyze-btn');
@@ -327,106 +326,120 @@
 
             // --- Check 24-Hour Local Storage Cache ---
             const cacheKey = `${CACHE_PREFIX}${subdomain.toLowerCase()}_${limit}`;
-            const cachedData = localStorage.getItem(cacheKey);
+            const cachedItem = localStorage.getItem(cacheKey);
 
-            if (cachedData) {
-                try {
-                let retries = 0;
-                const maxRetries = 5;
+            try {
+                let normalizedData = null;
 
-                while (allPosts.length < limit) {
-                    const fetchLimit = Math.min(batchSize, limit - allPosts.length);
-                    btnText.textContent = `Loading ${allPosts.length}/${limit}...`;
-                    
-                    const targetUrl = `https://${subdomain}.substack.com/api/v1/posts?sort=new&offset=${offset}&limit=${fetchLimit}`;
-                    
-                    let response;
+                // Try serving from local storage cache if available and fresh
+                if (cachedItem) {
                     try {
-                        response = await fetchWithProxyRotation(targetUrl, activeProxyIdx);
-                    } catch (e) {
-                        // Network error on active proxy, immediately try next proxy
-                        activeProxyIdx = (activeProxyIdx + 1) % PROXY_LIST.length;
-                        response = await fetchWithProxyRotation(targetUrl, activeProxyIdx);
-                    }
-
-                    // Exponential Backoff Retry & Proxy Rotation on 429 Too Many Requests
-                    if (response.status === 429) {
-                        if (retries < maxRetries) {
-                            retries++;
-                            // Rotate proxy on each 429 error to use a fresh outbound IP address
-                            activeProxyIdx = (activeProxyIdx + 1) % PROXY_LIST.length;
-                            
-                            // Parse Retry-After header or compute exponential delay with jitter
-                            const retryAfter = response.headers.get('Retry-After');
-                            let delaySec = retryAfter ? parseInt(retryAfter, 10) : (Math.pow(2, retries) * 2 + Math.floor(Math.random() * 3));
-                            if (isNaN(delaySec) || delaySec <= 0) delaySec = 4;
-
-                            // Countdown visual feedback for the user
-                            for (let sec = delaySec; sec > 0; sec--) {
-                                btnText.textContent = `Rate limited. Retrying in ${sec}s (Attempt ${retries}/${maxRetries})...`;
-                                await new Promise(r => setTimeout(r, 1000));
-                            }
-                            continue;
-                        } else {
-                            throw new Error("Rate limit exceeded by Substack (Status 429). Please wait 1-2 minutes before trying again.");
+                        const parsed = JSON.parse(cachedItem);
+                        if (parsed && parsed.timestamp && (Date.now() - parsed.timestamp < CACHE_TTL) && Array.isArray(parsed.data)) {
+                            normalizedData = parsed.data.map(p => ({
+                                ...p,
+                                date: new Date(p.date)
+                            }));
                         }
+                    } catch (e) {
+                        // Ignore corrupt cache entry
                     }
-                    retries = 0; // Reset retries on successful request
-
-                    if (!response.ok) throw new Error(`Error fetching data via proxy (Status ${response.status}).`);
-                    
-                    const data = await response.json();
-                    const items = Array.isArray(data) ? data : (data.posts || []);
-                    
-                    if (items.length === 0) break;
-
-                    allPosts = [...allPosts, ...items];
-                    offset += items.length;
-
-                    if (items.length < fetchLimit) break;
-                    // 1.2 Second delay between batch requests to respect rate limits
-                    await new Promise(r => setTimeout(r, 1200));
                 }
 
-                if (allPosts.length === 0) throw new Error("No posts found or invalid handle provided.");
+                // If not cached or cache expired, fetch from Substack API
+                if (!normalizedData) {
+                    let retries = 0;
+                    const maxRetries = 5;
 
-                const normalizedData = allPosts.map(p => {
-                    let words = p.wordcount || p.word_count || 0;
-                    if (!words && p.reading_time) words = Math.round(p.reading_time * 200);
-                    
-                    // Extract post tags or categories
-                    let tags = [];
-                    if (p.postTags && Array.isArray(p.postTags)) {
-                        tags = p.postTags.map(t => typeof t === 'object' ? (t.name || t.slug) : t).filter(Boolean);
-                    } else if (p.tags && Array.isArray(p.tags)) {
-                        tags = p.tags.map(t => typeof t === 'object' ? (t.name || t.slug) : t).filter(Boolean);
-                    } else if (p.primary_tag && p.primary_tag.name) {
-                        tags = [p.primary_tag.name];
-                    } else if (p.section && p.section.title) {
-                        tags = [p.section.title];
+                    while (allPosts.length < limit) {
+                        const fetchLimit = Math.min(batchSize, limit - allPosts.length);
+                        btnText.textContent = `Loading ${allPosts.length}/${limit}...`;
+                        
+                        const targetUrl = `https://${subdomain}.substack.com/api/v1/posts?sort=new&offset=${offset}&limit=${fetchLimit}`;
+                        
+                        let response;
+                        try {
+                            response = await fetchWithProxyRotation(targetUrl, activeProxyIdx);
+                        } catch (e) {
+                            // Network error on active proxy, immediately try next proxy
+                            activeProxyIdx = (activeProxyIdx + 1) % PROXY_LIST.length;
+                            response = await fetchWithProxyRotation(targetUrl, activeProxyIdx);
+                        }
+
+                        // Exponential Backoff Retry & Proxy Rotation on 429 Too Many Requests
+                        if (response.status === 429) {
+                            if (retries < maxRetries) {
+                                retries++;
+                                activeProxyIdx = (activeProxyIdx + 1) % PROXY_LIST.length;
+                                
+                                const retryAfter = response.headers.get('Retry-After');
+                                let delaySec = retryAfter ? parseInt(retryAfter, 10) : (Math.pow(2, retries) * 2 + Math.floor(Math.random() * 3));
+                                if (isNaN(delaySec) || delaySec <= 0) delaySec = 4;
+
+                                for (let sec = delaySec; sec > 0; sec--) {
+                                    btnText.textContent = `Rate limited. Retrying in ${sec}s (Attempt ${retries}/${maxRetries})...`;
+                                    await new Promise(r => setTimeout(r, 1000));
+                                }
+                                continue;
+                            } else {
+                                throw new Error("Rate limit exceeded by Substack (Status 429). Please wait 1-2 minutes before trying again.");
+                            }
+                        }
+                        retries = 0;
+
+                        if (!response.ok) throw new Error(`Error fetching data via proxy (Status ${response.status}).`);
+                        
+                        const data = await response.json();
+                        const items = Array.isArray(data) ? data : (data.posts || []);
+                        
+                        if (items.length === 0) break;
+
+                        allPosts = [...allPosts, ...items];
+                        offset += items.length;
+
+                        if (items.length < fetchLimit) break;
+                        await new Promise(r => setTimeout(r, 1200));
                     }
-                    
-                    return {
-                        id: p.id,
-                        title: p.title || 'Untitled',
-                        date: new Date(p.post_date || p.createdAt || Date.now()),
-                        reactions: p.reaction_count || 0,
-                        comments: p.comment_count || 0,
-                        words: words,
-                        url: p.canonical_url || `https://${subdomain}.substack.com/p/${p.slug}`,
-                        audience: p.audience === 'only_paid' ? 'Paid' : 'Free',
-                        tags: tags
-                    };
-                });
 
-                // Save to 24-Hour Cache
-                try {
-                    localStorage.setItem(cacheKey, JSON.stringify({
-                        timestamp: Date.now(),
-                        data: normalizedData
-                    }));
-                } catch (e) {
-                    // LocalStorage quota fallback
+                    if (allPosts.length === 0) throw new Error("No posts found or invalid handle provided.");
+
+                    normalizedData = allPosts.map(p => {
+                        let words = p.wordcount || p.word_count || 0;
+                        if (!words && p.reading_time) words = Math.round(p.reading_time * 200);
+                        
+                        let tags = [];
+                        if (p.postTags && Array.isArray(p.postTags)) {
+                            tags = p.postTags.map(t => typeof t === 'object' ? (t.name || t.slug) : t).filter(Boolean);
+                        } else if (p.tags && Array.isArray(p.tags)) {
+                            tags = p.tags.map(t => typeof t === 'object' ? (t.name || t.slug) : t).filter(Boolean);
+                        } else if (p.primary_tag && p.primary_tag.name) {
+                            tags = [p.primary_tag.name];
+                        } else if (p.section && p.section.title) {
+                            tags = [p.section.title];
+                        }
+                        
+                        return {
+                            id: p.id,
+                            title: p.title || 'Untitled',
+                            date: new Date(p.post_date || p.createdAt || Date.now()),
+                            reactions: p.reaction_count || 0,
+                            comments: p.comment_count || 0,
+                            words: words,
+                            url: p.canonical_url || `https://${subdomain}.substack.com/p/${p.slug}`,
+                            audience: p.audience === 'only_paid' ? 'Paid' : 'Free',
+                            tags: tags
+                        };
+                    });
+
+                    // Save to 24-Hour Cache
+                    try {
+                        localStorage.setItem(cacheKey, JSON.stringify({
+                            timestamp: Date.now(),
+                            data: normalizedData
+                        }));
+                    } catch (e) {
+                        // LocalStorage quota fallback
+                    }
                 }
 
                 currentPostsData = normalizedData;
