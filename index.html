@@ -225,7 +225,7 @@
         // Obfuscated Primary Proxy Endpoint (Base64 Encoded)
         const _px = 'aHR0cHM6Ly9zdXBlci1iYW5kLTliMzMub2xpdmVyaW8tYWxlc3NhbmRyby53b3JrZXJzLmRldi8=';
         
-        // Proxy Rotation List to bypass IP-based rate limiting (Status 429)
+        // Expanded Proxy Rotation List to bypass IP-based rate limiting (Status 429)
         const PROXY_LIST = [
             (target) => {
                 try {
@@ -234,7 +234,8 @@
                 } catch(e) { return target; }
             },
             (target) => `https://corsproxy.io/?${encodeURIComponent(target)}`,
-            (target) => `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`
+            (target) => `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`,
+            (target) => `https://thingproxy.freeboard.io/fetch/${target}`
         ];
 
         let activeProxyIdx = 0;
@@ -370,14 +371,15 @@
                         if (response.status === 429) {
                             if (retries < maxRetries) {
                                 retries++;
+                                // Rotate to next proxy in list to get a fresh IP address
                                 activeProxyIdx = (activeProxyIdx + 1) % PROXY_LIST.length;
                                 
                                 const retryAfter = response.headers.get('Retry-After');
-                                let delaySec = retryAfter ? parseInt(retryAfter, 10) : (Math.pow(2, retries) * 2 + Math.floor(Math.random() * 3));
-                                if (isNaN(delaySec) || delaySec <= 0) delaySec = 4;
+                                let delaySec = retryAfter ? parseInt(retryAfter, 10) : (Math.pow(2, retries) * 3 + Math.floor(Math.random() * 3));
+                                if (isNaN(delaySec) || delaySec <= 0) delaySec = 5;
 
                                 for (let sec = delaySec; sec > 0; sec--) {
-                                    btnText.textContent = `Rate limited. Retrying in ${sec}s (Attempt ${retries}/${maxRetries})...`;
+                                    btnText.textContent = `Rate limited. Switching proxy & retrying in ${sec}s (Attempt ${retries}/${maxRetries})...`;
                                     await new Promise(r => setTimeout(r, 1000));
                                 }
                                 continue;
@@ -398,7 +400,10 @@
                         offset += items.length;
 
                         if (items.length < fetchLimit) break;
-                        await new Promise(r => setTimeout(r, 1200));
+
+                        // Pacing Delay: Randomized jitter (1.5s - 2.5s) to avoid triggering rate limits
+                        const jitterDelay = 1500 + Math.floor(Math.random() * 1000);
+                        await new Promise(r => setTimeout(r, jitterDelay));
                     }
 
                     if (allPosts.length === 0) throw new Error("No posts found or invalid handle provided.");
