@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lettermetrics Alpha | Substack Analytics</title>
+    <title>Lettermetrics Beta | Substack Analytics</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -12,9 +12,7 @@
             darkMode: 'class',
             theme: {
                 extend: {
-                    colors: {
-                        slate: { 850: '#151e2e' }
-                    }
+                    colors: { slate: { 850: '#151e2e' } }
                 }
             }
         }
@@ -22,14 +20,10 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap'); 
         body { font-family: 'Inter', sans-serif; transition: background-color 0.3s, color 0.3s; }
-        
-        /* Custom Scrollbar for table */
         ::-webkit-scrollbar { height: 8px; width: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         .dark ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        
-        /* Table Sort Arrows */
         .sort-icon { display: inline-block; width: 0.8em; height: 0.8em; margin-left: 0.25rem; opacity: 0.3; transition: opacity 0.2s; }
         th:hover .sort-icon { opacity: 0.7; }
         .sort-active .sort-icon { opacity: 1; }
@@ -44,7 +38,7 @@
                 <div class="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center shadow-lg shadow-orange-500/20">
                     <i data-lucide="activity" class="w-5 h-5 text-white"></i>
                 </div>
-                <h1 class="font-bold text-xl tracking-tight">Lettermetrics <span class="text-orange-500">Beta</span></h1>
+                <h1 class="font-bold text-xl tracking-tight">Lettermetrics <span class="text-orange-500">Alpha</span></h1>
             </div>
             
             <div class="flex items-center gap-4">
@@ -60,8 +54,6 @@
     </header>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        
-        <!-- Intro Header -->
         <div>
             <h2 class="text-3xl font-bold mb-2">Analyze Your Metrics.</h2>
             <p class="text-slate-500 dark:text-slate-400 max-w-2xl">
@@ -97,19 +89,12 @@
         <div id="error-container" class="hidden p-4 rounded-xl bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 flex items-center gap-2 mb-6"></div>
 
         <div id="results-container" class="hidden space-y-8 animate-[fadeIn_0.5s_ease-out]">
-            
             <div id="growth-insights-container"></div>
-
-            <!-- Best Post Card Placeholder -->
             <div id="best-post-container"></div>
 
-            <!-- KPI Grid -->
             <h3 class="text-xl font-bold text-slate-900 dark:text-white">Overview</h3>
-            <div id="kpi-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                <!-- Populated via JavaScript -->
-            </div>
+            <div id="kpi-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
 
-            <!-- Charts Row 1 -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col transition-colors duration-200 shadow-sm">
                     <h3 class="text-lg font-bold mb-1 text-slate-900 dark:text-white">Posts Over Time</h3>
@@ -123,7 +108,6 @@
                 </div>
             </div>
 
-            <!-- Charts Row 2 -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col transition-colors duration-200 shadow-sm">
                     <h3 class="text-lg font-bold mb-1 text-slate-900 dark:text-white">Word Count Distribution</h3>
@@ -137,7 +121,6 @@
                 </div>
             </div>
 
-            <!-- Table Section -->
             <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden flex flex-col transition-colors duration-200 shadow-sm">
                 <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
                     <div>
@@ -165,9 +148,7 @@
                                 </th>
                             </tr>
                         </thead>
-                        <tbody id="posts-table-body" class="divide-y divide-slate-100 dark:divide-slate-800/60 transition-colors duration-200">
-                            <!-- Populated via JavaScript -->
-                        </tbody>
+                        <tbody id="posts-table-body" class="divide-y divide-slate-100 dark:divide-slate-800/60 transition-colors duration-200"></tbody>
                     </table>
                 </div>
             </div>
@@ -175,10 +156,8 @@
     </main>
 
     <script>
-        // Initialize Lucide Icons
         lucide.createIcons();
 
-        // Theme Handling
         const themeToggleBtn = document.getElementById('theme-toggle');
         const themeIconSun = document.getElementById('theme-icon-sun');
         const themeIconMoon = document.getElementById('theme-icon-moon');
@@ -208,31 +187,22 @@
             updateChartColors();
         });
 
-        // Global State for Table Sorting
         let currentPostsData = [];
         let currentSort = { key: 'reactions', dir: 'desc' };
 
-        // 24-Hour Cache Config
-        const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 Hours in ms
+        const CACHE_TTL = 24 * 60 * 60 * 1000;
         const CACHE_PREFIX = 'lm_cache_';
 
-        // Chart Instances
-        let chartTimeline = null;
-        let chartEngagement = null;
-        let chartWordCount = null;
-        let chartDayOfWeek = null;
+        let chartTimeline = null, chartEngagement = null, chartWordCount = null, chartDayOfWeek = null;
 
-        // Cloudflare Worker Base Endpoint
         const CLOUDFLARE_WORKER_URL = 'https://super-band-9b33.oliverio-alessandro.workers.dev/';
 
-        // Fetch exclusively via Cloudflare Worker
         const fetchViaCloudflare = async (targetUrl) => {
             const baseUrl = CLOUDFLARE_WORKER_URL.replace(/\/$/, '');
             const workerUrl = `${baseUrl}?url=${encodeURIComponent(targetUrl)}`;
             return await fetch(workerUrl);
         };
 
-        // Helper Functions
         const formatNum = (num) => {
             if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
             if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
@@ -276,7 +246,6 @@
             });
         };
 
-        // Main Fetch Logic
         document.getElementById('search-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -290,7 +259,6 @@
 
             if (!handle) return;
 
-            // UI Reset & Loading State
             btn.disabled = true;
             btnText.textContent = "Loading data...";
             errorContainer.classList.add('hidden');
@@ -302,7 +270,6 @@
             let offset = 0;
             const batchSize = 50;
             
-            // Clean Subdomain
             let subdomain = handle.replace(/^@/, '');
             if (subdomain.startsWith('http')) {
                 try { subdomain = new URL(subdomain).hostname.split('.')[0]; } 
@@ -311,14 +278,12 @@
                 subdomain = subdomain.replace(/\.substack\.com.*$/i, '').replace(/\/.*$/, '');
             }
 
-            // --- Check 24-Hour Local Storage Cache ---
             const cacheKey = `${CACHE_PREFIX}${subdomain.toLowerCase()}_${limit}`;
             const cachedItem = localStorage.getItem(cacheKey);
 
             try {
                 let normalizedData = null;
 
-                // Try serving from local storage cache if available and fresh
                 if (cachedItem) {
                     try {
                         const parsed = JSON.parse(cachedItem);
@@ -328,15 +293,12 @@
                                 date: new Date(p.date)
                             }));
                         }
-                    } catch (e) {
-                        // Ignore corrupt cache entry
-                    }
+                    } catch (e) {}
                 }
 
-                // If not cached or cache expired, fetch from Substack API via Cloudflare Worker
                 if (!normalizedData) {
                     let retries = 0;
-                    const maxRetries = 5;
+                    const maxRetries = 4;
 
                     while (allPosts.length < limit) {
                         const fetchLimit = Math.min(batchSize, limit - allPosts.length);
@@ -346,26 +308,23 @@
                         
                         let response = await fetchViaCloudflare(targetUrl);
 
-                        // Exponential Backoff Retry on 429 Too Many Requests
                         if (response.status === 429) {
                             if (retries < maxRetries) {
                                 retries++;
-                                const retryAfter = response.headers.get('Retry-After');
-                                let delaySec = retryAfter ? parseInt(retryAfter, 10) : (Math.pow(2, retries) * 3 + Math.floor(Math.random() * 3));
-                                if (isNaN(delaySec) || delaySec <= 0) delaySec = 5;
+                                let delaySec = Math.pow(2, retries) * 3; // 6s, 12s, 24s
 
                                 for (let sec = delaySec; sec > 0; sec--) {
-                                    btnText.textContent = `Rate limited (429). Retrying via Cloudflare in ${sec}s (Attempt ${retries}/${maxRetries})...`;
+                                    btnText.textContent = `Rate limit (429). Retrying in ${sec}s (${retries}/${maxRetries})...`;
                                     await new Promise(r => setTimeout(r, 1000));
                                 }
                                 continue;
                             } else {
-                                throw new Error("Rate limit exceeded by Substack (Status 429). Please wait a few minutes before trying again.");
+                                throw new Error("Substack hat diese Server-IP wegen zu vieler Anfragen temporär gesperrt (Status 429). Bitte warte ca. 5 Minuten und versuche es erneut.");
                             }
                         }
                         retries = 0;
 
-                        if (!response.ok) throw new Error(`Error fetching data via Cloudflare Worker (Status ${response.status}).`);
+                        if (!response.ok) throw new Error(`Fehler beim Laden über Cloudflare Worker (Status ${response.status}).`);
                         
                         const data = await response.json();
                         const items = Array.isArray(data) ? data : (data.posts || []);
@@ -377,12 +336,12 @@
 
                         if (items.length < fetchLimit) break;
 
-                        // Pacing Delay
-                        const jitterDelay = 1000 + Math.floor(Math.random() * 500);
+                        // Erhöhtes Pacing Delay (1,5 bis 2,5 Sekunden Pause zwischen Batches)
+                        const jitterDelay = 1500 + Math.floor(Math.random() * 1000);
                         await new Promise(r => setTimeout(r, jitterDelay));
                     }
 
-                    if (allPosts.length === 0) throw new Error("No posts found or invalid handle provided.");
+                    if (allPosts.length === 0) throw new Error("Keine Posts gefunden oder ungültiges Substack-Handle.");
 
                     normalizedData = allPosts.map(p => {
                         let words = p.wordcount || p.word_count || 0;
@@ -412,21 +371,17 @@
                         };
                     });
 
-                    // Save to 24-Hour Cache
                     try {
                         localStorage.setItem(cacheKey, JSON.stringify({
                             timestamp: Date.now(),
                             data: normalizedData
                         }));
-                    } catch (e) {
-                        // LocalStorage quota fallback
-                    }
+                    } catch (e) {}
                 }
 
                 currentPostsData = normalizedData;
                 renderDashboard(normalizedData);
                 
-                // Success State
                 resultsContainer.classList.remove('hidden');
                 statusBadge.innerHTML = `<div class="w-2 h-2 rounded-full bg-green-500"></div> Ready`;
                 
@@ -442,7 +397,6 @@
         });
 
         function renderDashboard(posts) {
-            // Calculate Base Stats
             let totalReactions = 0, totalComments = 0, totalWords = 0;
             posts.forEach(p => {
                 totalReactions += p.reactions;
@@ -455,7 +409,6 @@
             const avgReactions = Math.round(totalReactions / posts.length) || 0;
             const avgComments = Math.round(totalComments / posts.length) || 0;
 
-            // --- Calculate Growth Insights Metrics ---
             const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
             const dayStats = Array(7).fill(0).map(() => ({ count: 0, totalReactions: 0 }));
 
@@ -482,18 +435,15 @@
             const dayDiffPct = avgReactions > 0 ? Math.round(((bestDayAvgReactions - avgReactions) / avgReactions) * 100) : 0;
             const dayDiffFormatted = dayDiffPct >= 0 ? `+${dayDiffPct}%` : `${dayDiffPct}%`;
 
-            // Top Articles Pattern Word Average
             const topPerformingPosts = [...posts].sort((a, b) => b.reactions - a.reactions).slice(0, Math.max(1, Math.ceil(posts.length * 0.2)));
             const topAvgWords = Math.round(topPerformingPosts.reduce((sum, p) => sum + p.words, 0) / topPerformingPosts.length);
             const isLongerBetter = topAvgWords >= avgWords;
 
-            // Best Post Ratios
             const reactionsMultiplier = avgReactions > 0 ? (bestPost.reactions / avgReactions).toFixed(1) : '1.0';
             const commentsDiffPct = avgComments > 0 ? Math.round(((bestPost.comments - avgComments) / avgComments) * 100) : 0;
             const bestPostDayName = daysOfWeek[bestPost.date.getDay()];
             const publishedOnStrongestDay = bestPost.date.getDay() === bestDayIdx;
 
-            // Tag Performance Aggregation
             const tagMap = {};
             posts.forEach(p => {
                 const postTags = (p.tags && p.tags.length > 0) ? p.tags : [p.audience + " Articles"];
@@ -512,7 +462,6 @@
                 totalReactions: tagMap[tag].reactions
             })).sort((a, b) => b.avgReactions - a.avgReactions).slice(0, 5);
 
-            // Render Growth Insights Section HTML
             const growthInsightsHtml = `
                 <div class="bg-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-slate-800 space-y-6">
                     <div class="flex items-center gap-3 border-b border-slate-800 pb-4">
@@ -526,8 +475,6 @@
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        
-                        <!-- Best Performing Article Card -->
                         <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-600 transition-all">
                             <div>
                                 <div class="text-xs font-semibold text-orange-400 uppercase tracking-wider mb-2 flex items-center gap-2">
@@ -553,7 +500,6 @@
                             </div>
                         </div>
 
-                        <!-- Best Publishing Day Card -->
                         <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-600 transition-all">
                             <div>
                                 <div class="text-xs font-semibold text-blue-400 uppercase tracking-wider mb-2 flex items-center gap-2">
@@ -570,7 +516,6 @@
                             </div>
                         </div>
 
-                        <!-- Content Pattern Card -->
                         <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-600 transition-all">
                             <div>
                                 <div class="text-xs font-semibold text-purple-400 uppercase tracking-wider mb-2 flex items-center gap-2">
@@ -592,10 +537,8 @@
                                 </div>
                             </div>
                         </div>
-
                     </div>
 
-                    <!-- Best Performing Tags Row -->
                     <div class="pt-2 border-t border-slate-800">
                         <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
                             <i data-lucide="tag" class="w-4 h-4 text-orange-400"></i> Best Performing Tags / Topics (by Reactions)
@@ -616,7 +559,6 @@
 
             document.getElementById('growth-insights-container').innerHTML = growthInsightsHtml;
 
-            // Render Best Post Card
             const bestPostHtml = bestPost ? `
                 <div class="bg-gradient-to-r from-orange-600 to-amber-500 rounded-2xl p-6 text-white shadow-lg flex flex-col md:flex-row justify-between items-center gap-6 mb-8">
                     <div>
@@ -634,7 +576,6 @@
             ` : '';
             document.getElementById('best-post-container').innerHTML = bestPostHtml;
 
-            // Render KPI Grid
             const kpiData = [
                 { title: "Total Posts", val: posts.length, icon: "file-text", color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-100 dark:bg-blue-900/30" },
                 { title: "Total Reactions", val: formatNum(totalReactions), icon: "activity", color: "text-orange-600 dark:text-orange-400", bg: "bg-orange-100 dark:bg-orange-900/30" },
@@ -654,7 +595,6 @@
                 </div>
             `).join('');
 
-            // Chart.js Setup
             const colors = getChartColors();
             Chart.defaults.color = colors.text;
             Chart.defaults.borderColor = colors.grid;
@@ -677,7 +617,6 @@
                 }
             };
 
-            // Chart 1: Timeline
             const timelineData = [...posts].reverse();
             const dates = timelineData.map(p => formatDate(p.date));
             const freeData = timelineData.map(p => p.audience === 'Free' ? p.words : 0);
@@ -704,7 +643,6 @@
                 }
             });
 
-            // Chart 2: Engagement
             const reactionData = timelineData.map(p => p.reactions);
             const commentData = timelineData.map(p => p.comments);
 
@@ -731,7 +669,6 @@
                 }
             });
 
-            // Chart 3: Word Count Distribution
             const buckets = { '< 500': 0, '500-1K': 0, '1K-2K': 0, '2K-3.5K': 0, '> 3.5K': 0 };
             posts.forEach(p => {
                 if (p.words <= 500) buckets['< 500']++;
@@ -763,7 +700,6 @@
                 }
             });
 
-            // Chart 4: Day of Week
             const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
             const dayCounts = [0, 0, 0, 0, 0, 0, 0];
             posts.forEach(p => dayCounts[p.date.getDay()]++);
@@ -793,7 +729,6 @@
                 }
             });
 
-            // Render Table
             renderTable();
             lucide.createIcons();
         }
