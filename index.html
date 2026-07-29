@@ -38,7 +38,7 @@
                 <div class="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center shadow-lg shadow-orange-500/20">
                     <i data-lucide="activity" class="w-5 h-5 text-white"></i>
                 </div>
-                <h1 class="font-bold text-xl tracking-tight">Lettermetrics <span class="text-orange-500">Alpha</span></h1>
+                <h1 class="font-bold text-xl tracking-tight">Lettermetrics <span class="text-orange-500">Beta</span></h1>
             </div>
             
             <div class="flex items-center gap-3">
@@ -64,7 +64,7 @@
         <form id="search-form" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm mb-8 space-y-4 transition-colors duration-200">
             <div class="flex flex-col md:flex-row gap-4">
                 <div class="flex-1">
-                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">Substack Name (e.g. unknownlegends)</label>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">Substack Handle (e.g. lenny)</label>
                     <div class="relative">
                         <i data-lucide="search" class="absolute left-3 top-3 w-5 h-5 text-slate-400"></i>
                         <input type="text" id="handle-input" value="unknownlegends" required
@@ -453,91 +453,91 @@
             })).sort((a, b) => b.avgReactions - a.avgReactions).slice(0, 5);
 
             const growthInsightsHtml = `
-                <div class="bg-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-slate-800 space-y-6">
-                    <div class="flex items-center gap-3 border-b border-slate-800 pb-4">
-                        <div class="p-2.5 bg-orange-500/20 text-orange-400 rounded-xl border border-orange-500/30">
+                <div class="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-3xl p-6 sm:p-8 shadow-md border border-slate-200 dark:border-slate-800 space-y-6 transition-colors duration-200">
+                    <div class="flex items-center gap-3 border-b border-slate-200 dark:border-slate-800 pb-4">
+                        <div class="p-2.5 bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 rounded-xl border border-orange-200 dark:border-orange-500/30">
                             <i data-lucide="sparkles" class="w-6 h-6"></i>
                         </div>
                         <div>
-                            <h3 class="text-2xl font-bold tracking-tight">📊 Growth Insights</h3>
-                            <p class="text-slate-400 text-sm">Automated performance highlights & patterns from your recent posts</p>
+                            <h3 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">📊 Growth Insights</h3>
+                            <p class="text-slate-500 dark:text-slate-400 text-sm">Automated performance highlights & patterns from your recent posts</p>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-600 transition-all">
+                        <div class="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-300 dark:hover:border-slate-600 transition-all">
                             <div>
-                                <div class="text-xs font-semibold text-orange-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                <div class="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wider mb-2 flex items-center gap-2">
                                     <i data-lucide="trophy" class="w-4 h-4"></i> Best Performing Article
                                 </div>
-                                <h4 class="text-lg font-bold text-white mb-4 line-clamp-2">
-                                    "<a href="${bestPost.url}" target="_blank" class="hover:underline text-orange-200">${bestPost.title}</a>"
+                                <h4 class="text-lg font-bold text-slate-900 dark:text-white mb-4 line-clamp-2">
+                                    "<a href="${bestPost.url}" target="_blank" class="hover:underline text-orange-600 dark:text-orange-300">${bestPost.title}</a>"
                                 </h4>
                             </div>
-                            <div class="space-y-2 text-sm text-slate-300">
+                            <div class="space-y-2 text-sm text-slate-700 dark:text-slate-300">
                                 <div class="flex items-center gap-2">
-                                    <span class="inline-block w-2 h-2 rounded-full bg-orange-400"></span>
-                                    <span class="font-semibold text-white">${reactionsMultiplier}x</span> more reactions than average
+                                    <span class="inline-block w-2 h-2 rounded-full bg-orange-500"></span>
+                                    <span class="font-semibold text-slate-900 dark:text-white">${reactionsMultiplier}x</span> more reactions than average
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    <span class="inline-block w-2 h-2 rounded-full bg-green-400"></span>
-                                    <span class="font-semibold text-white">${commentsDiffPct >= 0 ? '+' + commentsDiffPct : commentsDiffPct}%</span> more comments
+                                    <span class="inline-block w-2 h-2 rounded-full bg-green-500"></span>
+                                    <span class="font-semibold text-slate-900 dark:text-white">${commentsDiffPct >= 0 ? '+' + commentsDiffPct : commentsDiffPct}%</span> more comments
                                 </div>
-                                <div class="flex items-center gap-2 text-xs text-slate-400 pt-1">
+                                <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 pt-1">
                                     <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
                                     ${publishedOnStrongestDay ? `Published on your strongest weekday (${bestPostDayName})` : `Published on a ${bestPostDayName}`}
                                 </div>
                             </div>
                         </div>
 
-                        <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-600 transition-all">
+                        <div class="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-300 dark:hover:border-slate-600 transition-all">
                             <div>
-                                <div class="text-xs font-semibold text-blue-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                <div class="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-2 flex items-center gap-2">
                                     <i data-lucide="calendar-check" class="w-4 h-4"></i> Best Publishing Day
                                 </div>
-                                <h4 class="text-2xl font-bold text-white mb-2">
-                                    ${bestDayName} <span class="text-slate-400 text-base font-normal">is your strongest day</span>
+                                <h4 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+                                    ${bestDayName} <span class="text-slate-500 dark:text-slate-400 text-base font-normal">is your strongest day</span>
                                 </h4>
-                                <p class="text-xs text-slate-400 mb-4">Based on average reactions per article published.</p>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Based on average reactions per article published.</p>
                             </div>
-                            <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800/80 flex items-center justify-between">
-                                <span class="text-xs text-slate-300">${bestDayName} Average:</span>
-                                <span class="font-bold text-green-400 text-sm">${dayDiffFormatted} reactions</span>
+                            <div class="bg-slate-100 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-200 dark:border-slate-800/80 flex items-center justify-between">
+                                <span class="text-xs text-slate-600 dark:text-slate-300">${bestDayName} Average:</span>
+                                <span class="font-bold text-green-600 dark:text-green-400 text-sm">${dayDiffFormatted} reactions</span>
                             </div>
                         </div>
 
-                        <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-600 transition-all">
+                        <div class="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-300 dark:hover:border-slate-600 transition-all">
                             <div>
-                                <div class="text-xs font-semibold text-purple-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                <div class="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wider mb-2 flex items-center gap-2">
                                     <i data-lucide="pen-tool" class="w-4 h-4"></i> Content Pattern
                                 </div>
-                                <h4 class="text-lg font-bold text-white mb-1">
+                                <h4 class="text-lg font-bold text-slate-900 dark:text-white mb-1">
                                     ${isLongerBetter ? 'Longer articles perform better' : 'Concise articles perform better'}
                                 </h4>
-                                <p class="text-xs text-slate-400 mb-4">Word length impact on engagement.</p>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Word length impact on engagement.</p>
                             </div>
                             <div class="grid grid-cols-2 gap-2 text-center">
-                                <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
-                                    <div class="text-xs text-slate-400">Top Posts Avg</div>
-                                    <div class="text-lg font-bold text-purple-300">${topAvgWords.toLocaleString()} words</div>
+                                <div class="bg-slate-100 dark:bg-slate-900/60 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800">
+                                    <div class="text-xs text-slate-500 dark:text-slate-400">Top Posts Avg</div>
+                                    <div class="text-lg font-bold text-purple-600 dark:text-purple-300">${topAvgWords.toLocaleString()} words</div>
                                 </div>
-                                <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
-                                    <div class="text-xs text-slate-400">Overall Avg</div>
-                                    <div class="text-lg font-bold text-slate-300">${avgWords.toLocaleString()} words</div>
+                                <div class="bg-slate-100 dark:bg-slate-900/60 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800">
+                                    <div class="text-xs text-slate-500 dark:text-slate-400">Overall Avg</div>
+                                    <div class="text-lg font-bold text-slate-800 dark:text-slate-300">${avgWords.toLocaleString()} words</div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="pt-2 border-t border-slate-800">
-                        <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                            <i data-lucide="tag" class="w-4 h-4 text-orange-400"></i> Best Performing Tags / Topics (by Reactions)
+                    <div class="pt-2 border-t border-slate-200 dark:border-slate-800">
+                        <div class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                            <i data-lucide="tag" class="w-4 h-4 text-orange-500 dark:text-orange-400"></i> Best Performing Tags / Topics (by Reactions)
                         </div>
                         <div class="flex flex-wrap gap-2.5">
                             ${sortedTags.map(tag => `
-                                <div class="bg-slate-800/80 hover:bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 flex items-center gap-2 text-sm transition-all">
-                                    <span class="font-medium text-slate-200">🏷️ ${tag.name}</span>
-                                    <span class="bg-orange-500/20 text-orange-300 text-xs px-2 py-0.5 rounded-full font-bold border border-orange-500/30">
+                                <div class="bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2 flex items-center gap-2 text-sm transition-all">
+                                    <span class="font-medium text-slate-800 dark:text-slate-200">🏷️ ${tag.name}</span>
+                                    <span class="bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-300 text-xs px-2 py-0.5 rounded-full font-bold border border-orange-200 dark:border-orange-500/30">
                                         avg ${tag.avgReactions} ❤️
                                     </span>
                                 </div>
