@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lettermetrics Beta | Substack Analytics</title>
+    <title>Lettermetrics Alpha | Substack Analytics</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -222,28 +222,38 @@
         let chartWordCount = null;
         let chartDayOfWeek = null;
 
-        // Obfuscated Primary Proxy Endpoint (Base64 Encoded)
-        const _px = 'aHR0cHM6Ly9zdXBlci1iYW5kLTliMzMub2xpdmVyaW8tYWxlc3NhbmRyby53b3JrZXJzLmRldi8=';
-        
-        // Expanded Proxy Rotation List to bypass IP-based rate limiting (Status 429)
-        const PROXY_LIST = [
-            (target) => {
+        // Smart fetch request with automatic CORS proxy fallback
+        const fetchWithFallback = async (targetUrl) => {
+            // 1. Attempt direct fetch first
+            try {
+                const response = await fetch(targetUrl);
+                if (response.ok || response.status === 429) {
+                    return response;
+                }
+            } catch (e) {
+                // Direct request blocked by CORS or network, proceed to proxy fallback
+            }
+
+            // 2. Multi-tier CORS proxy fallback list
+            const proxies = [
+                (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+                (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+                (url) => `https://thingproxy.freeboard.io/fetch/${encodeURIComponent(url)}`
+            ];
+
+            for (const buildProxyUrl of proxies) {
                 try {
-                    const base = atob(_px);
-                    return base ? `${base.replace(/\/$/, '')}?url=${encodeURIComponent(target)}` : target;
-                } catch(e) { return target; }
-            },
-            (target) => `https://corsproxy.io/?${encodeURIComponent(target)}`,
-            (target) => `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`,
-            (target) => `https://thingproxy.freeboard.io/fetch/${target}`
-        ];
+                    const proxyUrl = buildProxyUrl(targetUrl);
+                    const response = await fetch(proxyUrl);
+                    if (response.ok || response.status === 429) {
+                        return response;
+                    }
+                } catch (err) {
+                    // Try next proxy in fallback chain
+                }
+            }
 
-        let activeProxyIdx = 0;
-
-        const fetchWithProxyRotation = async (targetUrl, proxyIdx) => {
-            const resolver = PROXY_LIST[proxyIdx % PROXY_LIST.length];
-            const url = resolver(targetUrl);
-            return await fetch(url);
+            throw new Error("Unable to reach Substack API directly or through CORS fallback proxies. Please check your network connection.");
         };
 
         // Helper Functions
@@ -350,7 +360,7 @@
                 // If not cached or cache expired, fetch from Substack API
                 if (!normalizedData) {
                     let retries = 0;
-                    const maxRetries = 5;
+                    const maxRetries = 3;
 
                     while (allPosts.length < limit) {
                         const fetchLimit = Math.min(batchSize, limit - allPosts.length);
@@ -360,36 +370,31 @@
                         
                         let response;
                         try {
-                            response = await fetchWithProxyRotation(targetUrl, activeProxyIdx);
+                            response = await fetchWithFallback(targetUrl);
                         } catch (e) {
-                            // Network error on active proxy, immediately try next proxy
-                            activeProxyIdx = (activeProxyIdx + 1) % PROXY_LIST.length;
-                            response = await fetchWithProxyRotation(targetUrl, activeProxyIdx);
+                            throw new Error(e.message);
                         }
 
-                        // Exponential Backoff Retry & Proxy Rotation on 429 Too Many Requests
+                        // Exponential Backoff Retry on 429 Too Many Requests
                         if (response.status === 429) {
                             if (retries < maxRetries) {
                                 retries++;
-                                // Rotate to next proxy in list to get a fresh IP address
-                                activeProxyIdx = (activeProxyIdx + 1) % PROXY_LIST.length;
-                                
                                 const retryAfter = response.headers.get('Retry-After');
-                                let delaySec = retryAfter ? parseInt(retryAfter, 10) : (Math.pow(2, retries) * 3 + Math.floor(Math.random() * 3));
+                                let delaySec = retryAfter ? parseInt(retryAfter, 10) : (Math.pow(2, retries) * 3);
                                 if (isNaN(delaySec) || delaySec <= 0) delaySec = 5;
 
                                 for (let sec = delaySec; sec > 0; sec--) {
-                                    btnText.textContent = `Rate limited. Switching proxy & retrying in ${sec}s (Attempt ${retries}/${maxRetries})...`;
+                                    btnText.textContent = `Rate limited by Substack. Retrying in ${sec}s (Attempt ${retries}/${maxRetries})...`;
                                     await new Promise(r => setTimeout(r, 1000));
                                 }
                                 continue;
                             } else {
-                                throw new Error("Rate limit exceeded by Substack (Status 429). Please wait 1-2 minutes before trying again.");
+                                throw new Error("Rate limit exceeded by Substack (Status 429). Please wait a few minutes before trying again.");
                             }
                         }
                         retries = 0;
 
-                        if (!response.ok) throw new Error(`Error fetching data via proxy (Status ${response.status}).`);
+                        if (!response.ok) throw new Error(`Error fetching data directly (Status ${response.status}).`);
                         
                         const data = await response.json();
                         const items = Array.isArray(data) ? data : (data.posts || []);
