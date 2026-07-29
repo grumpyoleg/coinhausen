@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lettermetrics Alpha | Substack Analytics</title>
+    <title>Lettermetrics Beta | Substack Analytics</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -65,7 +65,7 @@
         <div>
             <h2 class="text-3xl font-bold mb-2">Analyze Your Metrics.</h2>
             <p class="text-slate-500 dark:text-slate-400 max-w-2xl">
-                Enter any Substack handle to instantly generate a comprehensive analytics dashboard. 100% client-side.
+                Enter any Substack handle to instantly generate a comprehensive analytics dashboard.
             </p>
         </div>
 
@@ -222,38 +222,14 @@
         let chartWordCount = null;
         let chartDayOfWeek = null;
 
-        // Smart fetch request with automatic CORS proxy fallback
-        const fetchWithFallback = async (targetUrl) => {
-            // 1. Attempt direct fetch first
-            try {
-                const response = await fetch(targetUrl);
-                if (response.ok || response.status === 429) {
-                    return response;
-                }
-            } catch (e) {
-                // Direct request blocked by CORS or network, proceed to proxy fallback
-            }
+        // Cloudflare Worker Base Endpoint
+        const CLOUDFLARE_WORKER_URL = 'https://super-band-9b33.oliverio-alessandro.workers.dev/';
 
-            // 2. Multi-tier CORS proxy fallback list
-            const proxies = [
-                (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-                (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-                (url) => `https://thingproxy.freeboard.io/fetch/${encodeURIComponent(url)}`
-            ];
-
-            for (const buildProxyUrl of proxies) {
-                try {
-                    const proxyUrl = buildProxyUrl(targetUrl);
-                    const response = await fetch(proxyUrl);
-                    if (response.ok || response.status === 429) {
-                        return response;
-                    }
-                } catch (err) {
-                    // Try next proxy in fallback chain
-                }
-            }
-
-            throw new Error("Unable to reach Substack API directly or through CORS fallback proxies. Please check your network connection.");
+        // Fetch exclusively via Cloudflare Worker
+        const fetchViaCloudflare = async (targetUrl) => {
+            const baseUrl = CLOUDFLARE_WORKER_URL.replace(/\/$/, '');
+            const workerUrl = `${baseUrl}?url=${encodeURIComponent(targetUrl)}`;
+            return await fetch(workerUrl);
         };
 
         // Helper Functions
@@ -357,10 +333,10 @@
                     }
                 }
 
-                // If not cached or cache expired, fetch from Substack API
+                // If not cached or cache expired, fetch from Substack API via Cloudflare Worker
                 if (!normalizedData) {
                     let retries = 0;
-                    const maxRetries = 3;
+                    const maxRetries = 5;
 
                     while (allPosts.length < limit) {
                         const fetchLimit = Math.min(batchSize, limit - allPosts.length);
@@ -368,23 +344,18 @@
                         
                         const targetUrl = `https://${subdomain}.substack.com/api/v1/posts?sort=new&offset=${offset}&limit=${fetchLimit}`;
                         
-                        let response;
-                        try {
-                            response = await fetchWithFallback(targetUrl);
-                        } catch (e) {
-                            throw new Error(e.message);
-                        }
+                        let response = await fetchViaCloudflare(targetUrl);
 
                         // Exponential Backoff Retry on 429 Too Many Requests
                         if (response.status === 429) {
                             if (retries < maxRetries) {
                                 retries++;
                                 const retryAfter = response.headers.get('Retry-After');
-                                let delaySec = retryAfter ? parseInt(retryAfter, 10) : (Math.pow(2, retries) * 3);
+                                let delaySec = retryAfter ? parseInt(retryAfter, 10) : (Math.pow(2, retries) * 3 + Math.floor(Math.random() * 3));
                                 if (isNaN(delaySec) || delaySec <= 0) delaySec = 5;
 
                                 for (let sec = delaySec; sec > 0; sec--) {
-                                    btnText.textContent = `Rate limited by Substack. Retrying in ${sec}s (Attempt ${retries}/${maxRetries})...`;
+                                    btnText.textContent = `Rate limited (429). Retrying via Cloudflare in ${sec}s (Attempt ${retries}/${maxRetries})...`;
                                     await new Promise(r => setTimeout(r, 1000));
                                 }
                                 continue;
@@ -394,7 +365,7 @@
                         }
                         retries = 0;
 
-                        if (!response.ok) throw new Error(`Error fetching data directly (Status ${response.status}).`);
+                        if (!response.ok) throw new Error(`Error fetching data via Cloudflare Worker (Status ${response.status}).`);
                         
                         const data = await response.json();
                         const items = Array.isArray(data) ? data : (data.posts || []);
@@ -406,8 +377,8 @@
 
                         if (items.length < fetchLimit) break;
 
-                        // Pacing Delay: Randomized jitter (1.5s - 2.5s) to avoid triggering rate limits
-                        const jitterDelay = 1500 + Math.floor(Math.random() * 1000);
+                        // Pacing Delay
+                        const jitterDelay = 1000 + Math.floor(Math.random() * 500);
                         await new Promise(r => setTimeout(r, jitterDelay));
                     }
 
