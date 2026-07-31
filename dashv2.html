@@ -1,230 +1,403 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lettermetrics | Substack Analytics</title>
-    
-    <!-- Tailwind CSS & DaisyUI CDN -->
+    <title>Lettermetrics | Advanced Substack Intelligence & Analytics</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
-    
-    <!-- External JS Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: { 
+                        slate: { 850: '#151e2e', 950: '#090d16' },
+                        brand: { 500: '#ff6700', 600: '#e05b00' }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap'); 
-        body { 
-            font-family: 'Inter', sans-serif; 
-            transition: background-color 0.3s, color 0.3s; 
-        }
-        ::-webkit-scrollbar { height: 8px; width: 8px; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap'); 
+        body { font-family: 'Plus Jakarta Sans', sans-serif; transition: background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1), color 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        ::-webkit-scrollbar { height: 6px; width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.4); border-radius: 4px; }
-        
-        .sort-icon { 
-            display: inline-block; 
-            width: 0.8em; 
-            height: 0.8em; 
-            margin-left: 0.25rem; 
-            opacity: 0.3; 
-            transition: opacity 0.2s, transform 0.2s; 
-        }
+        .dark ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+        .sort-icon { display: inline-block; width: 0.8em; height: 0.8em; margin-left: 0.25rem; opacity: 0.3; transition: opacity 0.2s; }
         th:hover .sort-icon { opacity: 0.7; }
         .sort-active .sort-icon { opacity: 1; }
         .sort-asc .sort-icon { transform: rotate(180deg); }
+
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.05); }
+        }
+        .animate-pulse-glow { animation: pulseGlow 6s ease-in-out infinite; }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        .dark .glass-card {
+            background: rgba(13, 18, 30, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+        }
+
+        .premium-shadow {
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.03), 0 1px 3px 0 rgba(0, 0, 0, 0.02);
+        }
+        .dark .premium-shadow {
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.02);
+        }
+
+        .hero-glow {
+            background: radial-gradient(circle at 50% 0%, rgba(255, 103, 0, 0.12) 0%, transparent 60%);
+        }
     </style>
 </head>
-<body class="min-h-screen bg-base-200 text-base-content pb-16 transition-colors duration-200">
+<body class="min-h-screen bg-slate-50 dark:bg-[#060913] text-slate-900 dark:text-slate-100 selection:bg-brand-500 selection:text-white pb-20 relative overflow-x-hidden">
+    
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[500px] hero-glow pointer-events-none -z-10 animate-pulse-glow"></div>
 
-    <header class="sticky top-0 z-50 bg-base-100/80 backdrop-blur-md border-b border-base-300">
-        <div class="navbar max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="navbar-start gap-3">
-                <div class="w-10 h-10 bg-warning text-warning-content rounded-xl flex items-center justify-center shadow-lg shadow-warning/20">
-                    <i data-lucide="activity" class="w-6 h-6"></i>
+    <!-- Navigation Header -->
+    <header class="sticky top-0 z-50 glass-card border-b border-slate-200/60 dark:border-slate-800/60 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3.5 group cursor-pointer">
+                <div class="w-11 h-11 bg-gradient-to-br from-brand-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg shadow-brand-500/25 group-hover:scale-105 transition-transform duration-300">
+                    <i data-lucide="activity" class="w-5 h-5 text-white"></i>
                 </div>
                 <div>
-                    <h1 class="font-black text-xl tracking-tight flex items-center gap-2">
-                        Lettermetrics 
-                        <span class="badge badge-warning badge-sm font-bold">DaisyUI</span>
-                    </h1>
+                    <div class="flex items-center gap-2">
+                        <span class="font-extrabold text-xl tracking-tight text-slate-900 dark:text-white">lettermetrics<span class="text-brand-500">.com</span></span>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20 uppercase tracking-widest">Enterprise</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium tracking-wide">Substack Intelligence Suite</p>
                 </div>
             </div>
             
-            <div class="navbar-end gap-3">
-                <div id="status-badge" class="badge badge-outline gap-2 py-3 px-4 font-semibold text-xs">
-                    <span class="w-2 h-2 rounded-full bg-success"></span> Ready
+            <div class="flex items-center gap-3">
+                <div id="status-badge" class="hidden sm:flex px-3.5 py-1.5 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full text-xs font-semibold text-slate-600 dark:text-slate-300 items-center gap-2 shadow-sm">
+                    <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div> Ready to Analyze
                 </div>
-                
-                <button id="theme-toggle" class="btn btn-ghost btn-circle" title="Toggle theme">
-                    <i data-lucide="sun" id="theme-icon-sun" class="w-5 h-5 hidden"></i>
-                    <i data-lucide="moon" id="theme-icon-moon" class="w-5 h-5"></i>
+                <button id="theme-toggle" class="p-2.5 rounded-2xl bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:text-brand-500 dark:hover:text-brand-400 border border-slate-200 dark:border-slate-800 hover:border-brand-500/30 transition-all duration-200 shadow-sm active:scale-95 cursor-pointer" title="Toggle Theme">
+                    <i data-lucide="sun" id="theme-icon-sun" class="w-4 h-4 hidden"></i>
+                    <i data-lucide="moon" id="theme-icon-moon" class="w-4 h-4"></i>
                 </button>
             </div>
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
         
-        <div class="space-y-2">
-            <h2 class="text-3xl font-extrabold tracking-tight">Substack Analytics Dashboard</h2>
-            <p class="text-base-content/70 max-w-2xl">
-                Enter a Substack handle or subdomain to receive real-time analytics, engagement patterns, and performance metrics.
+        <!-- Hero Search Section -->
+        <div class="text-center max-w-3xl mx-auto space-y-4 pt-4">
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 text-xs font-bold uppercase tracking-wider border border-brand-500/20 shadow-sm">
+                <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Deep Telemetry Engine
+            </div>
+            <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                Unlock the Secrets of Any <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-500 to-amber-500">Substack Publication</span>
+            </h1>
+            <p class="text-slate-600 dark:text-slate-400 text-base sm:text-lg font-normal">
+                Instant analytics, health ratings, growth velocity, and publication telemetry derived from the last 50 posts.
             </p>
         </div>
 
-        <form id="search-form" class="card bg-base-100 border border-base-300 shadow-xl p-6 space-y-4">
-            <div class="flex flex-col md:flex-row gap-4">
-                <div class="form-control flex-1">
-                    <label class="label">
-                        <span class="label-text font-bold uppercase text-xs text-base-content/70">Substack Handle / Name</span>
-                    </label>
-                    <div class="relative">
-                        <i data-lucide="search" class="absolute left-3.5 top-3.5 w-5 h-5 opacity-40"></i>
+        <!-- Search Bar Card -->
+        <div class="max-w-3xl mx-auto">
+            <form id="search-form" class="glass-card rounded-3xl p-3 sm:p-4 premium-shadow transition-all duration-300">
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <div class="relative flex-1 group">
+                        <i data-lucide="globe" class="absolute left-4 top-4 w-5 h-5 text-slate-400 group-focus-within:text-brand-500 transition-colors"></i>
                         <input type="text" id="handle-input" value="unknownlegends" required
-                            class="input input-bordered w-full pl-11 focus:input-warning font-medium"
-                            placeholder="e.g. pragmaticengineer or lenny">
+                            class="w-full pl-12 pr-4 py-3.5 bg-slate-50/50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 outline-none transition-all font-semibold placeholder:text-slate-400 dark:placeholder:text-slate-600 text-base"
+                            placeholder="e.g. pragmaticengineer">
                     </div>
-                </div>
-                
-                <div class="form-control w-full md:w-56">
-                    <label class="label">
-                        <span class="label-text font-bold uppercase text-xs text-base-content/70">Number of Posts</span>
-                    </label>
-                    <select id="limit-input" class="select select-bordered w-full focus:select-warning font-medium">
-                        <option value="25">25 Posts</option>
-                        <option value="50" selected>50 Posts</option>
-                        <option value="100">100 Posts</option>
-                    </select>
-                </div>
-                
-                <div class="flex items-end">
-                    <button type="submit" id="analyze-btn" class="btn btn-warning w-full md:w-auto px-8 gap-2 font-bold text-warning-content shadow-lg shadow-warning/10">
-                        <i data-lucide="sparkles" class="w-5 h-5"></i> <span id="btn-text">Analyze</span>
+                    <div class="w-full sm:w-44">
+                        <div class="relative h-full">
+                            <select id="limit-input" class="w-full h-full px-4 py-3.5 bg-slate-50/50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 outline-none appearance-none transition-all font-semibold cursor-pointer">
+                                <option value="50">Last 50 Posts</option>
+                            </select>
+                            <i data-lucide="chevron-down" class="absolute right-4 top-4 w-4 h-4 text-slate-400 pointer-events-none"></i>
+                        </div>
+                    </div>
+                    <button type="submit" id="analyze-btn" class="px-8 py-3.5 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-orange-400 text-white font-bold rounded-2xl transition-all shadow-lg shadow-brand-500/25 hover:shadow-brand-500/40 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 flex items-center justify-center gap-2.5 cursor-pointer text-base">
+                        <i data-lucide="zap" class="w-5 h-5"></i> <span id="btn-text">Analyze</span>
                     </button>
                 </div>
-            </div>
-        </form>
-
-        <div id="error-container" class="hidden alert alert-error shadow-lg">
-            <i data-lucide="alert-triangle" class="w-6 h-6"></i>
-            <span id="error-message">An error occurred.</span>
+            </form>
         </div>
 
-        <div id="results-container" class="hidden space-y-8">
+        <div id="error-container" class="hidden max-w-3xl mx-auto p-4 rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 flex items-center gap-3 transition-all">
+            <i data-lucide="alert-triangle" class="w-5 h-5 flex-shrink-0"></i>
+            <span class="text-sm font-medium"></span>
+        </div>
+
+        <!-- Results Container -->
+        <div id="results-container" class="hidden space-y-10 transition-all duration-700 opacity-0 translate-y-6">
             
+            <!-- Overall Rating Showcase Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Main Health Score Banner -->
+                <div class="glass-card lg:col-span-2 rounded-3xl p-8 premium-shadow relative overflow-hidden flex flex-col justify-between border border-slate-200/80 dark:border-slate-800">
+                    <div class="absolute -right-16 -top-16 w-72 h-72 bg-gradient-to-br from-brand-500/15 to-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                    
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6 relative z-10">
+                        <div class="flex items-center gap-6">
+                            <div class="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl bg-gradient-to-br from-brand-500 via-brand-600 to-amber-500 flex flex-col items-center justify-center text-white shadow-xl shadow-brand-500/30 flex-shrink-0 transform hover:scale-105 transition-transform">
+                                <span id="rating-score" class="text-4xl sm:text-5xl font-black tracking-tighter">0.0</span>
+                                <span id="rating-grade" class="text-xs font-extrabold uppercase tracking-widest mt-1 px-2.5 py-0.5 bg-black/25 rounded-full backdrop-blur-md">Grade A</span>
+                            </div>
+                            <div>
+                                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 text-xs font-bold uppercase tracking-wider mb-2 border border-brand-500/20">
+                                    <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Publication Health Index
+                                </div>
+                                <h3 id="rating-title" class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Exceptional Performance</h3>
+                                <p id="rating-subtitle" class="text-sm text-slate-600 dark:text-slate-400 mt-1 max-w-lg leading-relaxed">
+                                    Dynamically synthesized from reader feedback volume, comment density, word distribution, and publishing velocity across the last 50 posts.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-8 mt-8 border-t border-slate-200/80 dark:border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 relative z-10">
+                        <div class="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                            <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-500"></i> Verified Telemetry via lettermetrics.com
+                        </div>
+                        <button id="open-summary-modal-btn" class="w-full sm:w-auto px-6 py-3.5 bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 dark:hover:bg-slate-700 text-white font-bold rounded-2xl transition-all shadow-lg flex items-center justify-center gap-2.5 cursor-pointer border border-slate-700/50 text-sm">
+                            <i data-lucide="file-badge" class="w-4 h-4 text-brand-400"></i> Generate Summary Card (.PNG)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quick Snapshot Card -->
+                <div class="glass-card rounded-3xl p-8 premium-shadow flex flex-col justify-between border border-slate-200/80 dark:border-slate-800">
+                    <div>
+                        <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                            <i data-lucide="zap" class="w-4 h-4 text-brand-500"></i> Key Telemetry Highlights
+                        </div>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between p-3.5 rounded-2xl bg-slate-100/60 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800/60">
+                                <span class="text-xs font-semibold text-slate-500">Engagement Ratio</span>
+                                <span id="quick-stat-engagement" class="text-sm font-extrabold text-slate-900 dark:text-white">0.0%</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3.5 rounded-2xl bg-slate-100/60 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800/60">
+                                <span class="text-xs font-semibold text-slate-500">Free vs Paid Ratio</span>
+                                <span id="quick-stat-ratio" class="text-sm font-extrabold text-slate-900 dark:text-white">0% / 0%</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3.5 rounded-2xl bg-slate-100/60 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800/60">
+                                <span class="text-xs font-semibold text-slate-500">Avg Word Count</span>
+                                <span id="quick-stat-words" class="text-sm font-extrabold text-slate-900 dark:text-white">0 w</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pt-4 text-center">
+                        <span class="text-[11px] text-slate-400 font-medium">Powered by lettermetrics.com engine</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Growth Insights & Featured Best Post -->
             <div id="growth-insights-container"></div>
             <div id="best-post-container"></div>
 
-            <div class="space-y-3">
-                <h3 class="text-xl font-bold tracking-tight flex items-center gap-2">
-                    <i data-lucide="layout-grid" class="w-5 h-5 text-warning"></i> KPI Overview
-                </h3>
-                <div id="kpi-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4"></div>
+            <!-- KPI Grid Section -->
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2.5">
+                        <i data-lucide="bar-chart-3" class="w-6 h-6 text-brand-500"></i> Performance Telemetry Metrics
+                    </h3>
+                </div>
+                <div id="kpi-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
             </div>
 
-            <div class="space-y-3">
-                <h3 class="text-xl font-bold tracking-tight flex items-center gap-2">
-                    <i data-lucide="bar-chart-2" class="w-5 h-5 text-warning"></i> Visualizations
-                </h3>
-                
-                <!-- Charts Row 1 -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="card bg-base-100 border border-base-300 shadow-xl p-6 flex flex-col">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h4 class="card-title text-base font-bold">Posts & Word Count Over Time</h4>
-                                <p class="text-xs text-base-content/60">Article publications & length (Free vs. Paid)</p>
-                            </div>
-                            <span class="badge badge-accent badge-sm font-semibold">Timeline</span>
-                        </div>
-                        <div class="flex-1 min-h-[300px] relative w-full h-full"><canvas id="timelineChart"></canvas></div>
+            <!-- Charts Grid Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="glass-card p-6 sm:p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800 flex flex-col premium-shadow">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white">Posts Over Time</h3>
+                        <span class="p-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-500"><i data-lucide="calendar" class="w-4 h-4"></i></span>
                     </div>
-                    
-                    <div class="card bg-base-100 border border-base-300 shadow-xl p-6 flex flex-col">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h4 class="card-title text-base font-bold">Engagement Trends</h4>
-                                <p class="text-xs text-base-content/60">Reactions and comments per publication</p>
-                            </div>
-                            <span class="badge badge-warning badge-sm font-semibold">Engagement</span>
-                        </div>
-                        <div class="flex-1 min-h-[300px] relative w-full h-full"><canvas id="engagementChart"></canvas></div>
-                    </div>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Publishing frequency and volume breakdown over time.</p>
+                    <div class="flex-1 min-h-[320px] relative w-full h-full"><canvas id="timelineChart"></canvas></div>
                 </div>
-
-                <!-- Charts Row 2 -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="card bg-base-100 border border-base-300 shadow-xl p-6 flex flex-col">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h4 class="card-title text-base font-bold">Word Count Distribution</h4>
-                                <p class="text-xs text-base-content/60">Classification of posts by word count</p>
-                            </div>
-                            <span class="badge badge-secondary badge-sm font-semibold">Structure</span>
-                        </div>
-                        <div class="flex-1 min-h-[300px] relative w-full h-full"><canvas id="wordCountChart"></canvas></div>
+                <div class="glass-card p-6 sm:p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800 flex flex-col premium-shadow">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white">Engagement Trends</h3>
+                        <span class="p-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-brand-500"><i data-lucide="trending-up" class="w-4 h-4"></i></span>
                     </div>
-                    
-                    <div class="card bg-base-100 border border-base-300 shadow-xl p-6 flex flex-col">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h4 class="card-title text-base font-bold">Publishing Days</h4>
-                                <p class="text-xs text-base-content/60">Which days of the week are posts published most often?</p>
-                            </div>
-                            <span class="badge badge-info badge-sm font-semibold">Frequency</span>
-                        </div>
-                        <div class="flex-1 min-h-[300px] relative w-full h-full"><canvas id="dayOfWeekChart"></canvas></div>
-                    </div>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Reactions and comments trajectory per post.</p>
+                    <div class="flex-1 min-h-[320px] relative w-full h-full"><canvas id="engagementChart"></canvas></div>
                 </div>
             </div>
 
-            <div class="card bg-base-100 border border-base-300 shadow-xl overflow-hidden">
-                <div class="p-6 border-b border-base-300 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="glass-card p-6 sm:p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800 flex flex-col premium-shadow">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white">Word Count Distribution</h3>
+                        <span class="p-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-purple-500"><i data-lucide="file-text" class="w-4 h-4"></i></span>
+                    </div>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Typical length breakdown for your articles.</p>
+                    <div class="flex-1 min-h-[320px] relative w-full h-full"><canvas id="wordCountChart"></canvas></div>
+                </div>
+                <div class="glass-card p-6 sm:p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800 flex flex-col premium-shadow">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white">Publishing Days</h3>
+                        <span class="p-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-teal-500"><i data-lucide="clock" class="w-4 h-4"></i></span>
+                    </div>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Which days of the week do you post most frequently?</p>
+                    <div class="flex-1 min-h-[320px] relative w-full h-full"><canvas id="dayOfWeekChart"></canvas></div>
+                </div>
+            </div>
+
+            <!-- Posts Table Section -->
+            <div class="glass-card border border-slate-200/80 dark:border-slate-800 rounded-3xl overflow-hidden flex flex-col premium-shadow">
+                <div class="p-6 sm:p-8 border-b border-slate-200/80 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
-                        <h3 class="card-title text-lg font-bold">Top Performing Posts</h3>
-                        <p class="text-xs text-base-content/60">Sortable table of all analyzed posts.</p>
-                    </div>
-                    <div class="badge badge-neutral p-3 font-semibold text-xs">
-                        Click column headers to sort
+                        <h3 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2.5">
+                            <i data-lucide="award" class="w-5 h-5 text-brand-500"></i> Top Performing Posts
+                        </h3>
+                        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Sorted by reach and reactions. Click table headers to re-sort.</p>
                     </div>
                 </div>
                 <div class="overflow-x-auto w-full">
-                    <table class="table table-zebra w-full text-left text-sm whitespace-nowrap">
-                        <thead class="bg-base-200 text-xs uppercase select-none">
+                    <table class="w-full text-left text-sm whitespace-nowrap">
+                        <thead class="bg-slate-100/60 dark:bg-slate-950/60 text-slate-500 dark:text-slate-400 uppercase text-[11px] font-semibold tracking-wider border-b border-slate-200/80 dark:border-slate-800 select-none">
                             <tr>
-                                <th class="font-bold">#</th>
-                                <th class="font-bold w-full">Title & Audience</th>
-                                <th class="font-bold cursor-pointer hover:text-warning sort-header" data-sort="date">
+                                <th class="px-6 py-4">Rank</th>
+                                <th class="px-6 py-4 w-full">Title</th>
+                                <th class="px-6 py-4 cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 sort-header transition-colors" data-sort="date">
                                     Date <i data-lucide="chevron-down" class="sort-icon inline-block w-4 h-4"></i>
                                 </th>
-                                <th class="font-bold cursor-pointer hover:text-warning sort-header sort-active sort-desc" data-sort="reactions">
-                                    Likes ❤️ <i data-lucide="chevron-down" class="sort-icon inline-block w-4 h-4"></i>
+                                <th class="px-6 py-4 cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 sort-header sort-active sort-desc transition-colors" data-sort="reactions">
+                                    Reactions <i data-lucide="chevron-down" class="sort-icon inline-block w-4 h-4"></i>
                                 </th>
-                                <th class="font-bold cursor-pointer hover:text-warning sort-header" data-sort="comments">
-                                    Comments 💬 <i data-lucide="chevron-down" class="sort-icon inline-block w-4 h-4"></i>
+                                <th class="px-6 py-4 cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 sort-header transition-colors" data-sort="comments">
+                                    Comments <i data-lucide="chevron-down" class="sort-icon inline-block w-4 h-4"></i>
                                 </th>
-                                <th class="font-bold cursor-pointer hover:text-warning sort-header" data-sort="words">
-                                    Words 📝 <i data-lucide="chevron-down" class="sort-icon inline-block w-4 h-4"></i>
+                                <th class="px-6 py-4 cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 sort-header transition-colors" data-sort="words">
+                                    Words <i data-lucide="chevron-down" class="sort-icon inline-block w-4 h-4"></i>
                                 </th>
                             </tr>
                         </thead>
-                        <tbody id="posts-table-body"></tbody>
+                        <tbody id="posts-table-body" class="divide-y divide-slate-100 dark:divide-slate-800/60 transition-colors duration-200"></tbody>
                     </table>
                 </div>
             </div>
         </div>
     </main>
 
+    <!-- Summary & PNG Download Modal -->
+    <div id="summary-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md transition-opacity duration-300">
+        <div class="relative w-full max-w-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh]">
+            
+            <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-2xl bg-brand-500/10 text-brand-600 dark:text-brand-400 flex items-center justify-center font-bold">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900 dark:text-white">Publication Summary Card</h3>
+                        <p class="text-xs text-slate-500">Ready for social sharing or reports</p>
+                    </div>
+                </div>
+                <button id="close-modal-btn" class="p-2 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Exportable Card Container -->
+            <div class="p-6 sm:p-8 overflow-y-auto space-y-6">
+                <div id="exportable-card" class="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 text-white rounded-3xl p-8 sm:p-10 border border-slate-800 relative overflow-hidden shadow-2xl">
+                    <div class="absolute -right-20 -top-20 w-80 h-80 bg-brand-500/20 rounded-full blur-3xl pointer-events-none"></div>
+                    
+                    <div class="flex justify-between items-start mb-8 relative z-10">
+                        <div>
+                            <div class="text-xs font-bold text-brand-400 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                                <i data-lucide="activity" class="w-3.5 h-3.5"></i> lettermetrics.com Report
+                            </div>
+                            <h2 id="modal-subdomain-title" class="text-2xl sm:text-3xl font-black tracking-tight text-white">substack.com</h2>
+                            <p class="text-xs text-slate-400 mt-1">Deep Intelligence Suite Telemetry</p>
+                        </div>
+                        <div id="modal-rating-badge" class="w-20 h-20 rounded-2xl bg-gradient-to-br from-brand-500 to-amber-500 flex flex-col items-center justify-center text-white shadow-xl">
+                            <span id="modal-score-val" class="text-2xl font-black">0.0</span>
+                            <span id="modal-grade-val" class="text-[10px] font-bold uppercase tracking-wider">Grade A</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5 mb-8 relative z-10">
+                        <div class="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-4">
+                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Health Rating</div>
+                            <div id="modal-stat-health" class="text-lg font-black text-brand-400 mt-1">0 / 100</div>
+                        </div>
+                        <div class="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-4">
+                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Avg Reactions</div>
+                            <div id="modal-stat-reactions" class="text-lg font-black text-white mt-1">0</div>
+                        </div>
+                        <div class="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-4">
+                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Avg Comments</div>
+                            <div id="modal-stat-comments" class="text-lg font-black text-white mt-1">0</div>
+                        </div>
+                        <div class="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-4">
+                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Avg Word Count</div>
+                            <div id="modal-stat-words" class="text-lg font-black text-white mt-1">0 w</div>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-white/10 flex items-center justify-between text-xs text-slate-400 relative z-10">
+                        <span id="modal-date-generated">Generated on Aug 2026</span>
+                        <span class="font-bold text-brand-400">lettermetrics.com</span>
+                    </div>
+                </div>
+
+                <div class="text-center text-xs text-slate-500 dark:text-slate-400">
+                    Click download to instantly render and save this executive snapshot as a high-res PNG image.
+                </div>
+            </div>
+
+            <div class="p-6 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-3 bg-slate-50 dark:bg-slate-900/50">
+                <button id="close-modal-footer-btn" class="px-5 py-2.5 rounded-2xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 font-semibold text-xs transition-colors cursor-pointer">
+                    Close
+                </button>
+                <button id="download-png-btn" class="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-orange-400 text-white font-bold text-xs transition-all shadow-lg shadow-brand-500/25 flex items-center gap-2 cursor-pointer">
+                    <i data-lucide="download" class="w-4 h-4"></i> Download PNG
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-6 border-t border-slate-200/60 dark:border-slate-800/60 mt-20 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400 font-medium">
+        <div class="flex items-center gap-2">
+            <div class="w-6 h-6 bg-brand-600 rounded-xl flex items-center justify-center text-white font-bold text-xs shadow-md">L</div>
+            <span>© 2026 lettermetrics.com. All rights reserved.</span>
+        </div>
+        <div class="flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+            <span>Enterprise Substack Analytics</span>
+        </div>
+    </footer>
+
     <script>
         lucide.createIcons();
 
-        // Runtime Proxy Worker Hash
         const DEFAULT_PROXY_HASH = "aHR0cHM6Ly9zdXBlci1iYW5kLTliMzMub2xpdmVyaW8tYWxlc3NhbmRyby53b3JrZXJzLmRldi8=";
 
         function getProxyUrl() {
-            try { return atob(DEFAULT_PROXY_HASH); } catch (e) { return ''; }
+            try {
+                return atob(DEFAULT_PROXY_HASH);
+            } catch (e) {
+                return '';
+            }
         }
 
         const themeToggleBtn = document.getElementById('theme-toggle');
@@ -232,66 +405,38 @@
         const themeIconMoon = document.getElementById('theme-icon-moon');
         const htmlElement = document.documentElement;
 
+        if (localStorage.getItem('theme') === 'light' || (!('theme' in localStorage) && !window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            htmlElement.classList.remove('dark');
+            themeIconSun.classList.add('hidden');
+            themeIconMoon.classList.remove('hidden');
+        } else {
+            htmlElement.classList.add('dark');
+            themeIconMoon.classList.add('hidden');
+            themeIconSun.classList.remove('hidden');
+        }
+
+        themeToggleBtn.addEventListener('click', () => {
+            htmlElement.classList.toggle('dark');
+            if (htmlElement.classList.contains('dark')) {
+                localStorage.setItem('theme', 'dark');
+                themeIconMoon.classList.add('hidden');
+                themeIconSun.classList.remove('hidden');
+            } else {
+                localStorage.setItem('theme', 'light');
+                themeIconSun.classList.add('hidden');
+                themeIconMoon.classList.remove('hidden');
+            }
+            updateChartColors();
+        });
+
         let currentPostsData = [];
         let currentSort = { key: 'reactions', dir: 'desc' };
+        let activeSubdomain = 'unknownlegends';
 
         const CACHE_TTL = 24 * 60 * 60 * 1000;
         const CACHE_PREFIX = 'lm_cache_';
 
         let chartTimeline = null, chartEngagement = null, chartWordCount = null, chartDayOfWeek = null;
-
-        function getChartColors() {
-            const isDark = htmlElement.getAttribute('data-theme') === 'dark';
-            return {
-                text: isDark ? '#a6adbb' : '#4a5568',
-                grid: isDark ? '#2a323c' : '#e2e8f0',
-                tooltipBg: isDark ? '#1d232a' : '#ffffff',
-                tooltipBorder: isDark ? '#374151' : '#cbd5e1',
-                tooltipText: isDark ? '#ffffff' : '#0f172a'
-            };
-        }
-
-        function updateChartColors() {
-            const colors = getChartColors();
-            Chart.defaults.color = colors.text;
-            Chart.defaults.borderColor = colors.grid;
-            
-            [chartTimeline, chartEngagement, chartWordCount, chartDayOfWeek].forEach(chart => {
-                if (chart) {
-                    if(chart.options.scales.y) chart.options.scales.y.grid.color = colors.grid;
-                    if(chart.options.scales.x) chart.options.scales.x.grid.color = colors.grid;
-                    if(chart.options.plugins.tooltip) {
-                        chart.options.plugins.tooltip.backgroundColor = colors.tooltipBg;
-                        chart.options.plugins.tooltip.titleColor = colors.tooltipText;
-                        chart.options.plugins.tooltip.bodyColor = colors.tooltipText;
-                        chart.options.plugins.tooltip.borderColor = colors.tooltipBorder;
-                    }
-                    chart.update();
-                }
-            });
-        }
-
-        const savedTheme = localStorage.getItem('theme') || 'dark';
-        setTheme(savedTheme);
-
-        function setTheme(themeName) {
-            htmlElement.setAttribute('data-theme', themeName);
-            localStorage.setItem('theme', themeName);
-            if (themeName === 'dark') {
-                themeIconMoon.classList.add('hidden');
-                themeIconSun.classList.remove('hidden');
-            } else {
-                themeIconSun.classList.add('hidden');
-                themeIconMoon.classList.remove('hidden');
-            }
-            updateChartColors();
-        }
-
-        themeToggleBtn.addEventListener('click', () => {
-            const currentTheme = htmlElement.getAttribute('data-theme');
-            const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            setTheme(nextTheme);
-        });
 
         const fetchViaCloudflare = async (targetUrl) => {
             let baseUrl = getProxyUrl().trim();
@@ -313,6 +458,90 @@
             return d.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
         };
 
+        const getChartColors = () => {
+            const isDark = document.documentElement.classList.contains('dark');
+            return {
+                text: isDark ? '#94a3b8' : '#64748b',
+                grid: isDark ? 'rgba(30, 41, 59, 0.6)' : 'rgba(226, 232, 240, 0.8)',
+                tooltipBg: isDark ? '#0d121e' : '#ffffff',
+                tooltipBorder: isDark ? '#334155' : '#cbd5e1',
+                tooltipText: isDark ? '#ffffff' : '#0f172a'
+            };
+        };
+
+        const updateChartColors = () => {
+            const colors = getChartColors();
+            Chart.defaults.color = colors.text;
+            Chart.defaults.borderColor = colors.grid;
+            
+            [chartTimeline, chartEngagement, chartWordCount, chartDayOfWeek].forEach(chart => {
+                if (chart) {
+                    chart.options.scales.y.grid.color = colors.grid;
+                    if(chart.options.scales.x) chart.options.scales.x.grid.color = colors.grid;
+                    if(chart.options.plugins.tooltip) {
+                        chart.options.plugins.tooltip.backgroundColor = colors.tooltipBg;
+                        chart.options.plugins.tooltip.titleColor = colors.tooltipText;
+                        chart.options.plugins.tooltip.bodyColor = colors.tooltipText;
+                        chart.options.plugins.tooltip.borderColor = colors.tooltipBorder;
+                    }
+                    chart.update();
+                }
+            });
+        };
+
+        // Modal triggers
+        const modal = document.getElementById('summary-modal');
+        document.getElementById('open-summary-modal-btn').addEventListener('click', () => {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        });
+        document.getElementById('close-modal-btn').addEventListener('click', () => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        });
+        document.getElementById('close-modal-footer-btn').addEventListener('click', () => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        });
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        });
+
+        // PNG Download handler via html2canvas
+        document.getElementById('download-png-btn').addEventListener('click', async () => {
+            const card = document.getElementById('exportable-card');
+            const btn = document.getElementById('download-png-btn');
+            const originalText = btn.innerHTML;
+            
+            btn.disabled = true;
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Rendering PNG...`;
+            lucide.createIcons();
+
+            try {
+                const canvas = await html2canvas(card, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: null
+                });
+                const image = canvas.toDataURL("image/png");
+                const a = document.createElement('a');
+                a.href = image;
+                a.download = `lettermetrics-${activeSubdomain}-summary.png`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            } catch (err) {
+                console.error("PNG Generation failed:", err);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                lucide.createIcons();
+            }
+        });
+
         document.getElementById('search-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -321,18 +550,18 @@
             const btnText = document.getElementById('btn-text');
             const btn = document.getElementById('analyze-btn');
             const errorContainer = document.getElementById('error-container');
-            const errorMsg = document.getElementById('error-message');
             const resultsContainer = document.getElementById('results-container');
             const statusBadge = document.getElementById('status-badge');
 
             if (!handle) return;
 
             btn.disabled = true;
-            btnText.textContent = "Loading data...";
+            btnText.textContent = "Fetching telemetry...";
             errorContainer.classList.add('hidden');
+            resultsContainer.classList.add('opacity-0', 'translate-y-6');
             resultsContainer.classList.add('hidden');
-            statusBadge.className = "badge badge-warning gap-2 py-3 px-4 font-semibold text-xs";
-            statusBadge.innerHTML = `<span class="loading loading-spinner loading-xs"></span> Fetching...`;
+            statusBadge.innerHTML = `<div class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></div> Syncing...`;
+            lucide.createIcons();
 
             let allPosts = [];
             let offset = 0;
@@ -345,6 +574,7 @@
             } else {
                 subdomain = subdomain.replace(/\.substack\.com.*$/i, '').replace(/\/.*$/, '');
             }
+            activeSubdomain = subdomain;
 
             const cacheKey = `${CACHE_PREFIX}${subdomain.toLowerCase()}_${limit}`;
             const cachedItem = localStorage.getItem(cacheKey);
@@ -356,7 +586,10 @@
                     try {
                         const parsed = JSON.parse(cachedItem);
                         if (parsed && parsed.timestamp && (Date.now() - parsed.timestamp < CACHE_TTL) && Array.isArray(parsed.data)) {
-                            normalizedData = parsed.data.map(p => ({ ...p, date: new Date(p.date) }));
+                            normalizedData = parsed.data.map(p => ({
+                                ...p,
+                                date: new Date(p.date)
+                            }));
                         }
                     } catch (e) {}
                 }
@@ -367,10 +600,11 @@
                         btnText.textContent = `Loading ${allPosts.length}/${limit}...`;
                         
                         const targetUrl = `https://${subdomain}.substack.com/api/v1/posts?sort=new&offset=${offset}&limit=${fetchLimit}`;
+                        
                         let response = await fetchViaCloudflare(targetUrl);
 
                         if (!response.ok) {
-                            throw new Error(`Proxy request failed (Status ${response.status})`);
+                            throw new Error(`Proxy request failed with status ${response.status}`);
                         }
                         
                         const data = await response.json();
@@ -384,7 +618,7 @@
                         if (items.length < fetchLimit) break;
                     }
 
-                    if (allPosts.length === 0) throw new Error("No posts found or invalid Substack handle.");
+                    if (allPosts.length === 0) throw new Error("No posts found or invalid Substack publication handle.");
 
                     normalizedData = allPosts.map(p => {
                         let words = p.wordcount || p.word_count || 0;
@@ -423,17 +657,19 @@
                 }
 
                 currentPostsData = normalizedData;
-                renderDashboard(normalizedData);
+                renderDashboard(normalizedData, subdomain);
                 
                 resultsContainer.classList.remove('hidden');
-                statusBadge.className = "badge badge-outline badge-success gap-2 py-3 px-4 font-semibold text-xs";
-                statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-success"></span> Ready`;
+                setTimeout(() => {
+                    resultsContainer.classList.remove('opacity-0', 'translate-y-6');
+                }, 50);
+
+                statusBadge.innerHTML = `<div class="w-2 h-2 rounded-full bg-emerald-500"></div> Telemetry Loaded`;
                 
             } catch (err) {
-                errorMsg.textContent = err.message;
+                errorContainer.querySelector('span').textContent = err.message;
                 errorContainer.classList.remove('hidden');
-                statusBadge.className = "badge badge-outline badge-error gap-2 py-3 px-4 font-semibold text-xs";
-                statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-error"></span> Error`;
+                statusBadge.innerHTML = `<div class="w-2 h-2 rounded-full bg-red-500"></div> Sync Error`;
             } finally {
                 btn.disabled = false;
                 btnText.textContent = "Analyze";
@@ -441,18 +677,67 @@
             }
         });
 
-        function renderDashboard(posts) {
-            let totalReactions = 0, totalComments = 0, totalWords = 0;
+        function renderDashboard(posts, subdomain) {
+            let totalReactions = 0, totalComments = 0, totalWords = 0, freePostsCount = 0, paidPostsCount = 0;
             posts.forEach(p => {
                 totalReactions += p.reactions;
                 totalComments += p.comments;
                 totalWords += p.words;
+                if (p.audience === 'Paid') paidPostsCount++;
+                else freePostsCount++;
             });
             
             const bestPost = [...posts].sort((a, b) => b.reactions - a.reactions)[0];
             const avgWords = Math.round(totalWords / posts.length) || 0;
             const avgReactions = Math.round(totalReactions / posts.length) || 0;
             const avgComments = Math.round(totalComments / posts.length) || 0;
+            const engagementRate = totalReactions > 0 ? ((totalComments / totalReactions) * 100).toFixed(1) : '0.0';
+            const freeRatioPct = Math.round((freePostsCount / posts.length) * 100);
+            const paidRatioPct = Math.round((paidPostsCount / posts.length) * 100);
+
+            // Overall rating calculation
+            let rawScore = (avgReactions * 0.4) + (avgComments * 1.5) + (posts.length * 0.5);
+            let healthScore = Math.min(100, Math.max(10, Math.round(Math.log10(rawScore + 1) * 33)));
+            if (isNaN(healthScore)) healthScore = 75;
+            let finalRating10 = (healthScore / 10).toFixed(1);
+            
+            let grade = "C";
+            let ratingTitle = "Developing Momentum";
+            let ratingDescription = "Steady foundation with standard reader interaction. Consistent publishing schedule will boost long-term retention.";
+            
+            if (healthScore >= 85) {
+                grade = "A+";
+                ratingTitle = "Elite Performance Publication";
+                ratingDescription = "Outstanding audience resonance. High interaction volume, strong reactions, and exceptional community engagement across recent posts.";
+            } else if (healthScore >= 70) {
+                grade = "A";
+                ratingTitle = "High-Growth Publication";
+                ratingDescription = "Very strong performance metrics. Your articles consistently capture solid engagement and loyal reader feedback.";
+            } else if (healthScore >= 50) {
+                grade = "B";
+                ratingTitle = "Solid & Stable Publication";
+                ratingDescription = "Healthy engagement levels with predictable reach. Optimizing publishing times could further unlock viral potential.";
+            }
+
+            // Update UI elements for overall rating & snapshot
+            document.getElementById('rating-score').textContent = finalRating10;
+            document.getElementById('rating-grade').textContent = `Grade ${grade}`;
+            document.getElementById('rating-title').textContent = ratingTitle;
+            document.getElementById('rating-subtitle').textContent = ratingDescription;
+
+            document.getElementById('quick-stat-engagement').textContent = `${engagementRate}%`;
+            document.getElementById('quick-stat-ratio').textContent = `${freeRatioPct}% Free / ${paidRatioPct}% Paid`;
+            document.getElementById('quick-stat-words').textContent = `${formatNum(avgWords)} w`;
+
+            // Update modal summary card elements
+            document.getElementById('modal-subdomain-title').textContent = `${subdomain}.substack.com`;
+            document.getElementById('modal-score-val').textContent = finalRating10;
+            document.getElementById('modal-grade-val').textContent = `Grade ${grade}`;
+            document.getElementById('modal-stat-health').textContent = `${healthScore} / 100`;
+            document.getElementById('modal-stat-reactions').textContent = formatNum(avgReactions);
+            document.getElementById('modal-stat-comments').textContent = formatNum(avgComments);
+            document.getElementById('modal-stat-words').textContent = `${formatNum(avgWords)} w`;
+            document.getElementById('modal-date-generated').textContent = `Generated on ${new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`
 
             const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
             const dayStats = Array(7).fill(0).map(() => ({ count: 0, totalReactions: 0 }));
@@ -491,7 +776,7 @@
 
             const tagMap = {};
             posts.forEach(p => {
-                const postTags = (p.tags && p.tags.length > 0) ? p.tags : [p.audience + " Article"];
+                const postTags = (p.tags && p.tags.length > 0) ? p.tags : [p.audience + " Articles"];
                 postTags.forEach(tag => {
                     if (!tagMap[tag]) tagMap[tag] = { count: 0, reactions: 0, comments: 0 };
                     tagMap[tag].count++;
@@ -508,91 +793,91 @@
             })).sort((a, b) => b.avgReactions - a.avgReactions).slice(0, 5);
 
             const growthInsightsHtml = `
-                <div class="card bg-base-100 border border-base-300 shadow-xl p-6 sm:p-8 space-y-6">
-                    <div class="flex items-center gap-3 border-b border-base-300 pb-4">
-                        <div class="p-2.5 bg-warning/20 text-warning rounded-xl border border-warning/30">
-                            <i data-lucide="sparkles" class="w-6 h-6"></i>
+                <div class="glass-card text-slate-900 dark:text-white rounded-3xl p-6 sm:p-8 premium-shadow border border-slate-200/80 dark:border-slate-800 space-y-6">
+                    <div class="flex items-center gap-3.5 border-b border-slate-200/80 dark:border-slate-800 pb-5">
+                        <div class="p-3 bg-gradient-to-br from-brand-500/25 to-amber-500/20 text-brand-600 dark:text-brand-400 rounded-2xl border border-brand-500/30 shadow-inner">
+                            <i data-lucide="sparkles" class="w-6 h-6 animate-pulse"></i>
                         </div>
                         <div>
-                            <h3 class="text-2xl font-bold tracking-tight">Growth Insights</h3>
-                            <p class="text-base-content/70 text-sm">Automated performance analytics from your recent posts</p>
+                            <h3 class="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">Growth Insights</h3>
+                            <p class="text-slate-500 dark:text-slate-400 text-sm">Automated performance highlights and patterns from recent publication activity</p>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <div class="card bg-base-200/50 border border-base-300 p-5 flex flex-col justify-between hover:border-warning/50 transition-all">
+                        <div class="bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-6 flex flex-col justify-between hover:border-brand-500/30 transition-all duration-300 group">
                             <div>
-                                <div class="text-xs font-bold text-warning uppercase tracking-wider mb-2 flex items-center gap-2">
-                                    <i data-lucide="trophy" class="w-4 h-4"></i> Top Performing Article
+                                <div class="text-xs font-bold text-brand-600 dark:text-brand-400 uppercase tracking-wider mb-2.5 flex items-center gap-2">
+                                    <i data-lucide="trophy" class="w-4 h-4"></i> Best Performing Article
                                 </div>
-                                <h4 class="text-base font-bold mb-4 line-clamp-2">
-                                    "<a href="${bestPost.url}" target="_blank" class="hover:underline text-warning">${bestPost.title}</a>"
+                                <h4 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-4 line-clamp-2 leading-snug">
+                                    "<a href="${bestPost.url}" target="_blank" class="hover:text-brand-500 transition-colors">${bestPost.title}</a>"
                                 </h4>
                             </div>
-                            <div class="space-y-2 text-sm">
-                                <div class="flex items-center gap-2">
-                                    <span class="w-2 h-2 rounded-full bg-warning"></span>
-                                    <span class="font-bold">${reactionsMultiplier}x</span> more reactions than average
+                            <div class="space-y-2.5 text-sm text-slate-700 dark:text-slate-300 pt-2 border-t border-slate-200/60 dark:border-slate-800/60">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-slate-500 dark:text-slate-400">Reactivity scale</span>
+                                    <span class="font-bold text-brand-600 dark:text-brand-400 bg-brand-500/10 px-2 py-0.5 rounded-md">${reactionsMultiplier}x average</span>
                                 </div>
-                                <div class="flex items-center gap-2">
-                                    <span class="w-2 h-2 rounded-full bg-success"></span>
-                                    <span class="font-bold">${commentsDiffPct >= 0 ? '+' + commentsDiffPct : commentsDiffPct}%</span> comments
+                                <div class="flex items-center justify-between">
+                                    <span class="text-slate-500 dark:text-slate-400">Comments uplift</span>
+                                    <span class="font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md">${commentsDiffPct >= 0 ? '+' + commentsDiffPct : commentsDiffPct}%</span>
                                 </div>
-                                <div class="flex items-center gap-2 text-xs text-base-content/60 pt-1">
+                                <div class="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500 pt-1">
                                     <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
-                                    ${publishedOnStrongestDay ? `Published on your strongest day (${bestPostDayName})` : `Published on a ${bestPostDayName}`}
+                                    ${publishedOnStrongestDay ? `Published on optimal day (${bestDayName})` : `Published on ${bestPostDayName}`}
                                 </div>
                             </div>
                         </div>
 
-                        <div class="card bg-base-200/50 border border-base-300 p-5 flex flex-col justify-between hover:border-info/50 transition-all">
+                        <div class="bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-6 flex flex-col justify-between hover:border-blue-500/30 transition-all duration-300 group">
                             <div>
-                                <div class="text-xs font-bold text-info uppercase tracking-wider mb-2 flex items-center gap-2">
+                                <div class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-2.5 flex items-center gap-2">
                                     <i data-lucide="calendar-check" class="w-4 h-4"></i> Best Publishing Day
                                 </div>
-                                <h4 class="text-xl font-bold mb-2">
-                                    ${bestDayName} <span class="text-base-content/60 text-sm font-normal">drives the most engagement</span>
+                                <h4 class="text-2xl font-extrabold text-slate-900 dark:text-white mb-1">
+                                    ${bestDayName}
                                 </h4>
-                                <p class="text-xs text-base-content/60 mb-4">Based on average reactions per article.</p>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Highest average reaction yield per article.</p>
                             </div>
-                            <div class="bg-base-300/40 p-3 rounded-xl border border-base-300 flex items-center justify-between">
-                                <span class="text-xs text-base-content/80">${bestDayName} Avg:</span>
-                                <span class="font-bold text-success text-sm">${dayDiffFormatted} Likes</span>
+                            <div class="bg-slate-100/80 dark:bg-slate-950/80 p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800 flex items-center justify-between">
+                                <span class="text-xs font-medium text-slate-600 dark:text-slate-400">Engagement delta:</span>
+                                <span class="font-bold text-emerald-600 dark:text-emerald-400 text-sm">${dayDiffFormatted} vs avg</span>
                             </div>
                         </div>
 
-                        <div class="card bg-base-200/50 border border-base-300 p-5 flex flex-col justify-between hover:border-secondary/50 transition-all">
+                        <div class="bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-6 flex flex-col justify-between hover:border-purple-500/30 transition-all duration-300 group md:col-span-2 lg:col-span-1">
                             <div>
-                                <div class="text-xs font-bold text-secondary uppercase tracking-wider mb-2 flex items-center gap-2">
-                                    <i data-lucide="pen-tool" class="w-4 h-4"></i> Word Count Pattern
+                                <div class="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider mb-2.5 flex items-center gap-2">
+                                    <i data-lucide="pen-tool" class="w-4 h-4"></i> Content Pattern
                                 </div>
-                                <h4 class="text-base font-bold mb-1">
-                                    ${isLongerBetter ? 'In-depth articles perform better' : 'Compact articles perform better'}
+                                <h4 class="text-lg font-bold text-slate-900 dark:text-white mb-1">
+                                    ${isLongerBetter ? 'Long-form yields high traction' : 'Concise deep-dives preferred'}
                                 </h4>
-                                <p class="text-xs text-base-content/60 mb-4">Impact of post length on reader engagement.</p>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Word length impact correlation analysis.</p>
                             </div>
-                            <div class="grid grid-cols-2 gap-2 text-center">
-                                <div class="bg-base-300/40 p-2.5 rounded-xl border border-base-300">
-                                    <div class="text-xs text-base-content/60">Top Posts Avg</div>
-                                    <div class="text-base font-bold text-secondary">${topAvgWords.toLocaleString('en-US')} Words</div>
+                            <div class="grid grid-cols-2 gap-3 text-center">
+                                <div class="bg-slate-100/80 dark:bg-slate-950/80 p-3 rounded-xl border border-slate-200/80 dark:border-slate-800">
+                                    <div class="text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase">Top Posts</div>
+                                    <div class="text-base font-extrabold text-purple-600 dark:text-purple-400 mt-0.5">${topAvgWords.toLocaleString()} w</div>
                                 </div>
-                                <div class="bg-base-300/40 p-2.5 rounded-xl border border-base-300">
-                                    <div class="text-xs text-base-content/60">Overall Avg</div>
-                                    <div class="text-base font-bold">${avgWords.toLocaleString('en-US')} Words</div>
+                                <div class="bg-slate-100/80 dark:bg-slate-950/80 p-3 rounded-xl border border-slate-200/80 dark:border-slate-800">
+                                    <div class="text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase">Overall Avg</div>
+                                    <div class="text-base font-extrabold text-slate-800 dark:text-slate-200 mt-0.5">${avgWords.toLocaleString()} w</div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="pt-2 border-t border-base-300">
-                        <div class="text-xs font-bold text-base-content/70 uppercase tracking-wider mb-3 flex items-center gap-2">
-                            <i data-lucide="tag" class="w-4 h-4 text-warning"></i> Top Categories / Tags (by Reactions)
+                    <div class="pt-4 border-t border-slate-200/80 dark:border-slate-800">
+                        <div class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                            <i data-lucide="tag" class="w-4 h-4 text-brand-500"></i> Top Performing Topics / Tags
                         </div>
-                        <div class="flex flex-wrap gap-2.5">
+                        <div class="flex flex-wrap gap-2">
                             ${sortedTags.map(tag => `
-                                <div class="badge badge-lg gap-2 py-4 px-4 bg-base-200 border-base-300">
-                                    <span>🏷️ ${tag.name}</span>
-                                    <span class="badge badge-warning badge-sm font-bold">
+                                <div class="bg-slate-100/80 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 rounded-xl px-3.5 py-2 flex items-center gap-2.5 text-xs font-medium transition-all shadow-sm">
+                                    <span class="text-slate-800 dark:text-slate-200 font-semibold">#${tag.name}</span>
+                                    <span class="bg-brand-500/10 text-brand-600 dark:text-brand-400 px-2 py-0.5 rounded-lg font-bold border border-brand-500/20">
                                         avg ${tag.avgReactions} ❤️
                                     </span>
                                 </div>
@@ -605,24 +890,30 @@
             document.getElementById('growth-insights-container').innerHTML = growthInsightsHtml;
 
             const bestPostHtml = bestPost ? `
-                <div class="card bg-gradient-to-r from-amber-600 to-orange-500 text-white shadow-xl p-6 flex flex-col md:flex-row justify-between items-center gap-6">
-                    <div>
-                        <div class="text-amber-100 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-2">
-                            <i data-lucide="award" class="w-5 h-5"></i> Highlight Post
+                <div class="relative overflow-hidden bg-gradient-to-r from-brand-600 via-brand-500 to-amber-500 rounded-3xl p-6 sm:p-8 text-white shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6 group">
+                    <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+                    <div class="relative z-10 max-w-2xl">
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/20 backdrop-blur-md text-orange-100 text-xs font-bold uppercase tracking-wider mb-3 border border-white/10">
+                            <i data-lucide="award" class="w-3.5 h-3.5"></i> Featured Highlight Article
                         </div>
-                        <h3 class="text-2xl font-bold mb-2 line-clamp-1">
+                        <h3 class="text-2xl sm:text-3xl font-extrabold mb-2 leading-tight">
                             <a href="${bestPost.url}" target="_blank" class="hover:underline">${bestPost.title}</a>
                         </h3>
-                        <p class="text-amber-100 text-sm">${formatDate(bestPost.date)} • ${bestPost.audience}</p>
+                        <p class="text-orange-100/90 text-sm font-medium flex items-center gap-2">
+                            <span>${formatDate(bestPost.date)}</span>
+                            <span>•</span>
+                            <span class="px-2 py-0.5 rounded bg-black/20 text-xs">${bestPost.audience}</span>
+                        </p>
                     </div>
-                    <div class="flex gap-6">
+                    <div class="relative z-10 flex gap-6 sm:gap-8 bg-black/15 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/10 self-stretch md:self-auto justify-around">
                         <div class="text-center">
-                            <div class="text-3xl font-black">${formatNum(bestPost.reactions)}</div>
-                            <div class="text-amber-200 text-xs uppercase font-bold">Reactions</div>
+                            <div class="text-3xl font-black tracking-tight">${formatNum(bestPost.reactions)}</div>
+                            <div class="text-orange-200 text-[11px] font-bold uppercase tracking-wider mt-0.5">Reactions</div>
                         </div>
+                        <div class="w-px bg-white/20"></div>
                         <div class="text-center">
-                            <div class="text-3xl font-black">${formatNum(bestPost.comments)}</div>
-                            <div class="text-amber-200 text-xs uppercase font-bold">Comments</div>
+                            <div class="text-3xl font-black tracking-tight">${formatNum(bestPost.comments)}</div>
+                            <div class="text-orange-200 text-[11px] font-bold uppercase tracking-wider mt-0.5">Comments</div>
                         </div>
                     </div>
                 </div>
@@ -630,28 +921,33 @@
             document.getElementById('best-post-container').innerHTML = bestPostHtml;
 
             const kpiData = [
-                { title: "Posts", val: posts.length, icon: "file-text", badge: "badge-info" },
-                { title: "Total Likes", val: formatNum(totalReactions), icon: "heart", badge: "badge-warning" },
-                { title: "Comments", val: formatNum(totalComments), icon: "message-circle", badge: "badge-success" },
-                { title: "Total Words", val: formatNum(totalWords), icon: "hash", badge: "badge-secondary" },
-                { title: "Avg Likes / Post", val: formatNum(avgReactions), icon: "trending-up", badge: "badge-ghost" },
-                { title: "Avg Word Count", val: formatNum(avgWords), icon: "align-left", badge: "badge-ghost" }
+                { title: "Health Index Score", val: `${finalRating10} / 10`, icon: "shield-check", color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-500/10 border-amber-500/20" },
+                { title: "Total Posts Analyzed", val: posts.length, icon: "file-text", color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-500/10 border-blue-500/20" },
+                { title: "Total Reactions", val: formatNum(totalReactions), icon: "activity", color: "text-brand-600 dark:text-brand-400", bg: "bg-brand-500/10 border-brand-500/20" },
+                { title: "Total Comments", val: formatNum(totalComments), icon: "message-circle", color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20" },
+                { title: "Total Word Volume", val: formatNum(totalWords), icon: "hash", color: "text-purple-600 dark:text-purple-400", bg: "bg-purple-500/10 border-purple-500/20" },
+                { title: "Avg Reactions / Post", val: formatNum(avgReactions), icon: "trending-up", color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-500/10 border-amber-500/20" },
+                { title: "Avg Comments / Post", val: formatNum(avgComments), icon: "message-square", color: "text-teal-600 dark:text-teal-400", bg: "bg-teal-500/10 border-teal-500/20" },
+                { title: "Avg Word Count / Post", val: formatNum(avgWords), icon: "align-left", color: "text-indigo-600 dark:text-indigo-400", bg: "bg-indigo-500/10 border-indigo-500/20" },
+                { title: "Engagement Ratio", val: `${engagementRate}%`, icon: "pie-chart", color: "text-rose-600 dark:text-rose-400", bg: "bg-rose-500/10 border-rose-500/20" },
+                { title: "Free Posts Ratio", val: `${freeRatioPct}%`, icon: "globe", color: "text-sky-600 dark:text-sky-400", bg: "bg-sky-500/10 border-sky-500/20" },
+                { title: "Paid Posts Ratio", val: `${paidRatioPct}%`, icon: "lock", color: "text-yellow-600 dark:text-yellow-400", bg: "bg-yellow-500/10 border-yellow-500/20" }
             ];
 
             document.getElementById('kpi-grid').innerHTML = kpiData.map(kpi => `
-                <div class="stat bg-base-100 border border-base-300 rounded-box p-4 shadow-sm">
-                    <div class="stat-figure text-base-content/80">
-                        <span class="badge ${kpi.badge} p-2"><i data-lucide="${kpi.icon}" class="w-4 h-4"></i></span>
+                <div class="glass-card border border-slate-200/80 dark:border-slate-800 p-5 rounded-3xl premium-shadow transition-all duration-300 hover:scale-[1.02] group">
+                    <div class="flex justify-between items-start mb-3">
+                        <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">${kpi.title}</span>
+                        <div class="p-2.5 rounded-2xl border ${kpi.bg} ${kpi.color} shadow-inner"><i data-lucide="${kpi.icon}" class="w-4 h-4"></i></div>
                     </div>
-                    <div class="stat-title text-xs font-bold uppercase text-base-content/60">${kpi.title}</div>
-                    <div class="stat-value text-2xl text-base-content mt-1 font-extrabold">${kpi.val}</div>
+                    <div class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">${kpi.val}</div>
                 </div>
             `).join('');
 
             const colors = getChartColors();
             Chart.defaults.color = colors.text;
             Chart.defaults.borderColor = colors.grid;
-            Chart.defaults.font.family = 'Inter';
+            Chart.defaults.font.family = 'Plus Jakarta Sans';
 
             const commonOptions = {
                 responsive: true,
@@ -664,8 +960,9 @@
                         bodyColor: colors.tooltipText,
                         borderColor: colors.tooltipBorder,
                         borderWidth: 1,
-                        padding: 10,
-                        cornerRadius: 8
+                        padding: 12,
+                        cornerRadius: 12,
+                        boxPadding: 6
                     }
                 }
             };
@@ -682,13 +979,13 @@
                 data: {
                     labels: dates,
                     datasets: [
-                        { label: 'Free (Words)', data: freeData, backgroundColor: '#36d399', borderRadius: {topLeft: 4, topRight: 4}, stacked: true },
-                        { label: 'Paid (Words)', data: paidData, backgroundColor: '#fbbd23', borderRadius: {topLeft: 4, topRight: 4}, stacked: true }
+                        { label: 'Free (Words)', data: freeData, backgroundColor: '#10b981', borderRadius: 4, stacked: true },
+                        { label: 'Paid (Words)', data: paidData, backgroundColor: '#f59e0b', borderRadius: 4, stacked: true }
                     ]
                 },
                 options: {
                     ...commonOptions,
-                    plugins: { ...commonOptions.plugins, legend: { display: true, position: 'top', align: 'end', labels: { boxWidth: 12, usePointStyle: true } } },
+                    plugins: { ...commonOptions.plugins, legend: { display: true, position: 'top', align: 'end', labels: { boxWidth: 10, usePointStyle: true, font: { weight: 600 } } } },
                     scales: {
                         x: { display: false, stacked: true }, 
                         y: { beginAtZero: true, stacked: true, grid: { color: colors.grid } }
@@ -706,18 +1003,18 @@
                 data: {
                     labels: dates,
                     datasets: [
-                        { label: 'Likes ❤️', data: reactionData, borderColor: '#fbbd23', backgroundColor: 'rgba(251, 189, 35, 0.1)', fill: true, tension: 0.4, borderWidth: 2 },
-                        { label: 'Comments 💬', data: commentData, borderColor: '#3abff8', backgroundColor: 'transparent', tension: 0.4, borderWidth: 2 }
+                        { label: 'Reactions', data: reactionData, borderColor: '#ff6700', backgroundColor: 'rgba(255, 103, 0, 0.08)', fill: true, tension: 0.4, borderWidth: 2.5 },
+                        { label: 'Comments', data: commentData, borderColor: '#3b82f6', backgroundColor: 'transparent', tension: 0.4, borderWidth: 2.5 }
                     ]
                 },
                 options: {
                     ...commonOptions,
-                    plugins: { ...commonOptions.plugins, legend: { display: true, position: 'top', align: 'end', labels: { boxWidth: 12, usePointStyle: true } } },
+                    plugins: { ...commonOptions.plugins, legend: { display: true, position: 'top', align: 'end', labels: { boxWidth: 10, usePointStyle: true, font: { weight: 600 } } } },
                     scales: {
                         x: { display: false },
                         y: { beginAtZero: true, grid: { color: colors.grid } }
                     },
-                    elements: { point: { radius: 0, hitRadius: 10, hoverRadius: 4 } },
+                    elements: { point: { radius: 0, hitRadius: 10, hoverRadius: 5 } },
                     interaction: { mode: 'index', intersect: false }
                 }
             });
@@ -740,8 +1037,8 @@
                     datasets: [{
                         label: 'Number of Posts',
                         data: Object.values(buckets),
-                        backgroundColor: '#f000b8',
-                        borderRadius: 4
+                        backgroundColor: '#8b5cf6',
+                        borderRadius: 6
                     }]
                 },
                 options: {
@@ -769,8 +1066,8 @@
                     datasets: [{
                         label: 'Published Posts',
                         data: shiftedCounts,
-                        backgroundColor: '#1ddc94',
-                        borderRadius: 4
+                        backgroundColor: '#14b8a6',
+                        borderRadius: 6
                     }]
                 },
                 options: {
@@ -803,22 +1100,19 @@
                 if (valA < valB) return currentSort.dir === 'asc' ? -1 : 1;
                 if (valA > valB) return currentSort.dir === 'asc' ? 1 : -1;
                 return 0;
-            });
+            }).slice(0, 50);
 
             tbody.innerHTML = sortedData.map((p, i) => `
-                <tr class="hover">
-                    <td class="text-base-content/60 font-semibold">#${i + 1}</td>
-                    <td class="font-medium whitespace-normal min-w-[280px]">
-                        <a href="${p.url}" target="_blank" class="hover:text-warning transition-colors font-bold text-base-content">${p.title}</a>
-                        <div class="text-xs text-base-content/60 mt-1 flex items-center gap-2">
-                            <span class="badge badge-sm ${p.audience === 'Paid' ? 'badge-warning' : 'badge-ghost'} font-semibold">${p.audience}</span>
-                            ${p.tags && p.tags.length > 0 ? `<span class="opacity-60">🏷️ ${p.tags[0]}</span>` : ''}
-                        </div>
+                <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
+                    <td class="px-6 py-4 text-slate-400 font-semibold">#${i + 1}</td>
+                    <td class="px-6 py-4 font-semibold text-slate-900 dark:text-slate-100 whitespace-normal min-w-[280px]">
+                        <a href="${p.url}" target="_blank" class="hover:text-brand-500 transition-colors line-clamp-1">${p.title}</a>
+                        <div class="text-[11px] font-medium text-slate-400 dark:text-slate-500 mt-0.5">${p.audience} Publication</div>
                     </td>
-                    <td class="text-base-content/70">${formatDate(p.date)}</td>
-                    <td class="font-bold text-warning">${formatNum(p.reactions)}</td>
-                    <td class="font-bold text-info">${formatNum(p.comments)}</td>
-                    <td class="text-base-content/70 font-medium">${formatNum(p.words)}</td>
+                    <td class="px-6 py-4 text-slate-500 dark:text-slate-400 font-medium">${formatDate(p.date)}</td>
+                    <td class="px-6 py-4 font-bold text-brand-600 dark:text-brand-400">${formatNum(p.reactions)}</td>
+                    <td class="px-6 py-4 font-bold text-blue-600 dark:text-blue-400">${formatNum(p.comments)}</td>
+                    <td class="px-6 py-4 text-slate-500 dark:text-slate-400 font-medium">${formatNum(p.words)}</td>
                 </tr>
             `).join('');
 
