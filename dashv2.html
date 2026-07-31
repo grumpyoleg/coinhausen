@@ -1,78 +1,152 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Lettermetrics | Advanced Substack Intelligence & Analytics</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
-                    colors: { 
+                    colors: {
                         slate: { 850: '#151e2e', 950: '#090d16' },
                         brand: { 500: '#ff6700', 600: '#e05b00' }
+                    },
+                    animation: {
+                        float: 'float 6s ease-in-out infinite',
+                        wiggle: 'wiggle 2s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%,100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-6px)' }
+                        },
+                        wiggle: {
+                            '0%,100%': { transform: 'rotate(-1deg)' },
+                            '50%': { transform: 'rotate(1deg)' }
+                        }
                     }
                 }
             }
         }
     </script>
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap'); 
-        body { font-family: 'Plus Jakarta Sans', sans-serif; transition: background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1), color 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+        :root {
+            --glass-border-light: rgba(226,232,240,0.8);
+            --glass-border-dark: rgba(255,255,255,0.06);
+            --premium-shadow-light: 0 20px 40px -15px rgba(0,0,0,0.03), 0 1px 3px 0 rgba(0,0,0,0.02);
+            --premium-shadow-dark: 0 25px 50px -12px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.02);
+        }
+
+        body { font-family: 'Plus Jakarta Sans', sans-serif; transition: background-color 0.36s cubic-bezier(.16,1,.3,1), color 0.36s cubic-bezier(.16,1,.3,1); }
         ::-webkit-scrollbar { height: 6px; width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         .dark ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 9999px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
-        .sort-icon { display: inline-block; width: 0.8em; height: 0.8em; margin-left: 0.25rem; opacity: 0.3; transition: opacity 0.2s; }
-        th:hover .sort-icon { opacity: 0.7; }
-        .sort-active .sort-icon { opacity: 1; }
-        .sort-asc .sort-icon { transform: rotate(180deg); }
 
-        @keyframes pulseGlow {
-            0%, 100% { opacity: 0.3; transform: scale(1); }
-            50% { opacity: 0.6; transform: scale(1.05); }
-        }
-        .animate-pulse-glow { animation: pulseGlow 6s ease-in-out infinite; }
-        
         .glass-card {
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(226, 232, 240, 0.8);
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid var(--glass-border-light);
         }
         .dark .glass-card {
-            background: rgba(13, 18, 30, 0.7);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.07);
+            background: linear-gradient(180deg, rgba(12,17,28,0.72), rgba(8,11,18,0.72));
+            border: 1px solid var(--glass-border-dark);
         }
 
-        .premium-shadow {
-            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.03), 0 1px 3px 0 rgba(0, 0, 0, 0.02);
-        }
-        .dark .premium-shadow {
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.02);
-        }
+        .premium-shadow { box-shadow: var(--premium-shadow-light); }
+        .dark .premium-shadow { box-shadow: var(--premium-shadow-dark); }
 
         .hero-glow {
-            background: radial-gradient(circle at 50% 0%, rgba(255, 103, 0, 0.12) 0%, transparent 60%);
+            background: radial-gradient(circle at 50% 0%, rgba(255,103,0,0.12) 0%, transparent 60%);
+            filter: blur(20px);
         }
+
+        .sort-icon { display:inline-block; width:0.8em; height:0.8em; margin-left:.25rem; opacity:.3; transition: opacity .18s, transform .18s; }
+        th:hover .sort-icon { opacity:.7; transform: translateY(-1px); }
+        .sort-active .sort-icon { opacity:1; }
+
+        /* Animated reveals */
+        .reveal { transform: translateY(10px); opacity: 0; transition: transform .45s cubic-bezier(.2,.9,.2,1), opacity .45s ease-in-out; }
+        .reveal.visible { transform: translateY(0); opacity: 1; }
+
+        /* floating micro animation for badges & icons */
+        .float-slow { animation: float 6s ease-in-out infinite; }
+        @keyframes float {
+            0%,100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+
+        /* Modal and responsiveness */
+        .modal-backdrop {
+            transition: opacity .28s ease, visibility .28s;
+            will-change: opacity;
+        }
+        .modal-panel {
+            transform-origin: center;
+            transition: transform .28s cubic-bezier(.2,.9,.2,1), opacity .28s ease;
+        }
+        .modal-enter { opacity: 0; transform: translateY(14px) scale(.98); }
+        .modal-enter.modal-enter-active { opacity: 1; transform: translateY(0) scale(1); }
+        .modal-leave { opacity: 1; transform: translateY(0) scale(1); }
+        .modal-leave.modal-leave-active { opacity: 0; transform: translateY(14px) scale(.98); }
+
+        /* Exportable card responsive tuning */
+        #exportable-card { transition: transform .28s cubic-bezier(.2,.9,.2,1), box-shadow .28s ease; }
+        #exportable-card .small-compact { padding: 1.25rem; }
+        @media (max-width: 640px) {
+            #exportable-card { padding: 1.25rem !important; border-radius: 1.2rem; }
+            .modal-panel { margin: 1rem; width: calc(100% - 2rem); }
+            .modal-footer-stack { flex-direction: column-reverse; gap: .5rem; }
+            .modal-footer-stack .btn-full { width: 100%; display: inline-flex; justify-content: center; }
+        }
+
+        /* Sticky footer on small screens */
+        .modal-footer-sticky {
+            position: sticky;
+            bottom: 0;
+            background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.06));
+            backdrop-filter: blur(6px);
+        }
+        .dark .modal-footer-sticky {
+            background: linear-gradient(180deg, rgba(6,9,19,0.85), rgba(6,9,19,0.95));
+        }
+
+        /* Subtle hover and focus improvements */
+        .btn-cta { transition: transform .18s cubic-bezier(.2,.9,.2,1), box-shadow .18s; }
+        .btn-cta:active { transform: translateY(1px) scale(.997); }
+
+        /* Focus outline for keyboard users */
+        :focus { outline: 3px solid rgba(255,103,0,0.12); outline-offset: 3px; }
+
+        /* Respect reduced motion preference */
+        @media (prefers-reduced-motion: reduce) {
+            .float-slow, .reveal, #exportable-card, .btn-cta, .modal-panel { animation: none !important; transition: none !important; transform: none !important; }
+        }
+
+        /* Loading spinner alignment */
+        .btn-spinner { display:inline-flex; align-items:center; gap:.5rem; }
     </style>
 </head>
 <body class="min-h-screen bg-slate-50 dark:bg-[#060913] text-slate-900 dark:text-slate-100 selection:bg-brand-500 selection:text-white pb-20 relative overflow-x-hidden">
-    
-    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[500px] hero-glow pointer-events-none -z-10 animate-pulse-glow"></div>
+
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[500px] hero-glow pointer-events-none -z-10 float-slow"></div>
 
     <!-- Navigation Header -->
-    <header class="sticky top-0 z-50 glass-card border-b border-slate-200/60 dark:border-slate-800/60 transition-all duration-300">
+    <header class="sticky top-0 z-50 glass-card border-b border-slate-200/60 dark:border-slate-800/60 transition-all duration-300 backdrop-blur-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
             <div class="flex items-center gap-3.5 group cursor-pointer">
-                <div class="w-11 h-11 bg-gradient-to-br from-brand-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg shadow-brand-500/25 group-hover:scale-105 transition-transform duration-300">
+                <div class="w-11 h-11 bg-gradient-to-br from-brand-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg shadow-brand-500/25 group-hover:scale-105 transition-transform duration-300 animate-[wiggle_6s_infinite]">
                     <i data-lucide="activity" class="w-5 h-5 text-white"></i>
                 </div>
                 <div>
@@ -83,12 +157,11 @@
                     <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium tracking-wide">Substack Intelligence Suite</p>
                 </div>
             </div>
-            
             <div class="flex items-center gap-3">
                 <div id="status-badge" class="hidden sm:flex px-3.5 py-1.5 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full text-xs font-semibold text-slate-600 dark:text-slate-300 items-center gap-2 shadow-sm">
                     <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div> Ready to Analyze
                 </div>
-                <button id="theme-toggle" class="p-2.5 rounded-2xl bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:text-brand-500 dark:hover:text-brand-400 border border-slate-200 dark:border-slate-800 hover:border-brand-500/30 transition-all duration-200 shadow-sm active:scale-95 cursor-pointer" title="Toggle Theme">
+                <button id="theme-toggle" aria-label="Toggle Theme" class="p-2.5 rounded-2xl bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:text-brand-500 dark:hover:text-brand-400 border border-slate-200 dark:border-slate-800 hover:border-brand-500/30 transition-all duration-200 shadow-sm active:scale-95 cursor-pointer btn-cta">
                     <i data-lucide="sun" id="theme-icon-sun" class="w-4 h-4 hidden"></i>
                     <i data-lucide="moon" id="theme-icon-moon" class="w-4 h-4"></i>
                 </button>
@@ -97,29 +170,26 @@
     </header>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
-        
-        <!-- Hero Search Section -->
-        <div class="text-center max-w-3xl mx-auto space-y-4 pt-4">
+        <!-- Hero -->
+        <div class="text-center max-w-3xl mx-auto space-y-4 pt-4 reveal" id="hero">
             <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 text-xs font-bold uppercase tracking-wider border border-brand-500/20 shadow-sm">
                 <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Deep Telemetry Engine
             </div>
             <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                 Unlock the Secrets of Any <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-500 to-amber-500">Substack Publication</span>
             </h1>
-            <p class="text-slate-600 dark:text-slate-400 text-base sm:text-lg font-normal">
-                Instant analytics, health ratings, growth velocity, and publication telemetry derived from the last 50 posts.
-            </p>
+            <p class="text-slate-600 dark:text-slate-400 text-base sm:text-lg font-normal">Instant analytics, health ratings, growth velocity, and publication telemetry derived from the last 50 posts.</p>
         </div>
 
         <!-- Search Bar Card -->
-        <div class="max-w-3xl mx-auto">
+        <div class="max-w-3xl mx-auto reveal">
             <form id="search-form" class="glass-card rounded-3xl p-3 sm:p-4 premium-shadow transition-all duration-300">
                 <div class="flex flex-col sm:flex-row gap-3">
                     <div class="relative flex-1 group">
                         <i data-lucide="globe" class="absolute left-4 top-4 w-5 h-5 text-slate-400 group-focus-within:text-brand-500 transition-colors"></i>
                         <input type="text" id="handle-input" value="unknownlegends" required
                             class="w-full pl-12 pr-4 py-3.5 bg-slate-50/50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 outline-none transition-all font-semibold placeholder:text-slate-400 dark:placeholder:text-slate-600 text-base"
-                            placeholder="e.g. pragmaticengineer">
+                            placeholder="e.g. pragmaticengineer" />
                     </div>
                     <div class="w-full sm:w-44">
                         <div class="relative h-full">
@@ -129,7 +199,7 @@
                             <i data-lucide="chevron-down" class="absolute right-4 top-4 w-4 h-4 text-slate-400 pointer-events-none"></i>
                         </div>
                     </div>
-                    <button type="submit" id="analyze-btn" class="px-8 py-3.5 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-orange-400 text-white font-bold rounded-2xl transition-all shadow-lg shadow-brand-500/25 hover:shadow-brand-500/40 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 flex items-center justify-center gap-2.5 cursor-pointer text-base">
+                    <button type="submit" id="analyze-btn" class="px-8 py-3.5 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-orange-400 text-white font-bold rounded-2xl transition-all shadow-lg shadow-brand-500/25 hover:shadow-brand-500/40 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 flex items-center justify-center gap-2.5 cursor-pointer text-base btn-cta" aria-live="polite">
                         <i data-lucide="zap" class="w-5 h-5"></i> <span id="btn-text">Analyze</span>
                     </button>
                 </div>
@@ -141,16 +211,11 @@
             <span class="text-sm font-medium"></span>
         </div>
 
-        <!-- Results Container -->
+        <!-- Results -->
         <div id="results-container" class="hidden space-y-10 transition-all duration-700 opacity-0 translate-y-6">
-            
-            <!-- Overall Rating Showcase Grid -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                
-                <!-- Main Health Score Banner -->
                 <div class="glass-card lg:col-span-2 rounded-3xl p-8 premium-shadow relative overflow-hidden flex flex-col justify-between border border-slate-200/80 dark:border-slate-800">
                     <div class="absolute -right-16 -top-16 w-72 h-72 bg-gradient-to-br from-brand-500/15 to-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
-                    
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6 relative z-10">
                         <div class="flex items-center gap-6">
                             <div class="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl bg-gradient-to-br from-brand-500 via-brand-600 to-amber-500 flex flex-col items-center justify-center text-white shadow-xl shadow-brand-500/30 flex-shrink-0 transform hover:scale-105 transition-transform">
@@ -162,9 +227,7 @@
                                     <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Publication Health Index
                                 </div>
                                 <h3 id="rating-title" class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Exceptional Performance</h3>
-                                <p id="rating-subtitle" class="text-sm text-slate-600 dark:text-slate-400 mt-1 max-w-lg leading-relaxed">
-                                    Dynamically synthesized from reader feedback volume, comment density, word distribution, and publishing velocity across the last 50 posts.
-                                </p>
+                                <p id="rating-subtitle" class="text-sm text-slate-600 dark:text-slate-400 mt-1 max-w-lg leading-relaxed">Dynamically synthesized from reader feedback volume, comment density, word distribution, and publishing velocity across the last 50 posts.</p>
                             </div>
                         </div>
                     </div>
@@ -173,13 +236,12 @@
                         <div class="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
                             <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-500"></i> Verified Telemetry via lettermetrics.com
                         </div>
-                        <button id="open-summary-modal-btn" class="w-full sm:w-auto px-6 py-3.5 bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 dark:hover:bg-slate-700 text-white font-bold rounded-2xl transition-all shadow-lg flex items-center justify-center gap-2.5 cursor-pointer border border-slate-700/50 text-sm">
-                            <i data-lucide="file-badge" class="w-4 h-4 text-brand-400"></i> Generate Summary Card (.PNG)
+                        <button id="open-summary-modal-btn" class="w-full sm:w-auto px-6 py-3.5 bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 dark:hover:bg-slate-700 text-white font-bold rounded-2xl transition-all shadow-lg flex items-center justify-center gap-2.5 cursor-pointer border border-slate-700/50 text-sm btn-cta" aria-haspopup="dialog" aria-controls="summary-modal" aria-expanded="false">
+                            <i data-lucide="file-badge" class="w-4 h-4 text-brand-400"></i> <span id="summary-btn-text">Generate Summary Card (.PNG)</span>
                         </button>
                     </div>
                 </div>
 
-                <!-- Quick Snapshot Card -->
                 <div class="glass-card rounded-3xl p-8 premium-shadow flex flex-col justify-between border border-slate-200/80 dark:border-slate-800">
                     <div>
                         <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
@@ -204,14 +266,11 @@
                         <span class="text-[11px] text-slate-400 font-medium">Powered by lettermetrics.com engine</span>
                     </div>
                 </div>
-
             </div>
 
-            <!-- Growth Insights & Featured Best Post -->
             <div id="growth-insights-container"></div>
             <div id="best-post-container"></div>
 
-            <!-- KPI Grid Section -->
             <div class="space-y-4">
                 <div class="flex items-center justify-between">
                     <h3 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2.5">
@@ -221,7 +280,6 @@
                 <div id="kpi-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
             </div>
 
-            <!-- Charts Grid Section -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div class="glass-card p-6 sm:p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800 flex flex-col premium-shadow">
                     <div class="flex items-center justify-between mb-2">
@@ -260,7 +318,6 @@
                 </div>
             </div>
 
-            <!-- Posts Table Section -->
             <div class="glass-card border border-slate-200/80 dark:border-slate-800 rounded-3xl overflow-hidden flex flex-col premium-shadow">
                 <div class="p-6 sm:p-8 border-b border-slate-200/80 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
@@ -276,18 +333,10 @@
                             <tr>
                                 <th class="px-6 py-4">Rank</th>
                                 <th class="px-6 py-4 w-full">Title</th>
-                                <th class="px-6 py-4 cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 sort-header transition-colors" data-sort="date">
-                                    Date <i data-lucide="chevron-down" class="sort-icon inline-block w-4 h-4"></i>
-                                </th>
-                                <th class="px-6 py-4 cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 sort-header sort-active sort-desc transition-colors" data-sort="reactions">
-                                    Reactions <i data-lucide="chevron-down" class="sort-icon inline-block w-4 h-4"></i>
-                                </th>
-                                <th class="px-6 py-4 cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 sort-header transition-colors" data-sort="comments">
-                                    Comments <i data-lucide="chevron-down" class="sort-icon inline-block w-4 h-4"></i>
-                                </th>
-                                <th class="px-6 py-4 cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 sort-header transition-colors" data-sort="words">
-                                    Words <i data-lucide="chevron-down" class="sort-icon inline-block w-4 h-4"></i>
-                                </th>
+                                <th class="px-6 py-4 cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 sort-header transition-colors" data-sort="date">Date <i data-lucide="chevron-down" class="sort-icon inline-block w-4 h-4"></i></th>
+                                <th class="px-6 py-4 cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 sort-header sort-active sort-desc transition-colors" data-sort="reactions">Reactions <i data-lucide="chevron-down" class="sort-icon inline-block w-4 h-4"></i></th>
+                                <th class="px-6 py-4 cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 sort-header transition-colors" data-sort="comments">Comments <i data-lucide="chevron-down" class="sort-icon inline-block w-4 h-4"></i></th>
+                                <th class="px-6 py-4 cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 sort-header transition-colors" data-sort="words">Words <i data-lucide="chevron-down" class="sort-icon inline-block w-4 h-4"></i></th>
                             </tr>
                         </thead>
                         <tbody id="posts-table-body" class="divide-y divide-slate-100 dark:divide-slate-800/60 transition-colors duration-200"></tbody>
@@ -297,30 +346,27 @@
         </div>
     </main>
 
-    <!-- Summary & PNG Download Modal -->
-    <div id="summary-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md transition-opacity duration-300">
-        <div class="relative w-full max-w-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh]">
-            
+    <!-- Summary & PNG Download Modal (responsive + animated + mobile-friendly) -->
+    <div id="summary-modal" class="fixed inset-0 z-50 hidden modal-backdrop items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="modal-title">
+        <div class="modal-panel relative w-full max-w-3xl mx-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden" role="document">
             <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
                 <div class="flex items-center gap-2.5">
                     <div class="w-9 h-9 rounded-2xl bg-brand-500/10 text-brand-600 dark:text-brand-400 flex items-center justify-center font-bold">
                         <i data-lucide="sparkles" class="w-4 h-4"></i>
                     </div>
                     <div>
-                        <h3 class="text-base font-bold text-slate-900 dark:text-white">Publication Summary Card</h3>
+                        <h3 id="modal-title" class="text-base font-bold text-slate-900 dark:text-white">Publication Summary Card</h3>
                         <p class="text-xs text-slate-500">Ready for social sharing or reports</p>
                     </div>
                 </div>
-                <button id="close-modal-btn" class="p-2 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
+                <button id="close-modal-btn" class="p-2 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer" aria-label="Close summary">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
 
-            <!-- Exportable Card Container -->
-            <div class="p-6 sm:p-8 overflow-y-auto space-y-6">
-                <div id="exportable-card" class="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 text-white rounded-3xl p-8 sm:p-10 border border-slate-800 relative overflow-hidden shadow-2xl">
+            <div class="p-6 sm:p-8 overflow-y-auto space-y-6 max-h-[70vh]">
+                <div id="exportable-card" class="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 text-white rounded-3xl p-8 sm:p-10 border border-slate-800 relative overflow-hidden">
                     <div class="absolute -right-20 -top-20 w-80 h-80 bg-brand-500/20 rounded-full blur-3xl pointer-events-none"></div>
-                    
                     <div class="flex justify-between items-start mb-8 relative z-10">
                         <div>
                             <div class="text-xs font-bold text-brand-400 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
@@ -365,13 +411,13 @@
                 </div>
             </div>
 
-            <div class="p-6 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-3 bg-slate-50 dark:bg-slate-900/50">
-                <button id="close-modal-footer-btn" class="px-5 py-2.5 rounded-2xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 font-semibold text-xs transition-colors cursor-pointer">
-                    Close
-                </button>
-                <button id="download-png-btn" class="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-orange-400 text-white font-bold text-xs transition-all shadow-lg shadow-brand-500/25 flex items-center gap-2 cursor-pointer">
-                    <i data-lucide="download" class="w-4 h-4"></i> Download PNG
-                </button>
+            <div class="p-4 sm:p-6 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-3 bg-slate-50 dark:bg-slate-900/50 modal-footer-sticky">
+                <div class="w-full sm:w-auto modal-footer-stack flex items-center gap-3">
+                    <button id="close-modal-footer-btn" class="px-5 py-2.5 rounded-2xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 font-semibold text-xs transition-colors cursor-pointer">Close</button>
+                    <button id="download-png-btn" class="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-orange-400 text-white font-bold text-xs transition-all shadow-lg shadow-brand-500/25 flex items-center gap-2 btn-full" aria-label="Download summary PNG">
+                        <i data-lucide="download" class="w-4 h-4"></i> Download PNG
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -393,11 +439,7 @@
         const DEFAULT_PROXY_HASH = "aHR0cHM6Ly9zdXBlci1iYW5kLTliMzMub2xpdmVyaW8tYWxlc3NhbmRyby53b3JrZXJzLmRldi8=";
 
         function getProxyUrl() {
-            try {
-                return atob(DEFAULT_PROXY_HASH);
-            } catch (e) {
-                return '';
-            }
+            try { return atob(DEFAULT_PROXY_HASH); } catch (e) { return ''; }
         }
 
         const themeToggleBtn = document.getElementById('theme-toggle');
@@ -419,12 +461,10 @@
             htmlElement.classList.toggle('dark');
             if (htmlElement.classList.contains('dark')) {
                 localStorage.setItem('theme', 'dark');
-                themeIconMoon.classList.add('hidden');
-                themeIconSun.classList.remove('hidden');
+                themeIconMoon.classList.add('hidden'); themeIconSun.classList.remove('hidden');
             } else {
                 localStorage.setItem('theme', 'light');
-                themeIconSun.classList.add('hidden');
-                themeIconMoon.classList.remove('hidden');
+                themeIconSun.classList.add('hidden'); themeIconMoon.classList.remove('hidden');
             }
             updateChartColors();
         });
@@ -473,78 +513,127 @@
             const colors = getChartColors();
             Chart.defaults.color = colors.text;
             Chart.defaults.borderColor = colors.grid;
-            
+
             [chartTimeline, chartEngagement, chartWordCount, chartDayOfWeek].forEach(chart => {
                 if (chart) {
-                    chart.options.scales.y.grid.color = colors.grid;
-                    if(chart.options.scales.x) chart.options.scales.x.grid.color = colors.grid;
-                    if(chart.options.plugins.tooltip) {
+                    if (chart.options.scales?.y) chart.options.scales.y.grid.color = colors.grid;
+                    if (chart.options.scales?.x) chart.options.scales.x.grid.color = colors.grid;
+                    if (chart.options.plugins?.tooltip) {
                         chart.options.plugins.tooltip.backgroundColor = colors.tooltipBg;
                         chart.options.plugins.tooltip.titleColor = colors.tooltipText;
                         chart.options.plugins.tooltip.bodyColor = colors.tooltipText;
                         chart.options.plugins.tooltip.borderColor = colors.tooltipBorder;
                     }
-                    chart.update();
+                    try { chart.update(); } catch (e) { /* ignore */ }
                 }
             });
         };
 
-        // Modal triggers
+        // Modal elements and improved flow
         const modal = document.getElementById('summary-modal');
-        document.getElementById('open-summary-modal-btn').addEventListener('click', () => {
+        const openSummaryBtn = document.getElementById('open-summary-modal-btn');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const closeModalFooterBtn = document.getElementById('close-modal-footer-btn');
+        const downloadBtn = document.getElementById('download-png-btn');
+        const modalPanel = modal.querySelector('.modal-panel');
+        let lastFocusedElement = null;
+
+        function openModal() {
+            lastFocusedElement = document.activeElement;
             modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        });
-        document.getElementById('close-modal-btn').addEventListener('click', () => {
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        });
-        document.getElementById('close-modal-footer-btn').addEventListener('click', () => {
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        });
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
+            modal.style.display = 'flex';
+            modal.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+            openSummaryBtn.setAttribute('aria-expanded', 'true');
+
+            // small animate-in
+            modalPanel.classList.add('modal-enter', 'modal-enter-active');
+            setTimeout(() => modalPanel.classList.remove('modal-enter', 'modal-enter-active'), 320);
+
+            // focus management
+            closeModalBtn.focus();
+
+            // ensure exportable content is up-to-date (renderDashboard fills it on search)
+            lucide.createIcons();
+        }
+
+        function closeModal() {
+            modalPanel.classList.add('modal-leave', 'modal-leave-active');
+            modal.setAttribute('aria-hidden', 'true');
+            openSummaryBtn.setAttribute('aria-expanded', 'false');
+            document.body.style.overflow = '';
+            setTimeout(() => {
                 modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            }
+                modal.style.display = '';
+                modalPanel.classList.remove('modal-leave', 'modal-leave-active');
+                if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') lastFocusedElement.focus();
+            }, 260);
+        }
+
+        openSummaryBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            openModal();
         });
 
-        // PNG Download handler via html2canvas
-        document.getElementById('download-png-btn').addEventListener('click', async () => {
+        closeModalBtn.addEventListener('click', closeModal);
+        closeModalFooterBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal.getAttribute('aria-hidden') === 'false') closeModal(); });
+
+        // PNG Download handler - improved/responsive/high-res rendering
+        downloadBtn.addEventListener('click', async () => {
             const card = document.getElementById('exportable-card');
-            const btn = document.getElementById('download-png-btn');
-            const originalText = btn.innerHTML;
-            
+            const btn = downloadBtn;
+            const originalHTML = btn.innerHTML;
+
             btn.disabled = true;
-            btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Rendering PNG...`;
+            btn.classList.add('opacity-80');
+            btn.innerHTML = `<span class="btn-spinner"><i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Rendering PNG...</span>`;
             lucide.createIcons();
 
             try {
+                // Temporarily set a stable wide width for higher-quality capture while preserving visual scale for mobile.
+                const originalStyle = { width: card.style.width || '', transform: card.style.transform || '' };
+                const desiredWidth = 1200; // capture width for crispness
+                card.style.width = desiredWidth + 'px';
+                card.style.transform = 'scale(1)';
+
+                // pick a reasonable scale considering device pixel ratio (cap for memory)
+                const scale = Math.min(3, window.devicePixelRatio || 2);
+
                 const canvas = await html2canvas(card, {
-                    scale: 2,
+                    scale: scale,
                     useCORS: true,
-                    backgroundColor: null
+                    logging: false,
+                    backgroundColor: null,
+                    allowTaint: false
                 });
-                const image = canvas.toDataURL("image/png");
+
+                const image = canvas.toDataURL('image/png');
                 const a = document.createElement('a');
                 a.href = image;
                 a.download = `lettermetrics-${activeSubdomain}-summary.png`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
+
+                // restore
+                card.style.width = originalStyle.width;
+                card.style.transform = originalStyle.transform;
             } catch (err) {
-                console.error("PNG Generation failed:", err);
+                console.error('PNG Generation failed:', err);
+                alert('Image generation failed. Try again or reduce device zoom.');
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = originalText;
+                btn.innerHTML = originalHTML;
                 lucide.createIcons();
             }
         });
 
+        // Search + rendering logic (kept, but with small UX improvements)
         document.getElementById('search-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const handle = document.getElementById('handle-input').value.trim();
             const limit = parseInt(document.getElementById('limit-input').value);
             const btnText = document.getElementById('btn-text');
@@ -554,23 +643,20 @@
             const statusBadge = document.getElementById('status-badge');
 
             if (!handle) return;
-
             btn.disabled = true;
             btnText.textContent = "Fetching telemetry...";
             errorContainer.classList.add('hidden');
-            resultsContainer.classList.add('opacity-0', 'translate-y-6');
-            resultsContainer.classList.add('hidden');
+            resultsContainer.classList.add('opacity-0', 'translate-y-6', 'hidden');
             statusBadge.innerHTML = `<div class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></div> Syncing...`;
             lucide.createIcons();
 
             let allPosts = [];
             let offset = 0;
             const batchSize = 50;
-            
+
             let subdomain = handle.replace(/^@/, '');
             if (subdomain.startsWith('http')) {
-                try { subdomain = new URL(subdomain).hostname.split('.')[0]; } 
-                catch (e) { subdomain = handle; }
+                try { subdomain = new URL(subdomain).hostname.split('.')[0]; } catch (e) { subdomain = handle; }
             } else {
                 subdomain = subdomain.replace(/\.substack\.com.*$/i, '').replace(/\/.*$/, '');
             }
@@ -581,60 +667,46 @@
 
             try {
                 let normalizedData = null;
-
                 if (cachedItem) {
                     try {
                         const parsed = JSON.parse(cachedItem);
                         if (parsed && parsed.timestamp && (Date.now() - parsed.timestamp < CACHE_TTL) && Array.isArray(parsed.data)) {
-                            normalizedData = parsed.data.map(p => ({
-                                ...p,
-                                date: new Date(p.date)
-                            }));
+                            normalizedData = parsed.data.map(p => ({ ...p, date: new Date(p.date) }));
                         }
-                    } catch (e) {}
+                    } catch (e) { /* ignore parse issues */ }
                 }
 
                 if (!normalizedData) {
                     while (allPosts.length < limit) {
                         const fetchLimit = Math.min(batchSize, limit - allPosts.length);
                         btnText.textContent = `Loading ${allPosts.length}/${limit}...`;
-                        
                         const targetUrl = `https://${subdomain}.substack.com/api/v1/posts?sort=new&offset=${offset}&limit=${fetchLimit}`;
-                        
-                        let response = await fetchViaCloudflare(targetUrl);
 
+                        let response = await fetchViaCloudflare(targetUrl);
                         if (!response.ok) {
                             throw new Error(`Proxy request failed with status ${response.status}`);
                         }
-                        
+
                         const data = await response.json();
                         const items = Array.isArray(data) ? data : (data.posts || []);
-                        
                         if (items.length === 0) break;
 
                         allPosts = [...allPosts, ...items];
                         offset += items.length;
-
                         if (items.length < fetchLimit) break;
                     }
 
-                    if (allPosts.length === 0) throw new Error("No posts found or invalid Substack publication handle.");
+                    if (allPosts.length === 0) throw new Error('No posts found or invalid Substack publication handle.');
 
                     normalizedData = allPosts.map(p => {
                         let words = p.wordcount || p.word_count || 0;
                         if (!words && p.reading_time) words = Math.round(p.reading_time * 200);
-                        
                         let tags = [];
-                        if (p.postTags && Array.isArray(p.postTags)) {
-                            tags = p.postTags.map(t => typeof t === 'object' ? (t.name || t.slug) : t).filter(Boolean);
-                        } else if (p.tags && Array.isArray(p.tags)) {
-                            tags = p.tags.map(t => typeof t === 'object' ? (t.name || t.slug) : t).filter(Boolean);
-                        } else if (p.primary_tag && p.primary_tag.name) {
-                            tags = [p.primary_tag.name];
-                        } else if (p.section && p.section.title) {
-                            tags = [p.section.title];
-                        }
-                        
+                        if (p.postTags && Array.isArray(p.postTags)) tags = p.postTags.map(t => typeof t === 'object' ? (t.name || t.slug) : t).filter(Boolean);
+                        else if (p.tags && Array.isArray(p.tags)) tags = p.tags.map(t => typeof t === 'object' ? (t.name || t.slug) : t).filter(Boolean);
+                        else if (p.primary_tag && p.primary_tag.name) tags = [p.primary_tag.name];
+                        else if (p.section && p.section.title) tags = [p.section.title];
+
                         return {
                             id: p.id,
                             title: p.title || 'Untitled',
@@ -648,24 +720,18 @@
                         };
                     });
 
-                    try {
-                        localStorage.setItem(cacheKey, JSON.stringify({
-                            timestamp: Date.now(),
-                            data: normalizedData
-                        }));
-                    } catch (e) {}
+                    try { localStorage.setItem(cacheKey, JSON.stringify({ timestamp: Date.now(), data: normalizedData })); }
+                    catch (e) { /* ignore storage issues */ }
                 }
 
                 currentPostsData = normalizedData;
                 renderDashboard(normalizedData, subdomain);
-                
+
                 resultsContainer.classList.remove('hidden');
-                setTimeout(() => {
-                    resultsContainer.classList.remove('opacity-0', 'translate-y-6');
-                }, 50);
+                setTimeout(() => resultsContainer.classList.remove('opacity-0', 'translate-y-6'), 50);
 
                 statusBadge.innerHTML = `<div class="w-2 h-2 rounded-full bg-emerald-500"></div> Telemetry Loaded`;
-                
+
             } catch (err) {
                 errorContainer.querySelector('span').textContent = err.message;
                 errorContainer.classList.remove('hidden');
@@ -678,16 +744,11 @@
         });
 
         function renderDashboard(posts, subdomain) {
+            // compute aggregates
             let totalReactions = 0, totalComments = 0, totalWords = 0, freePostsCount = 0, paidPostsCount = 0;
-            posts.forEach(p => {
-                totalReactions += p.reactions;
-                totalComments += p.comments;
-                totalWords += p.words;
-                if (p.audience === 'Paid') paidPostsCount++;
-                else freePostsCount++;
-            });
-            
-            const bestPost = [...posts].sort((a, b) => b.reactions - a.reactions)[0];
+            posts.forEach(p => { totalReactions += p.reactions; totalComments += p.comments; totalWords += p.words; if (p.audience === 'Paid') paidPostsCount++; else freePostsCount++; });
+
+            const bestPost = [...posts].sort((a, b) => b.reactions - a.reactions)[0] || null;
             const avgWords = Math.round(totalWords / posts.length) || 0;
             const avgReactions = Math.round(totalReactions / posts.length) || 0;
             const avgComments = Math.round(totalComments / posts.length) || 0;
@@ -695,31 +756,20 @@
             const freeRatioPct = Math.round((freePostsCount / posts.length) * 100);
             const paidRatioPct = Math.round((paidPostsCount / posts.length) * 100);
 
-            // Overall rating calculation
+            // rating
             let rawScore = (avgReactions * 0.4) + (avgComments * 1.5) + (posts.length * 0.5);
             let healthScore = Math.min(100, Math.max(10, Math.round(Math.log10(rawScore + 1) * 33)));
             if (isNaN(healthScore)) healthScore = 75;
             let finalRating10 = (healthScore / 10).toFixed(1);
-            
+
             let grade = "C";
             let ratingTitle = "Developing Momentum";
             let ratingDescription = "Steady foundation with standard reader interaction. Consistent publishing schedule will boost long-term retention.";
-            
-            if (healthScore >= 85) {
-                grade = "A+";
-                ratingTitle = "Elite Performance Publication";
-                ratingDescription = "Outstanding audience resonance. High interaction volume, strong reactions, and exceptional community engagement across recent posts.";
-            } else if (healthScore >= 70) {
-                grade = "A";
-                ratingTitle = "High-Growth Publication";
-                ratingDescription = "Very strong performance metrics. Your articles consistently capture solid engagement and loyal reader feedback.";
-            } else if (healthScore >= 50) {
-                grade = "B";
-                ratingTitle = "Solid & Stable Publication";
-                ratingDescription = "Healthy engagement levels with predictable reach. Optimizing publishing times could further unlock viral potential.";
-            }
+            if (healthScore >= 85) { grade = "A+"; ratingTitle = "Elite Performance Publication"; ratingDescription = "Outstanding audience resonance. High interaction volume, strong reactions, and exceptional community engagement across recent posts."; }
+            else if (healthScore >= 70) { grade = "A"; ratingTitle = "High-Growth Publication"; ratingDescription = "Very strong performance metrics. Your articles consistently capture solid engagement and loyal reader feedback."; }
+            else if (healthScore >= 50) { grade = "B"; ratingTitle = "Solid & Stable Publication"; ratingDescription = "Healthy engagement levels with predictable reach. Optimizing publishing times could further unlock viral potential."; }
 
-            // Update UI elements for overall rating & snapshot
+            // Update UI
             document.getElementById('rating-score').textContent = finalRating10;
             document.getElementById('rating-grade').textContent = `Grade ${grade}`;
             document.getElementById('rating-title').textContent = ratingTitle;
@@ -729,7 +779,7 @@
             document.getElementById('quick-stat-ratio').textContent = `${freeRatioPct}% Free / ${paidRatioPct}% Paid`;
             document.getElementById('quick-stat-words').textContent = `${formatNum(avgWords)} w`;
 
-            // Update modal summary card elements
+            // modal summary
             document.getElementById('modal-subdomain-title').textContent = `${subdomain}.substack.com`;
             document.getElementById('modal-score-val').textContent = finalRating10;
             document.getElementById('modal-grade-val').textContent = `Grade ${grade}`;
@@ -737,51 +787,33 @@
             document.getElementById('modal-stat-reactions').textContent = formatNum(avgReactions);
             document.getElementById('modal-stat-comments').textContent = formatNum(avgComments);
             document.getElementById('modal-stat-words').textContent = `${formatNum(avgWords)} w`;
-            document.getElementById('modal-date-generated').textContent = `Generated on ${new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`
+            document.getElementById('modal-date-generated').textContent = `Generated on ${new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`;
 
-            const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-            const dayStats = Array(7).fill(0).map(() => ({ count: 0, totalReactions: 0 }));
+            const daysOfWeek = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+            const dayStats = Array(7).fill(0).map(() => ({ count:0, totalReactions:0 }));
+            posts.forEach(p => { const dayIdx = p.date.getDay(); dayStats[dayIdx].count++; dayStats[dayIdx].totalReactions += p.reactions; });
 
-            posts.forEach(p => {
-                const dayIdx = p.date.getDay();
-                dayStats[dayIdx].count++;
-                dayStats[dayIdx].totalReactions += p.reactions;
-            });
-
-            let bestDayIdx = 0;
-            let maxDayAvg = -1;
-            dayStats.forEach((stat, idx) => {
-                if (stat.count > 0) {
-                    const avg = stat.totalReactions / stat.count;
-                    if (avg > maxDayAvg) {
-                        maxDayAvg = avg;
-                        bestDayIdx = idx;
-                    }
-                }
-            });
-
-            const bestDayName = daysOfWeek[bestDayIdx];
-            const bestDayAvgReactions = Math.round(maxDayAvg);
+            let bestDayIdx = 0, maxDayAvg = -1;
+            dayStats.forEach((stat, idx) => { if (stat.count > 0) { const avg = stat.totalReactions / stat.count; if (avg > maxDayAvg) { maxDayAvg = avg; bestDayIdx = idx; } }});
+            const bestDayName = daysOfWeek[bestDayIdx]; const bestDayAvgReactions = Math.round(maxDayAvg);
             const dayDiffPct = avgReactions > 0 ? Math.round(((bestDayAvgReactions - avgReactions) / avgReactions) * 100) : 0;
             const dayDiffFormatted = dayDiffPct >= 0 ? `+${dayDiffPct}%` : `${dayDiffPct}%`;
 
-            const topPerformingPosts = [...posts].sort((a, b) => b.reactions - a.reactions).slice(0, Math.max(1, Math.ceil(posts.length * 0.2)));
-            const topAvgWords = Math.round(topPerformingPosts.reduce((sum, p) => sum + p.words, 0) / topPerformingPosts.length);
+            const topPerformingPosts = [...posts].sort((a,b) => b.reactions - a.reactions).slice(0, Math.max(1, Math.ceil(posts.length * 0.2)));
+            const topAvgWords = Math.round(topPerformingPosts.reduce((s,p) => s + p.words, 0) / topPerformingPosts.length);
             const isLongerBetter = topAvgWords >= avgWords;
 
-            const reactionsMultiplier = avgReactions > 0 ? (bestPost.reactions / avgReactions).toFixed(1) : '1.0';
-            const commentsDiffPct = avgComments > 0 ? Math.round(((bestPost.comments - avgComments) / avgComments) * 100) : 0;
-            const bestPostDayName = daysOfWeek[bestPost.date.getDay()];
-            const publishedOnStrongestDay = bestPost.date.getDay() === bestDayIdx;
+            const reactionsMultiplier = avgReactions > 0 ? (bestPost ? (bestPost.reactions / avgReactions).toFixed(1) : '1.0') : '1.0';
+            const commentsDiffPct = avgComments > 0 ? (bestPost ? Math.round(((bestPost.comments - avgComments) / avgComments) * 100) : 0) : 0;
+            const bestPostDayName = bestPost ? daysOfWeek[bestPost.date.getDay()] : '';
+            const publishedOnStrongestDay = bestPost ? bestPost.date.getDay() === bestDayIdx : false;
 
             const tagMap = {};
             posts.forEach(p => {
                 const postTags = (p.tags && p.tags.length > 0) ? p.tags : [p.audience + " Articles"];
                 postTags.forEach(tag => {
                     if (!tagMap[tag]) tagMap[tag] = { count: 0, reactions: 0, comments: 0 };
-                    tagMap[tag].count++;
-                    tagMap[tag].reactions += p.reactions;
-                    tagMap[tag].comments += p.comments;
+                    tagMap[tag].count++; tagMap[tag].reactions += p.reactions; tagMap[tag].comments += p.comments;
                 });
             });
 
@@ -790,10 +822,11 @@
                 count: tagMap[tag].count,
                 avgReactions: Math.round(tagMap[tag].reactions / tagMap[tag].count),
                 totalReactions: tagMap[tag].reactions
-            })).sort((a, b) => b.avgReactions - a.avgReactions).slice(0, 5);
+            })).sort((a,b) => b.avgReactions - a.avgReactions).slice(0,5);
 
+            // Growth insights
             const growthInsightsHtml = `
-                <div class="glass-card text-slate-900 dark:text-white rounded-3xl p-6 sm:p-8 premium-shadow border border-slate-200/80 dark:border-slate-800 space-y-6">
+                <div class="glass-card text-slate-900 dark:text-white rounded-3xl p-6 sm:p-8 premium-shadow border border-slate-200/80 dark:border-slate-800 space-y-6 reveal visible">
                     <div class="flex items-center gap-3.5 border-b border-slate-200/80 dark:border-slate-800 pb-5">
                         <div class="p-3 bg-gradient-to-br from-brand-500/25 to-amber-500/20 text-brand-600 dark:text-brand-400 rounded-2xl border border-brand-500/30 shadow-inner">
                             <i data-lucide="sparkles" class="w-6 h-6 animate-pulse"></i>
@@ -803,7 +836,6 @@
                             <p class="text-slate-500 dark:text-slate-400 text-sm">Automated performance highlights and patterns from recent publication activity</p>
                         </div>
                     </div>
-
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <div class="bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-6 flex flex-col justify-between hover:border-brand-500/30 transition-all duration-300 group">
                             <div>
@@ -811,7 +843,7 @@
                                     <i data-lucide="trophy" class="w-4 h-4"></i> Best Performing Article
                                 </div>
                                 <h4 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-4 line-clamp-2 leading-snug">
-                                    "<a href="${bestPost.url}" target="_blank" class="hover:text-brand-500 transition-colors">${bestPost.title}</a>"
+                                    "${bestPost ? `<a href="${bestPost.url}" target="_blank" class="hover:text-brand-500 transition-colors">${bestPost.title}</a>` : 'N/A'}"
                                 </h4>
                             </div>
                             <div class="space-y-2.5 text-sm text-slate-700 dark:text-slate-300 pt-2 border-t border-slate-200/60 dark:border-slate-800/60">
@@ -825,7 +857,7 @@
                                 </div>
                                 <div class="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500 pt-1">
                                     <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
-                                    ${publishedOnStrongestDay ? `Published on optimal day (${bestDayName})` : `Published on ${bestPostDayName}`}
+                                    ${publishedOnStrongestDay ? `Published on optimal day (${bestDayName})` : (bestPost ? `Published on ${bestPostDayName}` : 'No featured post')}
                                 </div>
                             </div>
                         </div>
@@ -889,6 +921,7 @@
 
             document.getElementById('growth-insights-container').innerHTML = growthInsightsHtml;
 
+            // Best post hero
             const bestPostHtml = bestPost ? `
                 <div class="relative overflow-hidden bg-gradient-to-r from-brand-600 via-brand-500 to-amber-500 rounded-3xl p-6 sm:p-8 text-white shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6 group">
                     <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
@@ -920,6 +953,7 @@
             ` : '';
             document.getElementById('best-post-container').innerHTML = bestPostHtml;
 
+            // KPI grid
             const kpiData = [
                 { title: "Health Index Score", val: `${finalRating10} / 10`, icon: "shield-check", color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-500/10 border-amber-500/20" },
                 { title: "Total Posts Analyzed", val: posts.length, icon: "file-text", color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-500/10 border-blue-500/20" },
@@ -944,6 +978,7 @@
                 </div>
             `).join('');
 
+            // Charts
             const colors = getChartColors();
             Chart.defaults.color = colors.text;
             Chart.defaults.borderColor = colors.grid;
@@ -952,7 +987,7 @@
             const commonOptions = {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { 
+                plugins: {
                     legend: { display: false },
                     tooltip: {
                         backgroundColor: colors.tooltipBg,
@@ -987,7 +1022,7 @@
                     ...commonOptions,
                     plugins: { ...commonOptions.plugins, legend: { display: true, position: 'top', align: 'end', labels: { boxWidth: 10, usePointStyle: true, font: { weight: 600 } } } },
                     scales: {
-                        x: { display: false, stacked: true }, 
+                        x: { display: false, stacked: true },
                         y: { beginAtZero: true, stacked: true, grid: { color: colors.grid } }
                     }
                 }
@@ -1010,15 +1045,13 @@
                 options: {
                     ...commonOptions,
                     plugins: { ...commonOptions.plugins, legend: { display: true, position: 'top', align: 'end', labels: { boxWidth: 10, usePointStyle: true, font: { weight: 600 } } } },
-                    scales: {
-                        x: { display: false },
-                        y: { beginAtZero: true, grid: { color: colors.grid } }
-                    },
+                    scales: { x: { display: false }, y: { beginAtZero: true, grid: { color: colors.grid } } },
                     elements: { point: { radius: 0, hitRadius: 10, hoverRadius: 5 } },
                     interaction: { mode: 'index', intersect: false }
                 }
             });
 
+            // Wordcount buckets
             const buckets = { '< 500': 0, '500-1K': 0, '1K-2K': 0, '2K-3.5K': 0, '> 3.5K': 0 };
             posts.forEach(p => {
                 if (p.words <= 500) buckets['< 500']++;
@@ -1041,19 +1074,14 @@
                         borderRadius: 6
                     }]
                 },
-                options: {
-                    ...commonOptions,
-                    scales: {
-                        x: { grid: { display: false } },
-                        y: { beginAtZero: true, grid: { color: colors.grid } }
-                    }
-                }
+                options: { ...commonOptions, scales: { x: { grid: { display: false } }, y: { beginAtZero: true, grid: { color: colors.grid } } } }
             });
 
-            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-            const dayCounts = [0, 0, 0, 0, 0, 0, 0];
+            const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+            const dayCounts = [0,0,0,0,0,0,0];
             posts.forEach(p => dayCounts[p.date.getDay()]++);
-            
+
+            // shift so week starts on Monday for visual parity
             const shiftedCounts = [...dayCounts.slice(1), dayCounts[0]];
             const shiftedDays = [...days.slice(1), days[0]];
 
@@ -1063,20 +1091,9 @@
                 type: 'bar',
                 data: {
                     labels: shiftedDays,
-                    datasets: [{
-                        label: 'Published Posts',
-                        data: shiftedCounts,
-                        backgroundColor: '#14b8a6',
-                        borderRadius: 6
-                    }]
+                    datasets: [{ label: 'Published Posts', data: shiftedCounts, backgroundColor: '#14b8a6', borderRadius: 6 }]
                 },
-                options: {
-                    ...commonOptions,
-                    scales: {
-                        x: { grid: { display: false } },
-                        y: { beginAtZero: true, grid: { color: colors.grid }, ticks: { stepSize: 1 } }
-                    }
-                }
+                options: { ...commonOptions, scales: { x: { grid: { display: false } }, y: { beginAtZero: true, grid: { color: colors.grid }, ticks: { stepSize: 1 } } } }
             });
 
             renderTable();
@@ -1085,24 +1102,18 @@
 
         function renderTable() {
             if (!currentPostsData.length) return;
-
             const tbody = document.getElementById('posts-table-body');
-            
-            const sortedData = [...currentPostsData].sort((a, b) => {
+
+            const sortedData = [...currentPostsData].sort((a,b) => {
                 let valA = a[currentSort.key];
                 let valB = b[currentSort.key];
-                
-                if (currentSort.key === 'date') {
-                    valA = a.date.getTime();
-                    valB = b.date.getTime();
-                }
-
+                if (currentSort.key === 'date') { valA = a.date.getTime(); valB = b.date.getTime(); }
                 if (valA < valB) return currentSort.dir === 'asc' ? -1 : 1;
                 if (valA > valB) return currentSort.dir === 'asc' ? 1 : -1;
                 return 0;
-            }).slice(0, 50);
+            }).slice(0,50);
 
-            tbody.innerHTML = sortedData.map((p, i) => `
+            tbody.innerHTML = sortedData.map((p,i) => `
                 <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
                     <td class="px-6 py-4 text-slate-400 font-semibold">#${i + 1}</td>
                     <td class="px-6 py-4 font-semibold text-slate-900 dark:text-slate-100 whitespace-normal min-w-[280px]">
@@ -1127,13 +1138,16 @@
         document.querySelectorAll('.sort-header').forEach(header => {
             header.addEventListener('click', () => {
                 const key = header.dataset.sort;
-                if (currentSort.key === key) {
-                    currentSort.dir = currentSort.dir === 'asc' ? 'desc' : 'asc';
-                } else {
-                    currentSort.key = key;
-                    currentSort.dir = 'desc';
-                }
+                if (currentSort.key === key) currentSort.dir = currentSort.dir === 'asc' ? 'desc' : 'asc';
+                else { currentSort.key = key; currentSort.dir = 'desc'; }
                 renderTable();
+            });
+        });
+
+        // Make hero & results reveal after load for subtle motion
+        window.addEventListener('load', () => {
+            document.querySelectorAll('.reveal').forEach((el, idx) => {
+                setTimeout(() => el.classList.add('visible'), 120 * idx);
             });
         });
     </script>
