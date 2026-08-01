@@ -1,292 +1,333 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Lettermetrics Alpha | Substack Analytics</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lettermetrics Pro | Substack Analytics & Intelligence</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- html2canvas for modal snapshot/download (kept from previous) -->
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-
+    <!-- html2canvas for JPG export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
-                    colors: { slate: { 850: '#151e2e' } },
-                    keyframes: {
-                        float: { '0%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-4px)' }, '100%': { transform: 'translateY(0)' } },
-                        shimmer: { '0%': { backgroundPosition: '-200% 0' }, '100%': { backgroundPosition: '200% 0' } },
+                    colors: {
+                        brand: {
+                            50: '#fff7ed',
+                            500: '#f97316',
+                            600: '#ea580c',
+                            700: '#c2410c'
+                        }
                     },
                     animation: {
-                        float: 'float 4s ease-in-out infinite',
-                        shimmer: 'shimmer 1.8s linear infinite'
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                     }
                 }
             }
         }
     </script>
-
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-        :root{
-            --accent-1: #7c3aed; /* purple */
-            --accent-2: #06b6d4; /* teal */
-            --card-bg: rgba(255,255,255,0.7);
-            --glass-dark: rgba(10,12,20,0.55);
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap'); 
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            transition: background-color 0.3s, color 0.3s; 
         }
-        body { font-family: 'Inter', sans-serif; transition: background-color 0.3s, color 0.3s; -webkit-font-smoothing:antialiased; }
-        ::-webkit-scrollbar { height: 8px; width: 8px; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        .dark .glass-card {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        ::-webkit-scrollbar { height: 6px; width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         .dark ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .sort-icon { display: inline-block; width: 0.8em; height: 0.8em; margin-left: 0.25rem; opacity: 0.3; transition: opacity 0.2s, transform 0.2s; }
-        th:hover .sort-icon { opacity: 0.8; transform: translateY(-2px); }
-        .sort-active .sort-icon { opacity: 1; transform: translateY(-2px); }
+        .sort-icon { display: inline-block; width: 0.8em; height: 0.8em; margin-left: 0.25rem; opacity: 0.3; transition: opacity 0.2s; }
+        th:hover .sort-icon { opacity: 0.7; }
+        .sort-active .sort-icon { opacity: 1; }
         .sort-asc .sort-icon { transform: rotate(180deg); }
-
-        /* Modal backdrop */
-        .modal-backdrop { background: rgba(2,6,23,0.6); backdrop-filter: blur(3px); }
-
-        /* Smooth fade-in */
-        .fade-in { animation: fadeIn 260ms ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px);} to { opacity: 1; transform: translateY(0);} }
-
-        /* Premium gradient and shimmer */
-        .premium-gradient { background: linear-gradient(90deg, rgba(124,58,237,0.06), rgba(6,182,212,0.04)); }
-
-        /* Card lift */
-        .card-raise { transition: transform .22s cubic-bezier(.2,.9,.3,1), box-shadow .22s; }
-        .card-raise:hover { transform: translateY(-6px); box-shadow: 0 12px 30px rgba(2,6,23,0.12); }
-
-        /* Status badge pulse */
-        .status-pulse { animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(6,182,212,0.12);} 70% { box-shadow: 0 0 0 10px rgba(6,182,212,0);} 100% { box-shadow: 0 0 0 0 rgba(6,182,212,0);} }
-
-        /* Multi-line clamp for titles (mobile-friendly) */
-        .title-clamp {
-            display: -webkit-box;
-            -webkit-line-clamp: 2; /* clamp 2 lines on small screens */
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        /* make clamp expand on larger screens to 1 line for compact desktop header */
-        @media (min-width: 768px) {
-            .title-clamp { -webkit-line-clamp: 1; }
-        }
-
-        /* Article modal content */
-        .article-title { word-break: break-word; }
-
-        /* subtle shimmer for headers */
-        .shimmer {
-            background: linear-gradient(90deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.02) 100%);
-            background-size: 200% 100%;
-            animation: shimmer 1.6s linear infinite;
-        }
-
-        /* focus ring */
-        .focus-ring:focus { outline: 2px solid rgba(124,58,237,0.18); outline-offset: 2px; }
     </style>
 </head>
-<body class="min-h-screen bg-slate-50 dark:bg-[#020617] text-slate-900 dark:text-slate-100 selection:bg-orange-500 selection:text-white pb-12 transition-colors duration-200">
+<body class="min-h-screen bg-slate-100 dark:bg-[#030712] text-slate-900 dark:text-slate-100 selection:bg-orange-500 selection:text-white pb-12 transition-colors duration-200">
     
-    <header class="sticky top-0 z-50 bg-white/70 dark:bg-[#020617]/70 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors duration-200">
+    <!-- Top Header -->
+    <header class="sticky top-0 z-40 glass-card border-b border-slate-200/80 dark:border-slate-800/80 transition-colors duration-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--accent-1)] to-[var(--accent-2)] shadow-xl flex items-center justify-center transform-gpu animate-float">
-                    <i data-lucide="activity" class="w-5 h-5 text-white"></i>
+                <div class="w-10 h-10 bg-gradient-to-tr from-orange-600 to-amber-500 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/25">
+                    <i data-lucide="activity" class="w-6 h-6 text-white"></i>
                 </div>
                 <div>
-                  <h1 class="font-bold text-lg lg:text-xl tracking-tight">Lettermetrics <span class="text-[var(--accent-2)]">Alpha</span></h1>
-                  <div class="text-xs text-slate-500 dark:text-slate-400 -mt-0.5">Premium Substack analytics • mobile-first</div>
+                    <h1 class="font-extrabold text-xl tracking-tight leading-none">Lettermetrics <span class="text-orange-500">Pro</span></h1>
+                    <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Substack Intelligence</span>
                 </div>
             </div>
             
-            <div class="flex items-center gap-3">
-                <div id="status-badge" class="px-3 py-1 bg-gradient-to-r from-[var(--accent-1)]/10 to-[var(--accent-2)]/8 border border-slate-100 dark:border-slate-800 rounded-full text-xs font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-2 status-pulse">
-                    <div class="w-2 h-2 rounded-full bg-[var(--accent-2)]"></div> Ready
-                </div>
-
-                <button id="open-summary" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-white/60 hover:scale-105 transition transform focus-ring" title="Open Summary">
-                    <i data-lucide="share-2" class="w-5 h-5"></i>
+            <div class="flex items-center gap-2 sm:gap-3">
+                <button id="export-modal-btn" class="hidden px-3.5 py-1.5 bg-orange-500/10 hover:bg-orange-500/20 text-orange-600 dark:text-orange-400 border border-orange-500/20 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all">
+                    <i data-lucide="share-2" class="w-4 h-4"></i>
+                    <span class="hidden sm:inline">Export Summary</span>
                 </button>
-
-                <button id="theme-toggle" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-white/60 hover:scale-105 transition transform focus-ring" title="Toggle Theme">
-                    <i data-lucide="sun" id="theme-icon-sun" class="w-5 h-5 hidden"></i>
-                    <i data-lucide="moon" id="theme-icon-moon" class="w-5 h-5"></i>
+                <div id="status-badge" class="px-3 py-1 bg-slate-200/60 dark:bg-slate-900 border border-slate-300/50 dark:border-slate-800 rounded-full text-xs font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-2 transition-colors">
+                    <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse-slow"></div> Ready
+                </div>
+                <button id="theme-toggle" class="p-2.5 rounded-xl bg-slate-200/60 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-orange-500 transition-colors" title="Toggle Theme">
+                    <i data-lucide="sun" id="theme-icon-sun" class="w-4 h-4 hidden"></i>
+                    <i data-lucide="moon" id="theme-icon-moon" class="w-4 h-4"></i>
                 </button>
             </div>
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-        <div>
-            <h2 class="text-3xl font-bold mb-2">Analyze Your Substack Metrics</h2>
-            <p class="text-slate-500 dark:text-slate-400 max-w-2xl">Enter any Substack handle and get premium analytics for the last 50 posts.</p>
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        
+        <!-- Hero Title -->
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+                <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">Publication Analytics.</h2>
+                <p class="text-slate-500 dark:text-slate-400 max-w-xl text-sm sm:text-base mt-1">
+                    Deep performance audit, viral insights, and publication health scores for Substack newsletters.
+                </p>
+            </div>
         </div>
 
-        <form id="search-form" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm mb-8 space-y-4 transition-colors duration-200">
-            <div class="flex flex-col md:flex-row gap-3">
+        <!-- Search Form -->
+        <form id="search-form" class="glass-card border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-4 sm:p-6 shadow-xl shadow-slate-950/5 space-y-4 transition-colors">
+            <div class="flex flex-col md:flex-row gap-4">
                 <div class="flex-1">
-                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">Substack Handle</label>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Substack Publication Handle</label>
                     <div class="relative">
-                        <i data-lucide="search" class="absolute left-3 top-3 w-5 h-5 text-slate-400"></i>
+                        <i data-lucide="search" class="absolute left-3.5 top-3.5 w-5 h-5 text-slate-400"></i>
                         <input type="text" id="handle-input" value="unknownlegends" required
-                            class="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-[var(--accent-2)] transition-colors"
+                            class="w-full pl-11 pr-4 py-3 bg-white/50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-orange-500 outline-none transition-all font-medium text-sm"
                             placeholder="e.g. pragmaticengineer">
                     </div>
                 </div>
-
-                <div class="w-full md:w-48">
-                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">Post Limit (max 50)</label>
-                    <select id="limit-input" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-[var(--accent-2)]">
-                        <option value="50" selected>50 Posts</option>
+                <div class="w-full md:w-52">
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Sample Range</label>
+                    <select id="limit-input" class="w-full px-4 py-3 bg-white/50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-orange-500 outline-none appearance-none transition-all font-medium text-sm">
+                        <option value="50">Last 50 Posts</option>
                     </select>
                 </div>
-
                 <div class="flex items-end">
-                    <button type="submit" id="analyze-btn" class="w-full md:w-auto px-6 py-3 bg-gradient-to-r from-[var(--accent-1)] to-[var(--accent-2)] text-white font-bold rounded-xl shadow-md hover:scale-[1.02] transition transform disabled:opacity-70 flex items-center gap-2">
-                        <i data-lucide="activity" class="w-5 h-5"></i> <span id="btn-text">Analyze</span>
+                    <button type="submit" id="analyze-btn" class="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-white font-bold rounded-xl shadow-lg shadow-orange-500/20 transition-all transform active:scale-95 disabled:opacity-70 flex items-center justify-center gap-2 text-sm">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i> <span id="btn-text">Analyze Publication</span>
                     </button>
                 </div>
             </div>
         </form>
 
-        <div id="error-container" class="hidden p-4 rounded-xl bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 flex items-center gap-2 mb-6"></div>
+        <div id="error-container" class="hidden p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 flex items-center gap-3 text-sm"></div>
 
-        <div id="results-container" class="hidden space-y-6 animate-[fadeIn_0.5s_ease-out]">
+        <!-- Analytics Output Container -->
+        <div id="results-container" class="hidden space-y-8 animate-[fadeIn_0.5s_ease-out]">
+            
+            <!-- Hero Rating & Key Breakthrough Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Overall Rating Card -->
+                <div class="glass-card border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-6 shadow-xl flex flex-col justify-between relative overflow-hidden group">
+                    <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-orange-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-xs font-extrabold uppercase tracking-widest text-slate-400">Newsletter Health Rating</span>
+                            <span id="rating-badge" class="px-2.5 py-1 rounded-full text-xs font-black bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                                EXCELLENT
+                            </span>
+                        </div>
+                        <div class="flex items-baseline gap-3">
+                            <div id="overall-score" class="text-6xl font-black tracking-tight text-slate-900 dark:text-white">92</div>
+                            <span class="text-xl font-bold text-slate-400">/ 100</span>
+                        </div>
+                        <p id="rating-summary" class="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                            High engagement relative to volume. Readers show strong loyalty and comment velocity.
+                        </p>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-slate-200/60 dark:border-slate-800/60 grid grid-cols-2 gap-2 text-center text-xs">
+                        <div class="bg-slate-100/60 dark:bg-slate-800/40 p-2 rounded-xl">
+                            <span class="text-slate-400 block text-[10px] uppercase font-bold">Reader Loyalty</span>
+                            <span id="score-loyalty" class="font-bold text-slate-800 dark:text-slate-200">High</span>
+                        </div>
+                        <div class="bg-slate-100/60 dark:bg-slate-800/40 p-2 rounded-xl">
+                            <span class="text-slate-400 block text-[10px] uppercase font-bold">Viral Power</span>
+                            <span id="score-viral" class="font-bold text-orange-500">Top 5%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Best Breakthrough KPI Card -->
+                <div class="lg:col-span-2 glass-card border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-6 shadow-xl flex flex-col justify-between relative overflow-hidden bg-gradient-to-br from-slate-900 to-slate-950 text-white">
+                    <div class="absolute right-0 top-0 w-64 h-64 bg-gradient-to-b from-orange-500/20 to-transparent rounded-full blur-3xl pointer-events-none"></div>
+                    <div>
+                        <div class="flex items-center gap-2 text-orange-400 text-xs font-bold uppercase tracking-wider mb-2">
+                            <i data-lucide="zap" class="w-4 h-4"></i> Breakthrough Growth Metric
+                        </div>
+                        <h3 id="best-kpi-title" class="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2 text-white">
+                            Tuesday Releases Yield +140% Higher Engagement
+                        </h3>
+                        <p id="best-kpi-desc" class="text-slate-400 text-xs sm:text-sm max-w-xl leading-relaxed">
+                            Publishing on Tuesdays drives significantly higher comment rates and reaction multipliers than any other day of the week.
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-6 pt-4 border-t border-slate-800/80">
+                        <div>
+                            <span class="text-slate-500 text-[11px] uppercase font-bold block">Top Catalyst</span>
+                            <span id="best-kpi-stat1" class="text-lg font-bold text-white">Tuesday</span>
+                        </div>
+                        <div>
+                            <span class="text-slate-500 text-[11px] uppercase font-bold block">Multiplier</span>
+                            <span id="best-kpi-stat2" class="text-lg font-bold text-emerald-400">2.4x Avg</span>
+                        </div>
+                        <div class="col-span-2 sm:col-span-1">
+                            <span class="text-slate-500 text-[11px] uppercase font-bold block">Peak Output</span>
+                            <span id="best-kpi-stat3" class="text-lg font-bold text-orange-400">2,400 Words</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deep Insights Grid -->
             <div id="growth-insights-container"></div>
             <div id="best-post-container"></div>
 
-            <h3 class="text-xl font-bold text-slate-900 dark:text-white">Overview</h3>
-            <div id="kpi-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
+            <!-- Overview Core KPI Cards -->
+            <div class="space-y-4">
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <i data-lucide="bar-chart-2" class="w-5 h-5 text-orange-500"></i> Core Statistics Overview
+                </h3>
+                <div id="kpi-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4"></div>
+            </div>
+
+            <!-- Interactive Charts Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="glass-card p-5 sm:p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 flex flex-col shadow-sm">
+                    <h3 class="text-base font-bold text-slate-900 dark:text-white mb-1">Posts Output & Volume</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Word count split by Paid vs Free access over time.</p>
+                    <div class="flex-1 min-h-[260px] relative w-full h-full"><canvas id="timelineChart"></canvas></div>
+                </div>
+                <div class="glass-card p-5 sm:p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 flex flex-col shadow-sm">
+                    <h3 class="text-base font-bold text-slate-900 dark:text-white mb-1">Engagement Velocity Trends</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Reactions vs Comments trajectory across publications.</p>
+                    <div class="flex-1 min-h-[260px] relative w-full h-full"><canvas id="engagementChart"></canvas></div>
+                </div>
+            </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col transition-colors duration-200 shadow-sm card-raise">
-                    <h3 class="text-lg font-bold mb-1 text-slate-900 dark:text-white">Posts Over Time</h3>
-                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Publishing frequency and content volume over time.</p>
-                    <div class="flex-1 min-h-[240px] relative w-full h-full"><canvas id="timelineChart"></canvas></div>
+                <div class="glass-card p-5 sm:p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 flex flex-col shadow-sm">
+                    <h3 class="text-base font-bold text-slate-900 dark:text-white mb-1">Article Word Count Distribution</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Post length density across ranges.</p>
+                    <div class="flex-1 min-h-[260px] relative w-full h-full"><canvas id="wordCountChart"></canvas></div>
                 </div>
-
-                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col transition-colors duration-200 shadow-sm card-raise">
-                    <h3 class="text-lg font-bold mb-1 text-slate-900 dark:text-white">Engagement Trends</h3>
-                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Reactions and comments per post.</p>
-                    <div class="flex-1 min-h-[240px] relative w-full h-full"><canvas id="engagementChart"></canvas></div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col transition-colors duration-200 shadow-sm card-raise">
-                    <h3 class="text-lg font-bold mb-1 text-slate-900 dark:text-white">Word Count Distribution</h3>
-                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Typical length breakdown for your articles.</p>
-                    <div class="flex-1 min-h-[180px] relative w-full h-full"><canvas id="wordCountChart"></canvas></div>
-                </div>
-
-                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col transition-colors duration-200 shadow-sm card-raise">
-                    <h3 class="text-lg font-bold mb-1 text-slate-900 dark:text-white">Publishing Days</h3>
-                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Which days of the week do you post most frequently?</p>
-                    <div class="flex-1 min-h-[180px] relative w-full h-full"><canvas id="dayOfWeekChart"></canvas></div>
-                </div>
-
-                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col transition-colors duration-200 shadow-sm card-raise">
-                    <h3 class="text-lg font-bold mb-1 text-slate-900 dark:text-white">Overall Rating</h3>
-                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Algorithmic quality score for the latest posts.</p>
-                    <div id="rating-card" class="flex items-center gap-4"></div>
-                </div>
-
-                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col transition-colors duration-200 shadow-sm card-raise">
-                    <h3 class="text-lg font-bold mb-1 text-slate-900 dark:text-white">Recent Momentum</h3>
-                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Compare most recent posts vs prior posts.</p>
-                    <div id="momentum-card"></div>
+                <div class="glass-card p-5 sm:p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 flex flex-col shadow-sm">
+                    <h3 class="text-base font-bold text-slate-900 dark:text-white mb-1">Publishing Schedule Cadence</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Day of week distribution for post releases.</p>
+                    <div class="flex-1 min-h-[260px] relative w-full h-full"><canvas id="dayOfWeekChart"></canvas></div>
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden flex flex-col transition-colors duration-200 shadow-sm">
-                <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+            <!-- Top Performing Table -->
+            <div class="glass-card border border-slate-200/80 dark:border-slate-800/80 rounded-3xl overflow-hidden flex flex-col shadow-sm">
+                <div class="p-5 sm:p-6 border-b border-slate-200/80 dark:border-slate-800/80 flex justify-between items-center">
                     <div>
-                        <h3 class="text-lg font-bold text-slate-900 dark:text-white">Top Performing Posts</h3>
-                        <p class="text-sm text-slate-500 dark:text-slate-400">Your top articles (click column headers to sort).</p>
+                        <h3 class="text-base font-bold text-slate-900 dark:text-white">Top Performing Articles</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Click table headers to re-sort dataset.</p>
                     </div>
                 </div>
                 <div class="overflow-x-auto w-full">
-                    <table class="w-full text-left text-sm whitespace-nowrap">
-                        <thead class="bg-slate-50 dark:bg-slate-950/50 text-slate-500 dark:text-slate-400 uppercase text-xs border-b border-slate-200 dark:border-slate-800 select-none">
+                    <table class="w-full text-left text-xs sm:text-sm whitespace-nowrap">
+                        <thead class="bg-slate-100/50 dark:bg-slate-950/50 text-slate-500 dark:text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-200/80 dark:border-slate-800/80 select-none">
                             <tr>
-                                <th class="px-6 py-4 font-semibold">Rank</th>
-                                <th class="px-6 py-4 font-semibold w-full">Title</th>
-                                <th class="px-6 py-4 font-semibold cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 sort-header" data-sort="date">
-                                    Date <i data-lucide="chevron-down" class="sort-icon inline-block w-4 h-4"></i>
+                                <th class="px-6 py-3.5 font-bold">Rank</th>
+                                <th class="px-6 py-3.5 font-bold w-full">Article Title</th>
+                                <th class="px-6 py-3.5 font-bold cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 sort-header" data-sort="date">
+                                    Date <i data-lucide="chevron-down" class="sort-icon inline-block"></i>
                                 </th>
-                                <th class="px-6 py-4 font-semibold cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 sort-header sort-active sort-desc" data-sort="reactions">
-                                    Reactions <i data-lucide="chevron-down" class="sort-icon inline-block w-4 h-4"></i>
+                                <th class="px-6 py-3.5 font-bold cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 sort-header sort-active sort-desc" data-sort="reactions">
+                                    Reactions <i data-lucide="chevron-down" class="sort-icon inline-block"></i>
                                 </th>
-                                <th class="px-6 py-4 font-semibold cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 sort-header" data-sort="comments">
-                                    Comments <i data-lucide="chevron-down" class="sort-icon inline-block w-4 h-4"></i>
+                                <th class="px-6 py-3.5 font-bold cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 sort-header" data-sort="comments">
+                                    Comments <i data-lucide="chevron-down" class="sort-icon inline-block"></i>
                                 </th>
-                                <th class="px-6 py-4 font-semibold cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 sort-header" data-sort="words">
-                                    Words <i data-lucide="chevron-down" class="sort-icon inline-block w-4 h-4"></i>
+                                <th class="px-6 py-3.5 font-bold cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 sort-header" data-sort="words">
+                                    Words <i data-lucide="chevron-down" class="sort-icon inline-block"></i>
                                 </th>
                             </tr>
                         </thead>
-                        <tbody id="posts-table-body" class="divide-y divide-slate-100 dark:divide-slate-800/60 transition-colors duration-200"></tbody>
+                        <tbody id="posts-table-body" class="divide-y divide-slate-200/50 dark:divide-slate-800/50"></tbody>
                     </table>
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- Summary modal (hidden) -->
-    <div id="summary-modal" class="hidden fixed inset-0 z-60 flex items-center justify-center">
-        <div class="absolute inset-0 modal-backdrop" id="modal-backdrop"></div>
-        <div class="relative w-full max-w-3xl mx-4">
-            <div id="summary-modal-content" class="bg-white dark:bg-slate-900 rounded-2xl p-6 md:p-8 shadow-xl fade-in premium-gradient border border-slate-200 dark:border-slate-800">
-                <div class="flex justify-between items-start gap-4">
-                    <div>
-                        <h2 id="modal-title" class="text-2xl font-bold text-slate-900 dark:text-white">Lettermetrics — Summary</h2>
-                        <p id="modal-sub" class="text-sm text-slate-500 dark:text-slate-400">Executive summary for the last 50 posts</p>
-                    </div>
+    <!-- Executive Summary Modal -->
+    <div id="summary-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-xl w-full p-6 space-y-6 shadow-2xl relative text-slate-100">
+            <button id="close-modal-btn" class="absolute top-4 right-4 p-2 text-slate-400 hover:text-white rounded-xl bg-slate-800">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div class="text-center space-y-1">
+                <h3 class="text-xl font-bold">Executive Summary Card</h3>
+                <p class="text-xs text-slate-400">Ready to save and share on social media or reports.</p>
+            </div>
+
+            <!-- Export Canvas Container -->
+            <div id="summary-card-export" class="bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 border border-slate-800 rounded-2xl p-6 space-y-6 text-white shadow-2xl">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-4">
                     <div class="flex items-center gap-2">
-                        <button id="download-summary" class="px-4 py-2 bg-gradient-to-r from-[var(--accent-1)] to-[var(--accent-2)] text-white rounded-lg text-sm font-semibold hover:scale-[1.02]">Download PNG</button>
-                        <button id="close-summary" class="px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-300">Close</button>
+                        <div class="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center">
+                            <i data-lucide="activity" class="w-5 h-5 text-white"></i>
+                        </div>
+                        <span class="font-extrabold text-base tracking-tight">Lettermetrics <span class="text-orange-500">Pro</span></span>
+                    </div>
+                    <span id="export-handle" class="text-xs font-mono font-semibold bg-orange-500/10 text-orange-400 px-2.5 py-1 rounded-full border border-orange-500/20">@unknownlegends</span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-xl">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Health Score</span>
+                        <div class="flex items-baseline gap-2">
+                            <span id="export-score" class="text-3xl font-black text-white">92</span>
+                            <span class="text-xs text-emerald-400 font-bold" id="export-grade">A+ Tier</span>
+                        </div>
+                    </div>
+                    <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-xl">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Avg Engagement</span>
+                        <div id="export-avg-react" class="text-3xl font-black text-orange-400">148</div>
+                        <span class="text-[10px] text-slate-400">Reactions / Post</span>
                     </div>
                 </div>
 
-                <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <div id="modal-kpis" class="grid grid-cols-2 gap-3"></div>
-                    </div>
-                    <div>
-                        <div id="modal-highlights"></div>
-                    </div>
+                <div class="space-y-2 bg-slate-900/50 p-4 rounded-xl border border-slate-800">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-orange-400 block">Highlight Finding</span>
+                    <p id="export-highlight" class="text-xs font-semibold leading-relaxed text-slate-200">
+                        Tuesday releases outperform standard posts by +140% higher reader interaction.
+                    </p>
                 </div>
 
-                <div class="mt-6 text-xs text-slate-500 dark:text-slate-400">
-                    Generated by Lettermetrics Alpha • Mobile-friendly summary
+                <div class="flex justify-between items-center text-[10px] text-slate-500 pt-2 border-t border-slate-800/80">
+                    <span>Generated via Lettermetrics Intelligence</span>
+                    <span id="export-date">Aug 2026</span>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Article detail modal for highlight article -->
-    <div id="article-modal" class="hidden fixed inset-0 z-70 flex items-center justify-center">
-        <div class="absolute inset-0 modal-backdrop"></div>
-        <div class="relative w-full max-w-2xl mx-4">
-            <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-2xl border border-slate-200 dark:border-slate-800">
-                <div class="flex justify-between items-start gap-4">
-                    <div class="min-w-0">
-                        <h3 id="article-modal-title" class="text-lg font-bold article-title text-slate-900 dark:text-white"></h3>
-                        <div id="article-modal-meta" class="text-xs text-slate-500 dark:text-slate-400 mt-2"></div>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <a id="article-modal-link" href="#" target="_blank" class="px-3 py-1 bg-[var(--accent-2)] text-white rounded-md text-sm">Open post</a>
-                        <button id="article-modal-close" class="px-3 py-1 border rounded-md text-sm">Close</button>
-                    </div>
-                </div>
+            <!-- Export Buttons -->
+            <div class="flex gap-3 pt-2">
+                <button id="download-jpg-btn" class="flex-1 py-3 bg-orange-600 hover:bg-orange-500 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 transition-all shadow-lg shadow-orange-500/20">
+                    <i data-lucide="download" class="w-4 h-4"></i> Download JPG Summary
+                </button>
             </div>
         </div>
     </div>
@@ -294,23 +335,13 @@
     <script>
         lucide.createIcons();
 
-        // Runtime encoded Cloudflare Worker base URL (base64).
         const DEFAULT_PROXY_HASH = "aHR0cHM6Ly9zdXBlci1iYW5kLTliMzMub2xpdmVyaW8tYWxlc3NhbmRyby53b3JrZXJzLmRldi8=";
 
         function getProxyUrl() {
-            try {
-                const decoded = atob(DEFAULT_PROXY_HASH || '');
-                const trimmed = (decoded || '').trim();
-                if (!trimmed || !(trimmed.startsWith('https://') || trimmed.startsWith('http://'))) {
-                    return '';
-                }
-                return trimmed;
-            } catch (e) {
-                return '';
-            }
+            try { return atob(DEFAULT_PROXY_HASH); } catch (e) { return ''; }
         }
 
-        // Theme toggle
+        // Theme Toggle Logic
         const themeToggleBtn = document.getElementById('theme-toggle');
         const themeIconSun = document.getElementById('theme-icon-sun');
         const themeIconMoon = document.getElementById('theme-icon-moon');
@@ -340,27 +371,22 @@
             updateChartColors();
         });
 
-        // State
         let currentPostsData = [];
         let currentSort = { key: 'reactions', dir: 'desc' };
+        let currentSubdomain = "unknownlegends";
+
         const CACHE_TTL = 24 * 60 * 60 * 1000;
         const CACHE_PREFIX = 'lm_cache_';
+
         let chartTimeline = null, chartEngagement = null, chartWordCount = null, chartDayOfWeek = null;
 
-        // Cloudflare-only fetch helper
         const fetchViaCloudflare = async (targetUrl) => {
-            const baseUrl = getProxyUrl().trim();
-            if (!baseUrl) {
-                throw new Error('Cloudflare worker URL not configured. Please set DEFAULT_PROXY_HASH to your worker base URL (base64).');
-            }
-            const normalizedBase = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
-            const encoded = encodeURIComponent(btoa(targetUrl));
-            const workerUrl = normalizedBase + encoded;
-            const res = await fetch(workerUrl, { cache: 'no-store' });
-            return res;
+            let baseUrl = getProxyUrl().trim();
+            if (!baseUrl.endsWith('/')) baseUrl += '/';
+            const encodedTarget = encodeURIComponent(btoa(targetUrl));
+            return await fetch(`${baseUrl}${encodedTarget}`);
         };
 
-        // Utilities
         const formatNum = (num) => {
             if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
             if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
@@ -369,14 +395,13 @@
 
         const formatDate = (dateString) => {
             if (!dateString) return '';
-            const d = new Date(dateString);
-            return d.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+            return new Date(dateString).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
         };
 
         const getChartColors = () => {
             const isDark = document.documentElement.classList.contains('dark');
             return {
-                text: isDark ? '#94a3b8' : '#0f172a',
+                text: isDark ? '#94a3b8' : '#64748b',
                 grid: isDark ? '#1e293b' : '#e2e8f0',
                 tooltipBg: isDark ? '#0f172a' : '#ffffff',
                 tooltipBorder: isDark ? '#334155' : '#cbd5e1',
@@ -388,58 +413,79 @@
             const colors = getChartColors();
             Chart.defaults.color = colors.text;
             Chart.defaults.borderColor = colors.grid;
-
+            
             [chartTimeline, chartEngagement, chartWordCount, chartDayOfWeek].forEach(chart => {
                 if (chart) {
-                    if (chart.options && chart.options.scales && chart.options.scales.y) {
-                        chart.options.scales.y.grid.color = colors.grid;
-                    }
-                    if (chart.options && chart.options.scales && chart.options.scales.x) {
-                        chart.options.scales.x.grid.color = colors.grid;
-                    }
-                    if (chart.options && chart.options.plugins && chart.options.plugins.tooltip) {
-                        chart.options.plugins.tooltip.backgroundColor = colors.tooltipBg;
-                        chart.options.plugins.tooltip.titleColor = colors.tooltipText;
-                        chart.options.plugins.tooltip.bodyColor = colors.tooltipText;
-                        chart.options.plugins.tooltip.borderColor = colors.tooltipBorder;
-                    }
-                    try { chart.update(); } catch (e) {}
+                    if(chart.options.scales.y) chart.options.scales.y.grid.color = colors.grid;
+                    if(chart.options.scales.x) chart.options.scales.x.grid.color = colors.grid;
+                    chart.update();
                 }
             });
         };
 
-        // Form handler (same logic as before)
+        // Modal Controls
+        const modal = document.getElementById('summary-modal');
+        document.getElementById('export-modal-btn').addEventListener('click', () => modal.classList.remove('hidden'));
+        document.getElementById('close-modal-btn').addEventListener('click', () => modal.classList.add('hidden'));
+
+        // Download Summary JPG
+        document.getElementById('download-jpg-btn').addEventListener('click', async () => {
+            const card = document.getElementById('summary-card-export');
+            const btn = document.getElementById('download-jpg-btn');
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Rendering JPG...`;
+            lucide.createIcons();
+
+            try {
+                const canvas = await html2canvas(card, {
+                    scale: 3,
+                    backgroundColor: '#020617',
+                    useCORS: true
+                });
+                const link = document.createElement('a');
+                link.download = `${currentSubdomain}-summary-card.jpg`;
+                link.href = canvas.toDataURL('image/jpeg', 0.95);
+                link.click();
+            } catch (err) {
+                alert('Export failed. Please try again.');
+            } finally {
+                btn.innerHTML = `<i data-lucide="download" class="w-4 h-4"></i> Download JPG Summary`;
+                lucide.createIcons();
+            }
+        });
+
+        // Search and Fetch Handler
         document.getElementById('search-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-
+            
             const handle = document.getElementById('handle-input').value.trim();
-            let limit = parseInt(document.getElementById('limit-input').value || '50');
-            limit = Math.min(50, Math.max(1, isNaN(limit) ? 50 : limit)); // enforce 1..50
+            const limit = parseInt(document.getElementById('limit-input').value);
             const btnText = document.getElementById('btn-text');
             const btn = document.getElementById('analyze-btn');
             const errorContainer = document.getElementById('error-container');
             const resultsContainer = document.getElementById('results-container');
             const statusBadge = document.getElementById('status-badge');
+            const exportModalBtn = document.getElementById('export-modal-btn');
 
             if (!handle) return;
 
             btn.disabled = true;
-            btnText.textContent = "Loading data...";
+            btnText.textContent = "Analyzing...";
             errorContainer.classList.add('hidden');
             resultsContainer.classList.add('hidden');
-            statusBadge.innerHTML = `<i data-lucide="loader-2" class="w-3 h-3 animate-spin"></i> Loading...`;
+            statusBadge.innerHTML = `<i data-lucide="loader-2" class="w-3 h-3 animate-spin text-orange-500"></i> Fetching...`;
             lucide.createIcons();
 
             let allPosts = [];
             let offset = 0;
             const batchSize = 50;
-
+            
             let subdomain = handle.replace(/^@/, '');
             if (subdomain.startsWith('http')) {
                 try { subdomain = new URL(subdomain).hostname.split('.')[0]; } catch (e) { subdomain = handle; }
             } else {
                 subdomain = subdomain.replace(/\.substack\.com.*$/i, '').replace(/\/.*$/, '');
             }
+            currentSubdomain = subdomain;
 
             const cacheKey = `${CACHE_PREFIX}${subdomain.toLowerCase()}_${limit}`;
             const cachedItem = localStorage.getItem(cacheKey);
@@ -459,55 +505,36 @@
                 if (!normalizedData) {
                     while (allPosts.length < limit) {
                         const fetchLimit = Math.min(batchSize, limit - allPosts.length);
-                        btnText.textContent = `Loading ${allPosts.length}/${limit}...`;
-
                         const targetUrl = `https://${subdomain}.substack.com/api/v1/posts?sort=new&offset=${offset}&limit=${fetchLimit}`;
-
+                        
                         let response = await fetchViaCloudflare(targetUrl);
-
-                        if (!response.ok) {
-                            const text = await response.text().catch(()=>'');
-                            throw new Error(`Proxy request failed with status ${response.status} ${text ? '- ' + text : ''}`);
-                        }
-
+                        if (!response.ok) throw new Error(`Proxy request failed (${response.status})`);
+                        
                         const data = await response.json();
                         const items = Array.isArray(data) ? data : (data.posts || []);
-
                         if (items.length === 0) break;
 
                         allPosts = [...allPosts, ...items];
                         offset += items.length;
-
                         if (items.length < fetchLimit) break;
                     }
 
-                    if (allPosts.length === 0) throw new Error("No posts found or invalid Substack handle.");
+                    if (allPosts.length === 0) throw new Error("No posts found or publication is private.");
 
                     normalizedData = allPosts.map(p => {
                         let words = p.wordcount || p.word_count || 0;
                         if (!words && p.reading_time) words = Math.round(p.reading_time * 200);
-
-                        let tags = [];
-                        if (p.postTags && Array.isArray(p.postTags)) {
-                            tags = p.postTags.map(t => typeof t === 'object' ? (t.name || t.slug) : t).filter(Boolean);
-                        } else if (p.tags && Array.isArray(p.tags)) {
-                            tags = p.tags.map(t => typeof t === 'object' ? (t.name || t.slug) : t).filter(Boolean);
-                        } else if (p.primary_tag && p.primary_tag.name) {
-                            tags = [p.primary_tag.name];
-                        } else if (p.section && p.section.title) {
-                            tags = [p.section.title];
-                        }
-
+                        
                         return {
                             id: p.id,
-                            title: p.title || 'Untitled',
+                            title: p.title || 'Untitled Article',
                             date: new Date(p.post_date || p.createdAt || Date.now()),
                             reactions: p.reaction_count || 0,
                             comments: p.comment_count || 0,
-                            words: words || 0,
+                            words: words,
                             url: p.canonical_url || `https://${subdomain}.substack.com/p/${p.slug}`,
                             audience: p.audience === 'only_paid' ? 'Paid' : 'Free',
-                            tags: tags
+                            tags: p.postTags ? p.postTags.map(t => t.name || t) : [p.audience + " Article"]
                         };
                     });
 
@@ -518,308 +545,165 @@
 
                 currentPostsData = normalizedData;
                 renderDashboard(normalizedData);
-
+                
                 resultsContainer.classList.remove('hidden');
-                statusBadge.innerHTML = `<div class="w-2 h-2 rounded-full bg-[var(--accent-2)]"></div> Ready`;
-
+                exportModalBtn.classList.remove('hidden');
+                statusBadge.innerHTML = `<div class="w-2 h-2 rounded-full bg-emerald-500"></div> Ready`;
+                
             } catch (err) {
                 errorContainer.innerHTML = `<i data-lucide="alert-triangle" class="w-5 h-5"></i> <span>${err.message}</span>`;
                 errorContainer.classList.remove('hidden');
                 statusBadge.innerHTML = `<div class="w-2 h-2 rounded-full bg-red-500"></div> Error`;
             } finally {
                 btn.disabled = false;
-                btnText.textContent = "Analyze";
+                btnText.textContent = "Analyze Publication";
                 lucide.createIcons();
             }
         });
 
-        // compute overall rating (unchanged)
-        function computeOverallRating(posts) {
-            if (!posts || posts.length === 0) return { score: 0, grade: 'N/A', description: 'No data' };
-
-            const now = Date.now();
-            const ages = posts.map(p => now - p.date.getTime());
-            const maxAge = Math.max(...ages, 1);
-            const maxReactions = Math.max(...posts.map(p => p.reactions), 1);
-            const maxComments = Math.max(...posts.map(p => p.comments), 1);
-            const maxWords = Math.max(...posts.map(p => p.words), 1);
-
-            const per = posts.map(p => {
-                const r = p.reactions / maxReactions;
-                const c = p.comments / maxComments;
-                const w = Math.min(p.words, 3000) / 3000;
-                const rec = 1 - ((now - p.date.getTime()) / maxAge);
-                return (r * 0.45) + (c * 0.25) + (rec * 0.20) + (w * 0.10);
-            });
-
-            const avgNormalized = per.reduce((a,b)=>a+b,0) / per.length;
-            const score = Math.round(Math.max(0, Math.min(100, avgNormalized * 100)));
-
-            let grade = 'C';
-            let desc = 'Average';
-            if (score >= 90) { grade = 'A+'; desc = 'Outstanding' }
-            else if (score >= 80) { grade = 'A'; desc = 'Excellent' }
-            else if (score >= 70) { grade = 'B+'; desc = 'Very good' }
-            else if (score >= 60) { grade = 'B'; desc = 'Good' }
-            else if (score >= 50) { grade = 'C+'; desc = 'Fair' }
-            else if (score >= 35) { grade = 'C'; desc = 'Needs improvement' }
-            else { grade = 'D'; desc = 'Low performance' }
-
-            return { score, grade, description: desc };
-        }
-
-        function median(values) {
-            if (!values.length) return 0;
-            const sorted = [...values].sort((a,b)=>a-b);
-            const mid = Math.floor(sorted.length/2);
-            return sorted.length % 2 !== 0 ? sorted[mid] : Math.round((sorted[mid-1] + sorted[mid])/2);
-        }
-
-        // keep renderDashboard structure but improved bestPost card behavior
         function renderDashboard(posts) {
             let totalReactions = 0, totalComments = 0, totalWords = 0;
-            posts.forEach(p => { totalReactions += p.reactions; totalComments += p.comments; totalWords += p.words; });
+            posts.forEach(p => {
+                totalReactions += p.reactions;
+                totalComments += p.comments;
+                totalWords += p.words;
+            });
 
-            const bestPost = [...posts].sort((a,b)=>b.reactions - a.reactions)[0];
+            const bestPost = [...posts].sort((a, b) => b.reactions - a.reactions)[0];
             const avgWords = Math.round(totalWords / posts.length) || 0;
             const avgReactions = Math.round(totalReactions / posts.length) || 0;
             const avgComments = Math.round(totalComments / posts.length) || 0;
 
-            const timespanDays = Math.max(1, (new Date() - posts[posts.length-1].date) / (1000*60*60*24));
-            const postsPerWeek = ((posts.length / Math.max(1, timespanDays)) * 7).toFixed(1);
-
-            const daysOfWeek = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-            const dayStats = Array(7).fill(0).map(()=>({count:0,totalReactions:0}));
+            // Day Calculation Engine
+            const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const dayStats = Array(7).fill(0).map(() => ({ count: 0, totalReactions: 0 }));
             posts.forEach(p => {
-                const d = p.date.getDay();
-                dayStats[d].count++;
-                dayStats[d].totalReactions += p.reactions;
+                const dayIdx = p.date.getDay();
+                dayStats[dayIdx].count++;
+                dayStats[dayIdx].totalReactions += p.reactions;
             });
+
             let bestDayIdx = 0, maxDayAvg = -1;
-            dayStats.forEach((s, i) => {
-                if (s.count>0) {
-                    const avg = s.totalReactions / s.count;
-                    if (avg > maxDayAvg) { maxDayAvg = avg; bestDayIdx = i; }
+            dayStats.forEach((stat, idx) => {
+                if (stat.count > 0) {
+                    const avg = stat.totalReactions / stat.count;
+                    if (avg > maxDayAvg) { maxDayAvg = avg; bestDayIdx = idx; }
                 }
             });
+
             const bestDayName = daysOfWeek[bestDayIdx];
+            const bestDayAvgReactions = Math.round(maxDayAvg);
+            const dayDiffPct = avgReactions > 0 ? Math.round(((bestDayAvgReactions - avgReactions) / avgReactions) * 100) : 0;
 
-            const tagMap = {};
-            posts.forEach(p => {
-                const postTags = (p.tags && p.tags.length>0) ? p.tags : [p.audience + " Articles"];
-                postTags.forEach(tag => {
-                    if (!tagMap[tag]) tagMap[tag] = { count: 0, reactions: 0, comments: 0 };
-                    tagMap[tag].count++;
-                    tagMap[tag].reactions += p.reactions;
-                    tagMap[tag].comments += p.comments;
-                });
-            });
-            const sortedTags = Object.keys(tagMap).map(tag => ({
-                name: tag,
-                count: tagMap[tag].count,
-                avgReactions: Math.round(tagMap[tag].reactions / tagMap[tag].count),
-                totalReactions: tagMap[tag].reactions
-            })).sort((a,b)=>b.avgReactions - a.avgReactions).slice(0,5);
+            // Overall Score Engine
+            const engagementScore = Math.min(100, Math.round((avgReactions * 2.5 + avgComments * 8) / 10));
+            const consistencyScore = Math.min(100, posts.length * 2);
+            const overallScore = Math.min(99, Math.max(52, Math.round((engagementScore * 0.7) + (consistencyScore * 0.3))));
 
-            const reactionsArr = posts.map(p=>p.reactions);
-            const medianReacts = median(reactionsArr);
-            const sortedReactsDesc = reactionsArr.slice().sort((a,b)=>b-a);
-            const topQuartile = sortedReactsDesc.slice(0, Math.max(1, Math.floor(sortedReactsDesc.length*0.25)));
-            const topQuartAvg = Math.round(topQuartile.reduce((a,b)=>a+b,0)/topQuartile.length) || 0;
-            const medianWords = median(posts.map(p=>p.words));
-            const avgReadingMins = Math.round((posts.reduce((s,p)=>s+p.words,0)/posts.length)/200) || 0;
+            document.getElementById('overall-score').textContent = overallScore;
+            
+            let ratingBadge = "HEALTHY";
+            let ratingColor = "bg-emerald-500/20 text-emerald-400 border-emerald-500/30";
+            if (overallScore >= 88) { ratingBadge = "S-TIER / EXCELLENT"; }
+            else if (overallScore >= 75) { ratingBadge = "A-TIER / STRONG"; }
+            else { ratingBadge = "BUILDING MOMENTUM"; ratingColor = "bg-amber-500/20 text-amber-400 border-amber-500/30"; }
+            
+            const badgeEl = document.getElementById('rating-badge');
+            badgeEl.className = `px-2.5 py-1 rounded-full text-[10px] font-extrabold border ${ratingColor}`;
+            badgeEl.textContent = ratingBadge;
 
-            const last5 = posts.slice(0,5);
-            const prev5 = posts.slice(5,10);
-            const last5Avg = last5.length ? Math.round(last5.reduce((a,b)=>a+b.reactions,0)/last5.length) : 0;
-            const prev5Avg = prev5.length ? Math.round(prev5.reduce((a,b)=>a+b.reactions,0)/prev5.length) : 0;
-            const momentumPct = prev5Avg > 0 ? Math.round(((last5Avg - prev5Avg) / prev5Avg) * 100) : (last5Avg > 0 ? 100 : 0);
+            // Update Breakthrough KPI Card
+            document.getElementById('best-kpi-title').textContent = `${bestDayName} Releases Yield ${dayDiffPct >= 0 ? '+' + dayDiffPct : dayDiffPct}% Engagement`;
+            document.getElementById('best-kpi-desc').textContent = `Publishing on ${bestDayName}s generates the highest engagement velocity across the analyzed sample size.`;
+            document.getElementById('best-kpi-stat1').textContent = bestDayName;
+            document.getElementById('best-kpi-stat2').textContent = `${(bestDayAvgReactions / Math.max(1, avgReactions)).toFixed(1)}x Avg`;
+            document.getElementById('best-kpi-stat3').textContent = `${avgWords.toLocaleString()} Words`;
 
-            // growth insights (small visual update only)
-            const growthInsightsHtml = `
-                <div class="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-3xl p-4 sm:p-6 shadow-md border border-slate-200 dark:border-slate-800 space-y-4 transition-colors duration-200 card-raise">
-                    <div class="flex items-center gap-3">
-                        <div class="p-2.5 rounded-lg bg-gradient-to-br from-[var(--accent-1)] to-[var(--accent-2)] text-white">
-                            <i data-lucide="sparkles" class="w-5 h-5"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-bold tracking-tight">Growth Insights</h3>
-                            <p class="text-slate-500 dark:text-slate-400 text-sm">Automated highlights from your recent posts</p>
-                        </div>
-                    </div>
+            // Export Modal Data Binding
+            document.getElementById('export-handle').textContent = `@${currentSubdomain}`;
+            document.getElementById('export-score').textContent = overallScore;
+            document.getElementById('export-grade').textContent = ratingBadge;
+            document.getElementById('export-avg-react').textContent = avgReactions;
+            document.getElementById('export-highlight').textContent = `${bestDayName} posts yield +${dayDiffPct}% higher interaction compared to publication average.`;
+            document.getElementById('export-date').textContent = new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                        <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
-                            <div class="text-xs text-slate-500 uppercase">Best Performing Article</div>
-                            <div class="mt-2 font-semibold"><a href="${bestPost.url}" target="_blank" class="text-[var(--accent-1)] dark:text-[var(--accent-2)]">${bestPost.title}</a></div>
-                            <div class="text-xs text-slate-500 mt-1">${formatDate(bestPost.date)} • ${formatNum(bestPost.reactions)} reactions</div>
-                        </div>
-
-                        <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
-                            <div class="text-xs text-slate-500 uppercase">Best Publishing Day</div>
-                            <div class="mt-2 font-semibold">${bestDayName}</div>
-                            <div class="text-xs text-slate-500 mt-1">Average reactions on ${bestDayName}: ${Math.round(maxDayAvg||0)}</div>
-                        </div>
-
-                        <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
-                            <div class="text-xs text-slate-500 uppercase">Content Pattern</div>
-                            <div class="mt-2 font-semibold">${(topQuartAvg >= avgReactions) ? 'Longer / Engaging posts perform well' : 'Concise posts do better'}</div>
-                            <div class="text-xs text-slate-500 mt-1">Top quartile avg: ${topQuartAvg} reactions</div>
-                        </div>
-                    </div>
-
-                    <div class="pt-3 border-t border-slate-100 dark:border-slate-800">
-                        <div class="text-xs text-slate-500 uppercase mb-2">Top Tags</div>
-                        <div class="flex flex-wrap gap-2">
-                            ${sortedTags.map(t => `<span class="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-sm text-slate-800 dark:text-slate-200">${t.name} • avg ${t.avgReactions} ❤️</span>`).join('')}
-                        </div>
-                    </div>
-                </div>
-            `;
-            document.getElementById('growth-insights-container').innerHTML = growthInsightsHtml;
-
-            // Best post card: clamp title & add "View" button for mobile
-            const bestPostHtml = bestPost ? `
-                <div class="bg-gradient-to-r from-[var(--accent-1)] to-[var(--accent-2)] rounded-2xl p-4 md:p-6 text-white shadow-lg flex flex-col md:flex-row justify-between items-start gap-4 card-raise">
-                    <div class="min-w-0 flex-1">
-                        <div class="text-orange-100 text-xs font-semibold uppercase tracking-wider mb-1">Highlight Article</div>
-                        <h3 class="text-lg font-bold mb-1 title-clamp"><a href="${bestPost.url}" target="_blank" class="hover:underline text-white">${bestPost.title}</a></h3>
-                        <p class="text-orange-100 text-xs">${formatDate(bestPost.date)} • ${bestPost.audience}</p>
-                    </div>
-
-                    <div class="flex items-center gap-4 mt-3 md:mt-0">
-                        <div class="text-center">
-                            <div class="text-2xl font-bold">${formatNum(bestPost.reactions)}</div>
-                            <div class="text-xs uppercase opacity-85">Reactions</div>
-                        </div>
-                        <div class="text-center">
-                            <div class="text-2xl font-bold">${formatNum(bestPost.comments)}</div>
-                            <div class="text-xs uppercase opacity-85">Comments</div>
-                        </div>
-                        <div class="sm:hidden">
-                          <button class="px-3 py-1 bg-white/20 hover:bg-white/30 rounded-md text-xs" data-open-article="${bestPost.id}">View</button>
-                        </div>
-                        <div class="hidden sm:block">
-                          <a href="${bestPost.url}" target="_blank" class="px-3 py-1 bg-white/20 hover:bg-white/30 rounded-md text-xs">Open</a>
-                        </div>
-                    </div>
-                </div>
-            ` : '';
-            document.getElementById('best-post-container').innerHTML = bestPostHtml;
-
-            // KPIs
+            // Render Core KPIs
             const kpiData = [
-                { title: "Total Posts", val: posts.length, icon: "file-text" },
-                { title: "Total Reactions", val: formatNum(totalReactions), icon: "activity" },
-                { title: "Total Comments", val: formatNum(totalComments), icon: "message-circle" },
-                { title: "Total Words", val: formatNum(totalWords), icon: "hash" },
-                { title: "Avg Reactions / Post", val: formatNum(avgReactions), icon: "trending-up" },
-                { title: "Median Reactions", val: formatNum(medianReacts), icon: "bar-chart-2" },
-                { title: "Top Quartile Avg", val: formatNum(topQuartAvg), icon: "star" },
-                { title: "Avg Words / Post", val: formatNum(avgWords), icon: "align-left" },
-                { title: "Median Words", val: formatNum(medianWords), icon: "layers" },
-                { title: "Avg Read (min)", val: `${avgReadingMins}m`, icon: "clock" },
-                { title: "Posts / Week", val: postsPerWeek, icon: "calendar" },
-                { title: "Recent Momentum", val: momentumPct >= 0 ? `+${momentumPct}%` : `${momentumPct}%`, icon: "trending-up" }
+                { title: "Total Articles", val: posts.length, icon: "file-text", color: "text-blue-500" },
+                { title: "Total Reactions", val: formatNum(totalReactions), icon: "heart", color: "text-orange-500" },
+                { title: "Total Comments", val: formatNum(totalComments), icon: "message-square", color: "text-emerald-500" },
+                { title: "Total Words", val: formatNum(totalWords), icon: "align-left", color: "text-purple-500" },
+                { title: "Avg Reactions", val: formatNum(avgReactions), icon: "trending-up", color: "text-amber-500" },
+                { title: "Avg Length", val: `${formatNum(avgWords)} w`, icon: "pen-tool", color: "text-indigo-500" }
             ];
 
             document.getElementById('kpi-grid').innerHTML = kpiData.map(kpi => `
-                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm transition-colors duration-200">
-                    <div class="flex justify-between items-start mb-2">
-                        <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">${kpi.title}</span>
-                        <div class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"><i data-lucide="${kpi.icon}" class="w-4 h-4"></i></div>
+                <div class="glass-card border border-slate-200/80 dark:border-slate-800/80 p-4 rounded-2xl shadow-sm">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">${kpi.title}</span>
+                        <i data-lucide="${kpi.icon}" class="w-4 h-4 ${kpi.color}"></i>
                     </div>
-                    <div class="text-xl font-bold text-slate-900 dark:text-white">${kpi.val}</div>
+                    <div class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">${kpi.val}</div>
                 </div>
             `).join('');
 
-            // Overall rating
-            const rating = computeOverallRating(posts);
-            const stars = Math.round(rating.score / 20);
-            const starHtml = Array.from({length:5}).map((_,i)=>`<i data-lucide="star" class="${i<stars ? 'text-yellow-400' : 'text-slate-300 dark:text-slate-700'} w-4 h-4 inline-block"></i>`).join('');
-            document.getElementById('rating-card').innerHTML = `
-                <div>
-                    <div class="flex items-center gap-2">${starHtml}</div>
-                    <div class="mt-2 text-2xl font-bold">${rating.score} <span class="text-sm font-medium text-slate-500 dark:text-slate-400">(${rating.grade})</span></div>
-                    <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">${rating.description}</div>
+            // Highlight Article Card
+            document.getElementById('best-post-container').innerHTML = bestPost ? `
+                <div class="bg-gradient-to-r from-orange-600 to-amber-500 rounded-3xl p-6 text-white shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <div class="text-orange-100 text-xs font-bold uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                            <i data-lucide="award" class="w-4 h-4"></i> Highlight Article
+                        </div>
+                        <h3 class="text-xl font-black line-clamp-1"><a href="${bestPost.url}" target="_blank" class="hover:underline">${bestPost.title}</a></h3>
+                        <p class="text-orange-100 text-xs mt-1">${formatDate(bestPost.date)} • ${bestPost.audience} Access</p>
+                    </div>
+                    <div class="flex gap-6 self-end sm:self-auto">
+                        <div class="text-center"><div class="text-2xl font-black">${formatNum(bestPost.reactions)}</div><div class="text-[10px] text-orange-100 uppercase font-bold">Reactions</div></div>
+                        <div class="text-center"><div class="text-2xl font-black">${formatNum(bestPost.comments)}</div><div class="text-[10px] text-orange-100 uppercase font-bold">Comments</div></div>
+                    </div>
                 </div>
-            `;
+            ` : '';
 
-            // momentum
-            document.getElementById('momentum-card').innerHTML = `
-                <div class="text-sm font-semibold">${last5Avg} avg reactions (last 5)</div>
-                <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">Compared to ${prev5Avg} (previous 5) • ${momentumPct >= 0 ? '+'+momentumPct+'%' : momentumPct+'%'}</div>
-            `;
-
-            // Charts (same as before)
+            // Render Chart Suite
             const colors = getChartColors();
-            Chart.defaults.color = colors.text;
-            Chart.defaults.borderColor = colors.grid;
-            Chart.defaults.font.family = 'Inter';
-
             const commonOptions = {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        backgroundColor: colors.tooltipBg,
-                        titleColor: colors.tooltipText,
-                        bodyColor: colors.tooltipText,
-                        borderColor: colors.tooltipBorder,
-                        borderWidth: 1,
-                        padding: 8,
-                        cornerRadius: 6
-                    }
-                }
+                plugins: { legend: { display: false } }
             };
 
             const timelineData = [...posts].reverse();
             const dates = timelineData.map(p => formatDate(p.date));
-            const freeData = timelineData.map(p => p.audience === 'Free' ? p.words : 0);
-            const paidData = timelineData.map(p => p.audience === 'Paid' ? p.words : 0);
 
+            // Chart 1: Timeline
             if (chartTimeline) chartTimeline.destroy();
-            const ctx1 = document.getElementById('timelineChart').getContext('2d');
-            chartTimeline = new Chart(ctx1, {
+            chartTimeline = new Chart(document.getElementById('timelineChart').getContext('2d'), {
                 type: 'bar',
                 data: {
                     labels: dates,
                     datasets: [
-                        { label: 'Free (Words)', data: freeData, backgroundColor: '#06b6d4', borderRadius: 4, stack: 'a' },
-                        { label: 'Paid (Words)', data: paidData, backgroundColor: '#7c3aed', borderRadius: 4, stack: 'a' }
+                        { label: 'Free Words', data: timelineData.map(p => p.audience === 'Free' ? p.words : 0), backgroundColor: '#10b981', borderRadius: 4, stacked: true },
+                        { label: 'Paid Words', data: timelineData.map(p => p.audience === 'Paid' ? p.words : 0), backgroundColor: '#f59e0b', borderRadius: 4, stacked: true }
                     ]
                 },
-                options: {
-                    ...commonOptions,
-                    plugins: { ...commonOptions.plugins, legend: { display: true, position: 'top', align: 'end', labels: { boxWidth: 12 } } },
-                    scales: { x: { display: false, stacked: true }, y: { beginAtZero: true, stacked: true, grid: { color: colors.grid } } }
-                }
+                options: { ...commonOptions, scales: { x: { display: false, stacked: true }, y: { beginAtZero: true, stacked: true } } }
             });
 
-            const reactionData = timelineData.map(p => p.reactions);
-            const commentData = timelineData.map(p => p.comments);
-
+            // Chart 2: Engagement
             if (chartEngagement) chartEngagement.destroy();
-            const ctx2 = document.getElementById('engagementChart').getContext('2d');
-            chartEngagement = new Chart(ctx2, {
+            chartEngagement = new Chart(document.getElementById('engagementChart').getContext('2d'), {
                 type: 'line',
                 data: {
                     labels: dates,
                     datasets: [
-                        { label: 'Reactions', data: reactionData, borderColor: '#f97316', backgroundColor: 'rgba(249,115,22,0.08)', fill: true, tension: 0.3, borderWidth: 2 },
-                        { label: 'Comments', data: commentData, borderColor: '#60a5fa', backgroundColor: 'transparent', tension: 0.3, borderWidth: 2 }
+                        { label: 'Reactions', data: timelineData.map(p => p.reactions), borderColor: '#ea580c', backgroundColor: 'rgba(234, 88, 12, 0.1)', fill: true, tension: 0.3 },
+                        { label: 'Comments', data: timelineData.map(p => p.comments), borderColor: '#3b82f6', tension: 0.3 }
                     ]
                 },
-                options: {
-                    ...commonOptions,
-                    plugins: { ...commonOptions.plugins, legend: { display: true, position: 'top', align: 'end' } },
-                    scales: { x: { display: false }, y: { beginAtZero: true, grid: { color: colors.grid } } },
-                    elements: { point: { radius: 0, hitRadius: 8, hoverRadius: 4 } },
-                    interaction: { mode: 'index', intersect: false }
-                }
+                options: { ...commonOptions, scales: { x: { display: false }, y: { beginAtZero: true } } }
             });
 
+            // Chart 3: Word count bucketing
             const buckets = { '< 500': 0, '500-1K': 0, '1K-2K': 0, '2K-3.5K': 0, '> 3.5K': 0 };
             posts.forEach(p => {
                 if (p.words <= 500) buckets['< 500']++;
@@ -830,74 +714,38 @@
             });
 
             if (chartWordCount) chartWordCount.destroy();
-            const ctx3 = document.getElementById('wordCountChart').getContext('2d');
-            chartWordCount = new Chart(ctx3, {
+            chartWordCount = new Chart(document.getElementById('wordCountChart').getContext('2d'), {
                 type: 'bar',
-                data: { labels: Object.keys(buckets), datasets: [{ label: 'Number of Posts', data: Object.values(buckets), backgroundColor: '#8b5cf6', borderRadius: 4 }] },
-                options: { ...commonOptions, scales: { x: { grid: { display: false } }, y: { beginAtZero: true, grid: { color: colors.grid } } } }
+                data: {
+                    labels: Object.keys(buckets),
+                    datasets: [{ data: Object.values(buckets), backgroundColor: '#6366f1', borderRadius: 6 }]
+                },
+                options: commonOptions
             });
 
-            const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-            const dayCounts = [0,0,0,0,0,0,0];
-            posts.forEach(p => dayCounts[p.date.getDay()]++);
-
-            const shiftedCounts = [...dayCounts.slice(1), dayCounts[0]];
-            const shiftedDays = [...days.slice(1), days[0]];
+            // Chart 4: Day of week schedule
+            const shiftedDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            const shiftedCounts = [dayStats[1].count, dayStats[2].count, dayStats[3].count, dayStats[4].count, dayStats[5].count, dayStats[6].count, dayStats[0].count];
 
             if (chartDayOfWeek) chartDayOfWeek.destroy();
-            const ctx4 = document.getElementById('dayOfWeekChart').getContext('2d');
-            chartDayOfWeek = new Chart(ctx4, {
+            chartDayOfWeek = new Chart(document.getElementById('dayOfWeekChart').getContext('2d'), {
                 type: 'bar',
-                data: { labels: shiftedDays, datasets: [{ label: 'Published Posts', data: shiftedCounts, backgroundColor: '#06b6d4', borderRadius: 4 }] },
-                options: { ...commonOptions, scales: { x: { grid: { display: false } }, y: { beginAtZero: true, grid: { color: colors.grid }, ticks: { stepSize: 1 } } } }
+                data: {
+                    labels: shiftedDays,
+                    datasets: [{ data: shiftedCounts, backgroundColor: '#14b8a6', borderRadius: 6 }]
+                },
+                options: commonOptions
             });
 
-            // Table
             renderTable();
-
-            // Fill modal content KPIs and highlights
-            document.getElementById('modal-kpis').innerHTML = [
-                {t:'Total Posts', v:posts.length},
-                {t:'Avg Reactions', v:avgReactions},
-                {t:'Median Reactions', v:medianReacts},
-                {t:'Top Quartile Avg', v:topQuartAvg},
-                {t:'Avg Read (min)', v: avgReadingMins + 'm'},
-                {t:'Posts / Week', v: postsPerWeek}
-            ].map(k => `<div class="p-2 bg-slate-50 dark:bg-slate-800 rounded-md border border-slate-100 dark:border-slate-700"><div class="text-xs text-slate-500">${k.t}</div><div class="font-semibold mt-1">${k.v}</div></div>`).join('');
-
-            document.getElementById('modal-highlights').innerHTML = `
-                <div class="bg-slate-50 dark:bg-slate-800 p-3 rounded-md border border-slate-100 dark:border-slate-700">
-                    <div class="text-xs text-slate-500">Top Article</div>
-                    <div class="font-semibold mt-1"><a href="${bestPost.url}" target="_blank" class="text-[var(--accent-1)] dark:text-[var(--accent-2)]">${bestPost.title}</a></div>
-                    <div class="text-xs text-slate-500 mt-1">${formatDate(bestPost.date)} • ${formatNum(bestPost.reactions)} reactions</div>
-                </div>
-            `;
-
             lucide.createIcons();
-
-            // Wire the small-screen View button to open article modal
-            setTimeout(() => {
-                document.querySelectorAll('[data-open-article]').forEach(btn => {
-                    btn.addEventListener('click', (ev) => {
-                        ev.preventDefault();
-                        // fill modal with bestPost content (we only have one bestPost for now)
-                        document.getElementById('article-modal-title').textContent = bestPost.title;
-                        document.getElementById('article-modal-meta').textContent = `${formatDate(bestPost.date)} • ${bestPost.audience} • ${formatNum(bestPost.reactions)} reactions • ${formatNum(bestPost.comments)} comments`;
-                        const link = document.getElementById('article-modal-link');
-                        link.href = bestPost.url;
-                        document.getElementById('article-modal').classList.remove('hidden');
-                        lucide.createIcons();
-                    });
-                });
-            }, 80);
         }
 
         function renderTable() {
             if (!currentPostsData.length) return;
-
             const tbody = document.getElementById('posts-table-body');
-
-            const sortedData = [...currentPostsData].sort((a,b) => {
+            
+            const sortedData = [...currentPostsData].sort((a, b) => {
                 let valA = a[currentSort.key];
                 let valB = b[currentSort.key];
                 if (currentSort.key === 'date') { valA = a.date.getTime(); valB = b.date.getTime(); }
@@ -907,84 +755,28 @@
             }).slice(0, 50);
 
             tbody.innerHTML = sortedData.map((p, i) => `
-                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                    <td class="px-6 py-4 text-slate-500">#${i + 1}</td>
-                    <td class="px-6 py-4 font-medium text-slate-900 dark:text-slate-100 whitespace-normal min-w-[200px]">
-                        <a href="${p.url}" target="_blank" class="hover:text-[var(--accent-1)] transition-colors">${p.title}</a>
-                        <div class="text-xs text-slate-500 mt-1">${p.audience}</div>
+                <tr class="hover:bg-slate-200/40 dark:hover:bg-slate-800/40 transition-colors">
+                    <td class="px-6 py-4 font-bold text-slate-400">#${i + 1}</td>
+                    <td class="px-6 py-4 font-semibold text-slate-900 dark:text-slate-100 whitespace-normal min-w-[220px]">
+                        <a href="${p.url}" target="_blank" class="hover:text-orange-500 transition-colors">${p.title}</a>
+                        <div class="text-[10px] text-slate-400 mt-0.5">${p.audience}</div>
                     </td>
                     <td class="px-6 py-4 text-slate-500">${formatDate(p.date)}</td>
-                    <td class="px-6 py-4 font-medium text-[var(--accent-1)] dark:text-[var(--accent-2)]">${formatNum(p.reactions)}</td>
-                    <td class="px-6 py-4 font-medium text-blue-600 dark:text-blue-400">${formatNum(p.comments)}</td>
+                    <td class="px-6 py-4 font-bold text-orange-500">${formatNum(p.reactions)}</td>
+                    <td class="px-6 py-4 font-bold text-blue-500">${formatNum(p.comments)}</td>
                     <td class="px-6 py-4 text-slate-500">${formatNum(p.words)}</td>
                 </tr>
             `).join('');
-
-            document.querySelectorAll('.sort-header').forEach(header => {
-                header.classList.remove('sort-active', 'sort-asc', 'sort-desc');
-                if (header.dataset.sort === currentSort.key) {
-                    header.classList.add('sort-active', `sort-${currentSort.dir}`);
-                }
-            });
         }
 
         document.querySelectorAll('.sort-header').forEach(header => {
             header.addEventListener('click', () => {
                 const key = header.dataset.sort;
-                if (currentSort.key === key) {
-                    currentSort.dir = currentSort.dir === 'asc' ? 'desc' : 'asc';
-                } else {
-                    currentSort.key = key;
-                    currentSort.dir = 'desc';
-                }
+                currentSort.dir = (currentSort.key === key && currentSort.dir === 'desc') ? 'asc' : 'desc';
+                currentSort.key = key;
                 renderTable();
             });
         });
-
-        // Summary modal open/close/download (unchanged)
-        const openSummaryBtn = document.getElementById('open-summary');
-        const summaryModal = document.getElementById('summary-modal');
-        const modalBackdrop = document.getElementById('modal-backdrop');
-        const closeSummaryBtn = document.getElementById('close-summary');
-        const downloadSummaryBtn = document.getElementById('download-summary');
-
-        openSummaryBtn.addEventListener('click', () => {
-            document.getElementById('modal-title').textContent = `Lettermetrics — ${document.getElementById('handle-input').value || 'Summary'}`;
-            summaryModal.classList.remove('hidden');
-            lucide.createIcons();
-        });
-
-        [closeSummaryBtn, modalBackdrop].forEach(el => el && el.addEventListener('click', () => {
-            summaryModal.classList.add('hidden');
-        }));
-
-        downloadSummaryBtn.addEventListener('click', async () => {
-            const node = document.getElementById('summary-modal-content');
-            try {
-                const canvas = await html2canvas(node, { scale: 2, useCORS: true, backgroundColor: null });
-                const dataUrl = canvas.toDataURL('image/png');
-                const a = document.createElement('a');
-                a.href = dataUrl;
-                a.download = `lettermetrics-summary-${(new Date()).toISOString().slice(0,10)}.png`;
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-            } catch (e) {
-                alert('Export failed: ' + (e && e.message ? e.message : e));
-            }
-        });
-
-        // Article modal handlers
-        const articleModal = document.getElementById('article-modal');
-        const articleModalClose = document.getElementById('article-modal-close');
-        articleModalClose && articleModalClose.addEventListener('click', () => articleModal.classList.add('hidden'));
-        document.querySelectorAll('.modal-backdrop').forEach(b => b.addEventListener('click', () => {
-            document.getElementById('summary-modal') && document.getElementById('summary-modal').classList.add('hidden');
-            articleModal.classList.add('hidden');
-        }));
-
-        // initial icon rendering
-        lucide.createIcons();
     </script>
 </body>
 </html>
