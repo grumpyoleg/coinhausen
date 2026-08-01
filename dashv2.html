@@ -1,291 +1,182 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lettermetrics | Advanced Substack Intelligence & Analytics</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Lettermetrics Alpha | Substack Analytics</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- html2canvas for modal snapshot/download -->
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
-                    colors: { 
-                        slate: { 850: '#151e2e', 950: '#090d16' },
-                        brand: { 500: '#ff6700', 600: '#e05b00' }
-                    }
+                    colors: { slate: { 850: '#151e2e' } }
                 }
             }
         }
     </script>
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap'); 
-        body { font-family: 'Plus Jakarta Sans', sans-serif; transition: background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1), color 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-        ::-webkit-scrollbar { height: 6px; width: 6px; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; transition: background-color 0.3s, color 0.3s; }
+        ::-webkit-scrollbar { height: 8px; width: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        .dark ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 9999px; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+        .dark ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .sort-icon { display: inline-block; width: 0.8em; height: 0.8em; margin-left: 0.25rem; opacity: 0.3; transition: opacity 0.2s; }
         th:hover .sort-icon { opacity: 0.7; }
         .sort-active .sort-icon { opacity: 1; }
         .sort-asc .sort-icon { transform: rotate(180deg); }
-
-        @keyframes pulseGlow {
-            0%, 100% { opacity: 0.3; transform: scale(1); }
-            50% { opacity: 0.6; transform: scale(1.05); }
-        }
-        .animate-pulse-glow { animation: pulseGlow 6s ease-in-out infinite; }
-        
-        .glass-card {
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(226, 232, 240, 0.8);
-        }
-        .dark .glass-card {
-            background: rgba(13, 18, 30, 0.7);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.07);
-        }
-
-        .premium-shadow {
-            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.03), 0 1px 3px 0 rgba(0, 0, 0, 0.02);
-        }
-        .dark .premium-shadow {
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.02);
-        }
-
-        .hero-glow {
-            background: radial-gradient(circle at 50% 0%, rgba(255, 103, 0, 0.12) 0%, transparent 60%);
-        }
+        /* Modal backdrop */
+        .modal-backdrop { background: rgba(2,6,23,0.6); }
+        /* Smooth fade-in */
+        .fade-in { animation: fadeIn 260ms ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px);} to { opacity: 1; transform: translateY(0);} }
+        /* A subtle premium card gradient */
+        .premium-gradient { background: linear-gradient(90deg, rgba(255,152,72,0.08), rgba(99,102,241,0.06)); }
     </style>
 </head>
-<body class="min-h-screen bg-slate-50 dark:bg-[#060913] text-slate-900 dark:text-slate-100 selection:bg-brand-500 selection:text-white pb-20 relative overflow-x-hidden">
-    
-    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[500px] hero-glow pointer-events-none -z-10 animate-pulse-glow"></div>
+<body
+    class="min-h-screen bg-slate-50 dark:bg-[#020617] text-slate-900 dark:text-slate-100 selection:bg-orange-500 selection:text-white pb-12 transition-colors duration-200">
 
-    <!-- Navigation Header -->
-    <header class="sticky top-0 z-50 glass-card border-b border-slate-200/60 dark:border-slate-800/60 transition-all duration-300">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-            <div class="flex items-center gap-3.5 group cursor-pointer">
-                <div class="w-11 h-11 bg-gradient-to-br from-brand-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg shadow-brand-500/25 group-hover:scale-105 transition-transform duration-300">
+    <header class="sticky top-0 z-50 bg-white/80 dark:bg-[#020617]/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors duration-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center shadow-lg shadow-orange-500/20">
                     <i data-lucide="activity" class="w-5 h-5 text-white"></i>
                 </div>
-                <div>
-                    <div class="flex items-center gap-2">
-                        <span class="font-extrabold text-xl tracking-tight text-slate-900 dark:text-white">lettermetrics<span class="text-brand-500">.com</span></span>
-                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20 uppercase tracking-widest">Enterprise</span>
-                    </div>
-                    <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium tracking-wide">Substack Intelligence Suite</p>
-                </div>
+                <h1 class="font-bold text-xl tracking-tight">Lettermetrics <span class="text-orange-500">Alpha</span></h1>
             </div>
-            
+
             <div class="flex items-center gap-3">
-                <div id="status-badge" class="hidden sm:flex px-3.5 py-1.5 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full text-xs font-semibold text-slate-600 dark:text-slate-300 items-center gap-2 shadow-sm">
-                    <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div> Ready to Analyze
+                <div id="status-badge" class="px-3 py-1 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full text-xs font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full bg-green-500"></div> Ready
                 </div>
-                <button id="theme-toggle" class="p-2.5 rounded-2xl bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:text-brand-500 dark:hover:text-brand-400 border border-slate-200 dark:border-slate-800 hover:border-brand-500/30 transition-all duration-200 shadow-sm active:scale-95 cursor-pointer" title="Toggle Theme">
-                    <i data-lucide="sun" id="theme-icon-sun" class="w-4 h-4 hidden"></i>
-                    <i data-lucide="moon" id="theme-icon-moon" class="w-4 h-4"></i>
+
+                <button id="open-summary" class="p-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-orange-500 transition-colors" title="Open Summary">
+                    <i data-lucide="share-2" class="w-5 h-5"></i>
+                </button>
+
+                <button id="theme-toggle" class="p-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-orange-500 transition-colors" title="Toggle Theme">
+                    <i data-lucide="sun" id="theme-icon-sun" class="w-5 h-5 hidden"></i>
+                    <i data-lucide="moon" id="theme-icon-moon" class="w-5 h-5"></i>
                 </button>
             </div>
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
-        
-        <!-- Hero Search Section -->
-        <div class="text-center max-w-3xl mx-auto space-y-4 pt-4">
-            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 text-xs font-bold uppercase tracking-wider border border-brand-500/20 shadow-sm">
-                <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Deep Telemetry Engine
-            </div>
-            <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-                Unlock the Secrets of Any <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-500 to-amber-500">Substack Publication</span>
-            </h1>
-            <p class="text-slate-600 dark:text-slate-400 text-base sm:text-lg font-normal">
-                Instant analytics, health ratings, growth velocity, and publication telemetry derived from the last 50 posts.
-            </p>
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        <div>
+            <h2 class="text-3xl font-bold mb-2">Analyze Your Substack Metrics</h2>
+            <p class="text-slate-500 dark:text-slate-400 max-w-2xl">Enter any Substack handle and get premium analytics for the last 50 posts.</p>
         </div>
 
-        <!-- Search Bar Card -->
-        <div class="max-w-3xl mx-auto">
-            <form id="search-form" class="glass-card rounded-3xl p-3 sm:p-4 premium-shadow transition-all duration-300">
-                <div class="flex flex-col sm:flex-row gap-3">
-                    <div class="relative flex-1 group">
-                        <i data-lucide="globe" class="absolute left-4 top-4 w-5 h-5 text-slate-400 group-focus-within:text-brand-500 transition-colors"></i>
+        <form id="search-form" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm mb-8 space-y-4 transition-colors duration-200">
+            <div class="flex flex-col md:flex-row gap-4">
+                <div class="flex-1">
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">Substack Handle</label>
+                    <div class="relative">
+                        <i data-lucide="search" class="absolute left-3 top-3 w-5 h-5 text-slate-400"></i>
                         <input type="text" id="handle-input" value="unknownlegends" required
-                            class="w-full pl-12 pr-4 py-3.5 bg-slate-50/50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 outline-none transition-all font-semibold placeholder:text-slate-400 dark:placeholder:text-slate-600 text-base"
+                            class="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-orange-200 dark:focus:ring-orange-700 transition-colors"
                             placeholder="e.g. pragmaticengineer">
                     </div>
-                    <div class="w-full sm:w-44">
-                        <div class="relative h-full">
-                            <select id="limit-input" class="w-full h-full px-4 py-3.5 bg-slate-50/50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 outline-none appearance-none transition-all font-semibold cursor-pointer">
-                                <option value="50">Last 50 Posts</option>
-                            </select>
-                            <i data-lucide="chevron-down" class="absolute right-4 top-4 w-4 h-4 text-slate-400 pointer-events-none"></i>
-                        </div>
-                    </div>
-                    <button type="submit" id="analyze-btn" class="px-8 py-3.5 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-orange-400 text-white font-bold rounded-2xl transition-all shadow-lg shadow-brand-500/25 hover:shadow-brand-500/40 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 flex items-center justify-center gap-2.5 cursor-pointer text-base">
-                        <i data-lucide="zap" class="w-5 h-5"></i> <span id="btn-text">Analyze</span>
+                </div>
+
+                <div class="w-full md:w-48">
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">Post Limit (max 50)</label>
+                    <select id="limit-input" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-orange-200 dark:focus:ring-orange-700">
+                        <option value="50" selected>50 Posts</option>
+                    </select>
+                </div>
+
+                <div class="flex items-end">
+                    <button type="submit" id="analyze-btn" class="w-full md:w-auto px-6 py-3 bg-orange-600 hover:bg-orange-500 text-white font-bold rounded-xl transition-all disabled:opacity-70 flex items-center gap-2">
+                        <i data-lucide="activity" class="w-5 h-5"></i> <span id="btn-text">Analyze</span>
                     </button>
                 </div>
-            </form>
-        </div>
-
-        <div id="error-container" class="hidden max-w-3xl mx-auto p-4 rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 flex items-center gap-3 transition-all">
-            <i data-lucide="alert-triangle" class="w-5 h-5 flex-shrink-0"></i>
-            <span class="text-sm font-medium"></span>
-        </div>
-
-        <!-- Results Container -->
-        <div id="results-container" class="hidden space-y-10 transition-all duration-700 opacity-0 translate-y-6">
-            
-            <!-- Overall Rating Showcase Grid -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                
-                <!-- Main Health Score Banner -->
-                <div class="glass-card lg:col-span-2 rounded-3xl p-8 premium-shadow relative overflow-hidden flex flex-col justify-between border border-slate-200/80 dark:border-slate-800">
-                    <div class="absolute -right-16 -top-16 w-72 h-72 bg-gradient-to-br from-brand-500/15 to-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
-                    
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6 relative z-10">
-                        <div class="flex items-center gap-6">
-                            <div class="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl bg-gradient-to-br from-brand-500 via-brand-600 to-amber-500 flex flex-col items-center justify-center text-white shadow-xl shadow-brand-500/30 flex-shrink-0 transform hover:scale-105 transition-transform">
-                                <span id="rating-score" class="text-4xl sm:text-5xl font-black tracking-tighter">0.0</span>
-                                <span id="rating-grade" class="text-xs font-extrabold uppercase tracking-widest mt-1 px-2.5 py-0.5 bg-black/25 rounded-full backdrop-blur-md">Grade A</span>
-                            </div>
-                            <div>
-                                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 text-xs font-bold uppercase tracking-wider mb-2 border border-brand-500/20">
-                                    <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Publication Health Index
-                                </div>
-                                <h3 id="rating-title" class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Exceptional Performance</h3>
-                                <p id="rating-subtitle" class="text-sm text-slate-600 dark:text-slate-400 mt-1 max-w-lg leading-relaxed">
-                                    Dynamically synthesized from reader feedback volume, comment density, word distribution, and publishing velocity across the last 50 posts.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="pt-8 mt-8 border-t border-slate-200/80 dark:border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 relative z-10">
-                        <div class="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                            <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-500"></i> Verified Telemetry via lettermetrics.com
-                        </div>
-                        <button id="open-summary-modal-btn" class="w-full sm:w-auto px-6 py-3.5 bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 dark:hover:bg-slate-700 text-white font-bold rounded-2xl transition-all shadow-lg flex items-center justify-center gap-2.5 cursor-pointer border border-slate-700/50 text-sm">
-                            <i data-lucide="file-badge" class="w-4 h-4 text-brand-400"></i> Generate Summary Card (.PNG)
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Quick Snapshot Card -->
-                <div class="glass-card rounded-3xl p-8 premium-shadow flex flex-col justify-between border border-slate-200/80 dark:border-slate-800">
-                    <div>
-                        <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-                            <i data-lucide="zap" class="w-4 h-4 text-brand-500"></i> Key Telemetry Highlights
-                        </div>
-                        <div class="space-y-4">
-                            <div class="flex items-center justify-between p-3.5 rounded-2xl bg-slate-100/60 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800/60">
-                                <span class="text-xs font-semibold text-slate-500">Engagement Ratio</span>
-                                <span id="quick-stat-engagement" class="text-sm font-extrabold text-slate-900 dark:text-white">0.0%</span>
-                            </div>
-                            <div class="flex items-center justify-between p-3.5 rounded-2xl bg-slate-100/60 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800/60">
-                                <span class="text-xs font-semibold text-slate-500">Free vs Paid Ratio</span>
-                                <span id="quick-stat-ratio" class="text-sm font-extrabold text-slate-900 dark:text-white">0% / 0%</span>
-                            </div>
-                            <div class="flex items-center justify-between p-3.5 rounded-2xl bg-slate-100/60 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800/60">
-                                <span class="text-xs font-semibold text-slate-500">Avg Word Count</span>
-                                <span id="quick-stat-words" class="text-sm font-extrabold text-slate-900 dark:text-white">0 w</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="pt-4 text-center">
-                        <span class="text-[11px] text-slate-400 font-medium">Powered by lettermetrics.com engine</span>
-                    </div>
-                </div>
-
             </div>
+        </form>
 
-            <!-- Growth Insights & Featured Best Post -->
+        <div id="error-container" class="hidden p-4 rounded-xl bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 flex items-center gap-2 mb-6"></div>
+
+        <div id="results-container" class="hidden space-y-6 animate-[fadeIn_0.5s_ease-out]">
             <div id="growth-insights-container"></div>
             <div id="best-post-container"></div>
 
-            <!-- KPI Grid Section -->
-            <div class="space-y-4">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2.5">
-                        <i data-lucide="bar-chart-3" class="w-6 h-6 text-brand-500"></i> Performance Telemetry Metrics
-                    </h3>
-                </div>
-                <div id="kpi-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
-            </div>
-
-            <!-- Charts Grid Section -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="glass-card p-6 sm:p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800 flex flex-col premium-shadow">
-                    <div class="flex items-center justify-between mb-2">
-                        <h3 class="text-lg font-bold text-slate-900 dark:text-white">Posts Over Time</h3>
-                        <span class="p-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-500"><i data-lucide="calendar" class="w-4 h-4"></i></span>
-                    </div>
-                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Publishing frequency and volume breakdown over time.</p>
-                    <div class="flex-1 min-h-[320px] relative w-full h-full"><canvas id="timelineChart"></canvas></div>
-                </div>
-                <div class="glass-card p-6 sm:p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800 flex flex-col premium-shadow">
-                    <div class="flex items-center justify-between mb-2">
-                        <h3 class="text-lg font-bold text-slate-900 dark:text-white">Engagement Trends</h3>
-                        <span class="p-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-brand-500"><i data-lucide="trending-up" class="w-4 h-4"></i></span>
-                    </div>
-                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Reactions and comments trajectory per post.</p>
-                    <div class="flex-1 min-h-[320px] relative w-full h-full"><canvas id="engagementChart"></canvas></div>
-                </div>
-            </div>
+            <h3 class="text-xl font-bold text-slate-900 dark:text-white">Overview</h3>
+            <div id="kpi-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="glass-card p-6 sm:p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800 flex flex-col premium-shadow">
-                    <div class="flex items-center justify-between mb-2">
-                        <h3 class="text-lg font-bold text-slate-900 dark:text-white">Word Count Distribution</h3>
-                        <span class="p-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-purple-500"><i data-lucide="file-text" class="w-4 h-4"></i></span>
-                    </div>
-                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Typical length breakdown for your articles.</p>
-                    <div class="flex-1 min-h-[320px] relative w-full h-full"><canvas id="wordCountChart"></canvas></div>
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col transition-colors duration-200 shadow-sm">
+                    <h3 class="text-lg font-bold mb-1 text-slate-900 dark:text-white">Posts Over Time</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Publishing frequency and content volume over time.</p>
+                    <div class="flex-1 min-h-[240px] relative w-full h-full"><canvas id="timelineChart"></canvas></div>
                 </div>
-                <div class="glass-card p-6 sm:p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800 flex flex-col premium-shadow">
-                    <div class="flex items-center justify-between mb-2">
-                        <h3 class="text-lg font-bold text-slate-900 dark:text-white">Publishing Days</h3>
-                        <span class="p-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-teal-500"><i data-lucide="clock" class="w-4 h-4"></i></span>
-                    </div>
-                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Which days of the week do you post most frequently?</p>
-                    <div class="flex-1 min-h-[320px] relative w-full h-full"><canvas id="dayOfWeekChart"></canvas></div>
+
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col transition-colors duration-200 shadow-sm">
+                    <h3 class="text-lg font-bold mb-1 text-slate-900 dark:text-white">Engagement Trends</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Reactions and comments per post.</p>
+                    <div class="flex-1 min-h-[240px] relative w-full h-full"><canvas id="engagementChart"></canvas></div>
                 </div>
             </div>
 
-            <!-- Posts Table Section -->
-            <div class="glass-card border border-slate-200/80 dark:border-slate-800 rounded-3xl overflow-hidden flex flex-col premium-shadow">
-                <div class="p-6 sm:p-8 border-b border-slate-200/80 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col transition-colors duration-200 shadow-sm">
+                    <h3 class="text-lg font-bold mb-1 text-slate-900 dark:text-white">Word Count Distribution</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Typical length breakdown for your articles.</p>
+                    <div class="flex-1 min-h-[180px] relative w-full h-full"><canvas id="wordCountChart"></canvas></div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col transition-colors duration-200 shadow-sm">
+                    <h3 class="text-lg font-bold mb-1 text-slate-900 dark:text-white">Publishing Days</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Which days of the week do you post most frequently?</p>
+                    <div class="flex-1 min-h-[180px] relative w-full h-full"><canvas id="dayOfWeekChart"></canvas></div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col transition-colors duration-200 shadow-sm">
+                    <h3 class="text-lg font-bold mb-1 text-slate-900 dark:text-white">Overall Rating</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Algorithmic quality score for the latest posts.</p>
+                    <div id="rating-card" class="flex items-center gap-4">
+                        <!-- filled by JS -->
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col transition-colors duration-200 shadow-sm">
+                    <h3 class="text-lg font-bold mb-1 text-slate-900 dark:text-white">Recent Momentum</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Compare most recent posts vs prior posts.</p>
+                    <div id="momentum-card"></div>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden flex flex-col transition-colors duration-200 shadow-sm">
+                <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
                     <div>
-                        <h3 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2.5">
-                            <i data-lucide="award" class="w-5 h-5 text-brand-500"></i> Top Performing Posts
-                        </h3>
-                        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Sorted by reach and reactions. Click table headers to re-sort.</p>
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white">Top Performing Posts</h3>
+                        <p class="text-sm text-slate-500 dark:text-slate-400">Your top articles (click column headers to sort).</p>
                     </div>
                 </div>
                 <div class="overflow-x-auto w-full">
                     <table class="w-full text-left text-sm whitespace-nowrap">
-                        <thead class="bg-slate-100/60 dark:bg-slate-950/60 text-slate-500 dark:text-slate-400 uppercase text-[11px] font-semibold tracking-wider border-b border-slate-200/80 dark:border-slate-800 select-none">
+                        <thead class="bg-slate-50 dark:bg-slate-950/50 text-slate-500 dark:text-slate-400 uppercase text-xs border-b border-slate-200 dark:border-slate-800 select-none">
                             <tr>
-                                <th class="px-6 py-4">Rank</th>
-                                <th class="px-6 py-4 w-full">Title</th>
-                                <th class="px-6 py-4 cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 sort-header transition-colors" data-sort="date">
+                                <th class="px-6 py-4 font-semibold">Rank</th>
+                                <th class="px-6 py-4 font-semibold w-full">Title</th>
+                                <th class="px-6 py-4 font-semibold cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 sort-header" data-sort="date">
                                     Date <i data-lucide="chevron-down" class="sort-icon inline-block w-4 h-4"></i>
                                 </th>
-                                <th class="px-6 py-4 cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 sort-header sort-active sort-desc transition-colors" data-sort="reactions">
+                                <th class="px-6 py-4 font-semibold cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 sort-header sort-active sort-desc" data-sort="reactions">
                                     Reactions <i data-lucide="chevron-down" class="sort-icon inline-block w-4 h-4"></i>
                                 </th>
-                                <th class="px-6 py-4 cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 sort-header transition-colors" data-sort="comments">
+                                <th class="px-6 py-4 font-semibold cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 sort-header" data-sort="comments">
                                     Comments <i data-lucide="chevron-down" class="sort-icon inline-block w-4 h-4"></i>
                                 </th>
-                                <th class="px-6 py-4 cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 sort-header transition-colors" data-sort="words">
+                                <th class="px-6 py-4 font-semibold cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 sort-header" data-sort="words">
                                     Words <i data-lucide="chevron-down" class="sort-icon inline-block w-4 h-4"></i>
                                 </th>
                             </tr>
@@ -297,109 +188,61 @@
         </div>
     </main>
 
-    <!-- Summary & PNG Download Modal -->
-    <div id="summary-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md transition-opacity duration-300">
-        <div class="relative w-full max-w-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh]">
-            
-            <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-                <div class="flex items-center gap-2.5">
-                    <div class="w-9 h-9 rounded-2xl bg-brand-500/10 text-brand-600 dark:text-brand-400 flex items-center justify-center font-bold">
-                        <i data-lucide="sparkles" class="w-4 h-4"></i>
+    <!-- Summary modal (hidden) -->
+    <div id="summary-modal" class="hidden fixed inset-0 z-60 flex items-center justify-center">
+        <div class="absolute inset-0 modal-backdrop" id="modal-backdrop"></div>
+        <div class="relative w-full max-w-3xl mx-4">
+            <div id="summary-modal-content" class="bg-white dark:bg-slate-900 rounded-2xl p-6 md:p-8 shadow-xl fade-in premium-gradient border border-slate-200 dark:border-slate-800">
+                <div class="flex justify-between items-start gap-4">
+                    <div>
+                        <h2 id="modal-title" class="text-2xl font-bold text-slate-900 dark:text-white">Lettermetrics — Summary</h2>
+                        <p id="modal-sub" class="text-sm text-slate-500 dark:text-slate-400">Executive summary for the last 50 posts</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button id="download-summary" class="px-4 py-2 bg-orange-600 text-white rounded-lg text-sm font-semibold hover:bg-orange-500">Download PNG</button>
+                        <button id="close-summary" class="px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-300">Close</button>
+                    </div>
+                </div>
+
+                <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <div id="modal-kpis" class="grid grid-cols-2 gap-3"></div>
                     </div>
                     <div>
-                        <h3 class="text-base font-bold text-slate-900 dark:text-white">Publication Summary Card</h3>
-                        <p class="text-xs text-slate-500">Ready for social sharing or reports</p>
-                    </div>
-                </div>
-                <button id="close-modal-btn" class="p-2 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-
-            <!-- Exportable Card Container -->
-            <div class="p-6 sm:p-8 overflow-y-auto space-y-6">
-                <div id="exportable-card" class="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 text-white rounded-3xl p-8 sm:p-10 border border-slate-800 relative overflow-hidden shadow-2xl">
-                    <div class="absolute -right-20 -top-20 w-80 h-80 bg-brand-500/20 rounded-full blur-3xl pointer-events-none"></div>
-                    
-                    <div class="flex justify-between items-start mb-8 relative z-10">
-                        <div>
-                            <div class="text-xs font-bold text-brand-400 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
-                                <i data-lucide="activity" class="w-3.5 h-3.5"></i> lettermetrics.com Report
-                            </div>
-                            <h2 id="modal-subdomain-title" class="text-2xl sm:text-3xl font-black tracking-tight text-white">substack.com</h2>
-                            <p class="text-xs text-slate-400 mt-1">Deep Intelligence Suite Telemetry</p>
-                        </div>
-                        <div id="modal-rating-badge" class="w-20 h-20 rounded-2xl bg-gradient-to-br from-brand-500 to-amber-500 flex flex-col items-center justify-center text-white shadow-xl">
-                            <span id="modal-score-val" class="text-2xl font-black">0.0</span>
-                            <span id="modal-grade-val" class="text-[10px] font-bold uppercase tracking-wider">Grade A</span>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5 mb-8 relative z-10">
-                        <div class="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-4">
-                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Health Rating</div>
-                            <div id="modal-stat-health" class="text-lg font-black text-brand-400 mt-1">0 / 100</div>
-                        </div>
-                        <div class="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-4">
-                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Avg Reactions</div>
-                            <div id="modal-stat-reactions" class="text-lg font-black text-white mt-1">0</div>
-                        </div>
-                        <div class="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-4">
-                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Avg Comments</div>
-                            <div id="modal-stat-comments" class="text-lg font-black text-white mt-1">0</div>
-                        </div>
-                        <div class="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-4">
-                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Avg Word Count</div>
-                            <div id="modal-stat-words" class="text-lg font-black text-white mt-1">0 w</div>
-                        </div>
-                    </div>
-
-                    <div class="pt-4 border-t border-white/10 flex items-center justify-between text-xs text-slate-400 relative z-10">
-                        <span id="modal-date-generated">Generated on Aug 2026</span>
-                        <span class="font-bold text-brand-400">lettermetrics.com</span>
+                        <div id="modal-highlights"></div>
                     </div>
                 </div>
 
-                <div class="text-center text-xs text-slate-500 dark:text-slate-400">
-                    Click download to instantly render and save this executive snapshot as a high-res PNG image.
+                <div class="mt-6 text-xs text-slate-500 dark:text-slate-400">
+                    Generated by Lettermetrics Alpha • Mobile-friendly summary
                 </div>
-            </div>
-
-            <div class="p-6 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-3 bg-slate-50 dark:bg-slate-900/50">
-                <button id="close-modal-footer-btn" class="px-5 py-2.5 rounded-2xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 font-semibold text-xs transition-colors cursor-pointer">
-                    Close
-                </button>
-                <button id="download-png-btn" class="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-orange-400 text-white font-bold text-xs transition-all shadow-lg shadow-brand-500/25 flex items-center gap-2 cursor-pointer">
-                    <i data-lucide="download" class="w-4 h-4"></i> Download PNG
-                </button>
             </div>
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-6 border-t border-slate-200/60 dark:border-slate-800/60 mt-20 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400 font-medium">
-        <div class="flex items-center gap-2">
-            <div class="w-6 h-6 bg-brand-600 rounded-xl flex items-center justify-center text-white font-bold text-xs shadow-md">L</div>
-            <span>© 2026 lettermetrics.com. All rights reserved.</span>
-        </div>
-        <div class="flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
-            <span>Enterprise Substack Analytics</span>
-        </div>
-    </footer>
-
     <script>
         lucide.createIcons();
 
+        // Runtime encoded Cloudflare Worker base URL (base64).
+        // Replace the value below with your own base64-encoded worker URL (e.g. btoa('https://my-worker.workers.dev/'))
         const DEFAULT_PROXY_HASH = "aHR0cHM6Ly9zdXBlci1iYW5kLTliMzMub2xpdmVyaW8tYWxlc3NhbmRyby53b3JrZXJzLmRldi8=";
 
         function getProxyUrl() {
             try {
-                return atob(DEFAULT_PROXY_HASH);
+                const decoded = atob(DEFAULT_PROXY_HASH || '');
+                const trimmed = (decoded || '').trim();
+                // require an https worker base url
+                if (!trimmed || !(trimmed.startsWith('https://') || trimmed.startsWith('http://'))) {
+                    // No worker configured
+                    return '';
+                }
+                return trimmed;
             } catch (e) {
                 return '';
             }
         }
 
+        // Theme toggle
         const themeToggleBtn = document.getElementById('theme-toggle');
         const themeIconSun = document.getElementById('theme-icon-sun');
         const themeIconMoon = document.getElementById('theme-icon-moon');
@@ -429,23 +272,28 @@
             updateChartColors();
         });
 
+        // State
         let currentPostsData = [];
         let currentSort = { key: 'reactions', dir: 'desc' };
-        let activeSubdomain = 'unknownlegends';
-
         const CACHE_TTL = 24 * 60 * 60 * 1000;
         const CACHE_PREFIX = 'lm_cache_';
-
         let chartTimeline = null, chartEngagement = null, chartWordCount = null, chartDayOfWeek = null;
 
+        // Cloudflare-only fetch helper
         const fetchViaCloudflare = async (targetUrl) => {
-            let baseUrl = getProxyUrl().trim();
-            if (!baseUrl.endsWith('/')) baseUrl += '/';
-            const encodedTarget = encodeURIComponent(btoa(targetUrl));
-            const workerUrl = `${baseUrl}${encodedTarget}`;
-            return await fetch(workerUrl);
+            const baseUrl = getProxyUrl().trim();
+            if (!baseUrl) {
+                throw new Error('Cloudflare worker URL not configured. Please set DEFAULT_PROXY_HASH to your worker base URL (base64).');
+            }
+            const normalizedBase = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
+            // encode the target URL with base64 then encodeURIComponent
+            const encoded = encodeURIComponent(btoa(targetUrl));
+            const workerUrl = normalizedBase + encoded;
+            const res = await fetch(workerUrl, { cache: 'no-store' });
+            return res;
         };
 
+        // Utilities
         const formatNum = (num) => {
             if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
             if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
@@ -461,9 +309,9 @@
         const getChartColors = () => {
             const isDark = document.documentElement.classList.contains('dark');
             return {
-                text: isDark ? '#94a3b8' : '#64748b',
-                grid: isDark ? 'rgba(30, 41, 59, 0.6)' : 'rgba(226, 232, 240, 0.8)',
-                tooltipBg: isDark ? '#0d121e' : '#ffffff',
+                text: isDark ? '#94a3b8' : '#0f172a',
+                grid: isDark ? '#1e293b' : '#e2e8f0',
+                tooltipBg: isDark ? '#0f172a' : '#ffffff',
                 tooltipBorder: isDark ? '#334155' : '#cbd5e1',
                 tooltipText: isDark ? '#ffffff' : '#0f172a'
             };
@@ -473,80 +321,33 @@
             const colors = getChartColors();
             Chart.defaults.color = colors.text;
             Chart.defaults.borderColor = colors.grid;
-            
+
             [chartTimeline, chartEngagement, chartWordCount, chartDayOfWeek].forEach(chart => {
                 if (chart) {
-                    chart.options.scales.y.grid.color = colors.grid;
-                    if(chart.options.scales.x) chart.options.scales.x.grid.color = colors.grid;
-                    if(chart.options.plugins.tooltip) {
+                    if (chart.options && chart.options.scales && chart.options.scales.y) {
+                        chart.options.scales.y.grid.color = colors.grid;
+                    }
+                    if (chart.options && chart.options.scales && chart.options.scales.x) {
+                        chart.options.scales.x.grid.color = colors.grid;
+                    }
+                    if (chart.options && chart.options.plugins && chart.options.plugins.tooltip) {
                         chart.options.plugins.tooltip.backgroundColor = colors.tooltipBg;
                         chart.options.plugins.tooltip.titleColor = colors.tooltipText;
                         chart.options.plugins.tooltip.bodyColor = colors.tooltipText;
                         chart.options.plugins.tooltip.borderColor = colors.tooltipBorder;
                     }
-                    chart.update();
+                    try { chart.update(); } catch (e) {}
                 }
             });
         };
 
-        // Modal triggers
-        const modal = document.getElementById('summary-modal');
-        document.getElementById('open-summary-modal-btn').addEventListener('click', () => {
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        });
-        document.getElementById('close-modal-btn').addEventListener('click', () => {
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        });
-        document.getElementById('close-modal-footer-btn').addEventListener('click', () => {
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        });
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            }
-        });
-
-        // PNG Download handler via html2canvas
-        document.getElementById('download-png-btn').addEventListener('click', async () => {
-            const card = document.getElementById('exportable-card');
-            const btn = document.getElementById('download-png-btn');
-            const originalText = btn.innerHTML;
-            
-            btn.disabled = true;
-            btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Rendering PNG...`;
-            lucide.createIcons();
-
-            try {
-                const canvas = await html2canvas(card, {
-                    scale: 2,
-                    useCORS: true,
-                    backgroundColor: null
-                });
-                const image = canvas.toDataURL("image/png");
-                const a = document.createElement('a');
-                a.href = image;
-                a.download = `lettermetrics-${activeSubdomain}-summary.png`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-            } catch (err) {
-                console.error("PNG Generation failed:", err);
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = originalText;
-                lucide.createIcons();
-            }
-        });
-
+        // Form handler
         document.getElementById('search-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const handle = document.getElementById('handle-input').value.trim();
-            const limit = parseInt(document.getElementById('limit-input').value);
+            let limit = parseInt(document.getElementById('limit-input').value || '50');
+            limit = Math.min(50, Math.max(1, isNaN(limit) ? 50 : limit)); // enforce 1..50
             const btnText = document.getElementById('btn-text');
             const btn = document.getElementById('analyze-btn');
             const errorContainer = document.getElementById('error-container');
@@ -556,25 +357,23 @@
             if (!handle) return;
 
             btn.disabled = true;
-            btnText.textContent = "Fetching telemetry...";
+            btnText.textContent = "Loading data...";
             errorContainer.classList.add('hidden');
-            resultsContainer.classList.add('opacity-0', 'translate-y-6');
             resultsContainer.classList.add('hidden');
-            statusBadge.innerHTML = `<div class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></div> Syncing...`;
+            statusBadge.innerHTML = `<i data-lucide="loader-2" class="w-3 h-3 animate-spin"></i> Loading...`;
             lucide.createIcons();
 
             let allPosts = [];
             let offset = 0;
-            const batchSize = 50;
-            
+            const batchSize = 50; // we will normally only do one fetch because limit <= 50
+
+            // normalize handle -> subdomain
             let subdomain = handle.replace(/^@/, '');
             if (subdomain.startsWith('http')) {
-                try { subdomain = new URL(subdomain).hostname.split('.')[0]; } 
-                catch (e) { subdomain = handle; }
+                try { subdomain = new URL(subdomain).hostname.split('.')[0]; } catch (e) { subdomain = handle; }
             } else {
                 subdomain = subdomain.replace(/\.substack\.com.*$/i, '').replace(/\/.*$/, '');
             }
-            activeSubdomain = subdomain;
 
             const cacheKey = `${CACHE_PREFIX}${subdomain.toLowerCase()}_${limit}`;
             const cachedItem = localStorage.getItem(cacheKey);
@@ -586,44 +385,42 @@
                     try {
                         const parsed = JSON.parse(cachedItem);
                         if (parsed && parsed.timestamp && (Date.now() - parsed.timestamp < CACHE_TTL) && Array.isArray(parsed.data)) {
-                            normalizedData = parsed.data.map(p => ({
-                                ...p,
-                                date: new Date(p.date)
-                            }));
+                            normalizedData = parsed.data.map(p => ({ ...p, date: new Date(p.date) }));
                         }
                     } catch (e) {}
                 }
 
                 if (!normalizedData) {
+                    // Only fetch up to 'limit' posts; Substack API supports offset & limit
                     while (allPosts.length < limit) {
                         const fetchLimit = Math.min(batchSize, limit - allPosts.length);
                         btnText.textContent = `Loading ${allPosts.length}/${limit}...`;
-                        
+
                         const targetUrl = `https://${subdomain}.substack.com/api/v1/posts?sort=new&offset=${offset}&limit=${fetchLimit}`;
-                        
+
                         let response = await fetchViaCloudflare(targetUrl);
 
                         if (!response.ok) {
-                            throw new Error(`Proxy request failed with status ${response.status}`);
+                            // Surface helpful error to user
+                            const text = await response.text().catch(()=>'');
+                            throw new Error(`Proxy request failed with status ${response.status} ${text ? '- ' + text : ''}`);
                         }
-                        
+
                         const data = await response.json();
                         const items = Array.isArray(data) ? data : (data.posts || []);
-                        
-                        if (items.length === 0) break;
 
+                        if (items.length === 0) break;
                         allPosts = [...allPosts, ...items];
                         offset += items.length;
-
                         if (items.length < fetchLimit) break;
                     }
 
-                    if (allPosts.length === 0) throw new Error("No posts found or invalid Substack publication handle.");
+                    if (allPosts.length === 0) throw new Error("No posts found or invalid Substack handle.");
 
                     normalizedData = allPosts.map(p => {
                         let words = p.wordcount || p.word_count || 0;
                         if (!words && p.reading_time) words = Math.round(p.reading_time * 200);
-                        
+
                         let tags = [];
                         if (p.postTags && Array.isArray(p.postTags)) {
                             tags = p.postTags.map(t => typeof t === 'object' ? (t.name || t.slug) : t).filter(Boolean);
@@ -634,14 +431,14 @@
                         } else if (p.section && p.section.title) {
                             tags = [p.section.title];
                         }
-                        
+
                         return {
                             id: p.id,
                             title: p.title || 'Untitled',
                             date: new Date(p.post_date || p.createdAt || Date.now()),
                             reactions: p.reaction_count || 0,
                             comments: p.comment_count || 0,
-                            words: words,
+                            words: words || 0,
                             url: p.canonical_url || `https://${subdomain}.substack.com/p/${p.slug}`,
                             audience: p.audience === 'only_paid' ? 'Paid' : 'Free',
                             tags: tags
@@ -649,27 +446,20 @@
                     });
 
                     try {
-                        localStorage.setItem(cacheKey, JSON.stringify({
-                            timestamp: Date.now(),
-                            data: normalizedData
-                        }));
+                        localStorage.setItem(cacheKey, JSON.stringify({ timestamp: Date.now(), data: normalizedData }));
                     } catch (e) {}
                 }
 
                 currentPostsData = normalizedData;
-                renderDashboard(normalizedData, subdomain);
-                
-                resultsContainer.classList.remove('hidden');
-                setTimeout(() => {
-                    resultsContainer.classList.remove('opacity-0', 'translate-y-6');
-                }, 50);
+                renderDashboard(normalizedData);
 
-                statusBadge.innerHTML = `<div class="w-2 h-2 rounded-full bg-emerald-500"></div> Telemetry Loaded`;
-                
+                resultsContainer.classList.remove('hidden');
+                statusBadge.innerHTML = `<div class="w-2 h-2 rounded-full bg-green-500"></div> Ready`;
+
             } catch (err) {
-                errorContainer.querySelector('span').textContent = err.message;
+                errorContainer.innerHTML = `<i data-lucide="alert-triangle" class="w-5 h-5"></i> <span>${err.message}</span>`;
                 errorContainer.classList.remove('hidden');
-                statusBadge.innerHTML = `<div class="w-2 h-2 rounded-full bg-red-500"></div> Sync Error`;
+                statusBadge.innerHTML = `<div class="w-2 h-2 rounded-full bg-red-500"></div> Error`;
             } finally {
                 btn.disabled = false;
                 btnText.textContent = "Analyze";
@@ -677,106 +467,88 @@
             }
         });
 
-        function renderDashboard(posts, subdomain) {
-            let totalReactions = 0, totalComments = 0, totalWords = 0, freePostsCount = 0, paidPostsCount = 0;
-            posts.forEach(p => {
-                totalReactions += p.reactions;
-                totalComments += p.comments;
-                totalWords += p.words;
-                if (p.audience === 'Paid') paidPostsCount++;
-                else freePostsCount++;
+        // compute overall rating (0-100) from reactions/comments/words/recency
+        function computeOverallRating(posts) {
+            if (!posts || posts.length === 0) return { score: 0, grade: 'N/A', description: 'No data' };
+
+            const now = Date.now();
+            const ages = posts.map(p => now - p.date.getTime());
+            const maxAge = Math.max(...ages, 1);
+            const maxReactions = Math.max(...posts.map(p => p.reactions), 1);
+            const maxComments = Math.max(...posts.map(p => p.comments), 1);
+            const maxWords = Math.max(...posts.map(p => p.words), 1);
+
+            // per-post normalized score
+            const per = posts.map(p => {
+                const r = p.reactions / maxReactions; // 0..1
+                const c = p.comments / maxComments; // 0..1
+                const w = Math.min(p.words, 3000) / 3000; // 0..1, capping extremely long posts
+                // recency weight: newer posts score higher: 1 - age/maxAge (0..1)
+                const rec = 1 - ((now - p.date.getTime()) / maxAge);
+                // weights tuned: reactions 45%, comments 25%, recency 20%, words 10%
+                return (r * 0.45) + (c * 0.25) + (rec * 0.20) + (w * 0.10);
             });
-            
-            const bestPost = [...posts].sort((a, b) => b.reactions - a.reactions)[0];
+
+            const avgNormalized = per.reduce((a,b)=>a+b,0) / per.length;
+            const score = Math.round(Math.max(0, Math.min(100, avgNormalized * 100)));
+
+            // map to grade & descriptor
+            let grade = 'C';
+            let desc = 'Average';
+            if (score >= 90) { grade = 'A+'; desc = 'Outstanding' }
+            else if (score >= 80) { grade = 'A'; desc = 'Excellent' }
+            else if (score >= 70) { grade = 'B+'; desc = 'Very good' }
+            else if (score >= 60) { grade = 'B'; desc = 'Good' }
+            else if (score >= 50) { grade = 'C+'; desc = 'Fair' }
+            else if (score >= 35) { grade = 'C'; desc = 'Needs improvement' }
+            else { grade = 'D'; desc = 'Low performance' }
+
+            return { score, grade, description: desc };
+        }
+
+        // helper to compute median
+        function median(values) {
+            if (!values.length) return 0;
+            const sorted = [...values].sort((a,b)=>a-b);
+            const mid = Math.floor(sorted.length/2);
+            return sorted.length % 2 !== 0 ? sorted[mid] : Math.round((sorted[mid-1] + sorted[mid])/2);
+        }
+
+        function renderDashboard(posts) {
+            // Basic aggregates
+            let totalReactions = 0, totalComments = 0, totalWords = 0;
+            posts.forEach(p => { totalReactions += p.reactions; totalComments += p.comments; totalWords += p.words; });
+
+            const bestPost = [...posts].sort((a,b)=>b.reactions - a.reactions)[0];
             const avgWords = Math.round(totalWords / posts.length) || 0;
             const avgReactions = Math.round(totalReactions / posts.length) || 0;
             const avgComments = Math.round(totalComments / posts.length) || 0;
-            const engagementRate = totalReactions > 0 ? ((totalComments / totalReactions) * 100).toFixed(1) : '0.0';
-            const freeRatioPct = Math.round((freePostsCount / posts.length) * 100);
-            const paidRatioPct = Math.round((paidPostsCount / posts.length) * 100);
 
-            // Overall rating calculation
-            let rawScore = (avgReactions * 0.4) + (avgComments * 1.5) + (posts.length * 0.5);
-            let healthScore = Math.min(100, Math.max(10, Math.round(Math.log10(rawScore + 1) * 33)));
-            if (isNaN(healthScore)) healthScore = 75;
-            let finalRating10 = (healthScore / 10).toFixed(1);
-            
-            let grade = "C";
-            let ratingTitle = "Developing Momentum";
-            let ratingDescription = "Steady foundation with standard reader interaction. Consistent publishing schedule will boost long-term retention.";
-            
-            if (healthScore >= 85) {
-                grade = "A+";
-                ratingTitle = "Elite Performance Publication";
-                ratingDescription = "Outstanding audience resonance. High interaction volume, strong reactions, and exceptional community engagement across recent posts.";
-            } else if (healthScore >= 70) {
-                grade = "A";
-                ratingTitle = "High-Growth Publication";
-                ratingDescription = "Very strong performance metrics. Your articles consistently capture solid engagement and loyal reader feedback.";
-            } else if (healthScore >= 50) {
-                grade = "B";
-                ratingTitle = "Solid & Stable Publication";
-                ratingDescription = "Healthy engagement levels with predictable reach. Optimizing publishing times could further unlock viral potential.";
-            }
+            // per-week frequency
+            const timespanDays = Math.max(1, (new Date() - posts[posts.length-1].date) / (1000*60*60*24));
+            const postsPerWeek = ((posts.length / Math.max(1, timespanDays)) * 7).toFixed(1);
 
-            // Update UI elements for overall rating & snapshot
-            document.getElementById('rating-score').textContent = finalRating10;
-            document.getElementById('rating-grade').textContent = `Grade ${grade}`;
-            document.getElementById('rating-title').textContent = ratingTitle;
-            document.getElementById('rating-subtitle').textContent = ratingDescription;
-
-            document.getElementById('quick-stat-engagement').textContent = `${engagementRate}%`;
-            document.getElementById('quick-stat-ratio').textContent = `${freeRatioPct}% Free / ${paidRatioPct}% Paid`;
-            document.getElementById('quick-stat-words').textContent = `${formatNum(avgWords)} w`;
-
-            // Update modal summary card elements
-            document.getElementById('modal-subdomain-title').textContent = `${subdomain}.substack.com`;
-            document.getElementById('modal-score-val').textContent = finalRating10;
-            document.getElementById('modal-grade-val').textContent = `Grade ${grade}`;
-            document.getElementById('modal-stat-health').textContent = `${healthScore} / 100`;
-            document.getElementById('modal-stat-reactions').textContent = formatNum(avgReactions);
-            document.getElementById('modal-stat-comments').textContent = formatNum(avgComments);
-            document.getElementById('modal-stat-words').textContent = `${formatNum(avgWords)} w`;
-            document.getElementById('modal-date-generated').textContent = `Generated on ${new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`
-
-            const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-            const dayStats = Array(7).fill(0).map(() => ({ count: 0, totalReactions: 0 }));
-
+            // day-of-week stats
+            const daysOfWeek = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+            const dayStats = Array(7).fill(0).map(()=>({count:0,totalReactions:0}));
             posts.forEach(p => {
-                const dayIdx = p.date.getDay();
-                dayStats[dayIdx].count++;
-                dayStats[dayIdx].totalReactions += p.reactions;
+                const d = p.date.getDay();
+                dayStats[d].count++;
+                dayStats[d].totalReactions += p.reactions;
             });
-
-            let bestDayIdx = 0;
-            let maxDayAvg = -1;
-            dayStats.forEach((stat, idx) => {
-                if (stat.count > 0) {
-                    const avg = stat.totalReactions / stat.count;
-                    if (avg > maxDayAvg) {
-                        maxDayAvg = avg;
-                        bestDayIdx = idx;
-                    }
+            let bestDayIdx = 0, maxDayAvg = -1;
+            dayStats.forEach((s, i) => {
+                if (s.count>0) {
+                    const avg = s.totalReactions / s.count;
+                    if (avg > maxDayAvg) { maxDayAvg = avg; bestDayIdx = i; }
                 }
             });
-
             const bestDayName = daysOfWeek[bestDayIdx];
-            const bestDayAvgReactions = Math.round(maxDayAvg);
-            const dayDiffPct = avgReactions > 0 ? Math.round(((bestDayAvgReactions - avgReactions) / avgReactions) * 100) : 0;
-            const dayDiffFormatted = dayDiffPct >= 0 ? `+${dayDiffPct}%` : `${dayDiffPct}%`;
 
-            const topPerformingPosts = [...posts].sort((a, b) => b.reactions - a.reactions).slice(0, Math.max(1, Math.ceil(posts.length * 0.2)));
-            const topAvgWords = Math.round(topPerformingPosts.reduce((sum, p) => sum + p.words, 0) / topPerformingPosts.length);
-            const isLongerBetter = topAvgWords >= avgWords;
-
-            const reactionsMultiplier = avgReactions > 0 ? (bestPost.reactions / avgReactions).toFixed(1) : '1.0';
-            const commentsDiffPct = avgComments > 0 ? Math.round(((bestPost.comments - avgComments) / avgComments) * 100) : 0;
-            const bestPostDayName = daysOfWeek[bestPost.date.getDay()];
-            const publishedOnStrongestDay = bestPost.date.getDay() === bestDayIdx;
-
+            // Tag breakdown
             const tagMap = {};
             posts.forEach(p => {
-                const postTags = (p.tags && p.tags.length > 0) ? p.tags : [p.audience + " Articles"];
+                const postTags = (p.tags && p.tags.length>0) ? p.tags : [p.audience + " Articles"];
                 postTags.forEach(tag => {
                     if (!tagMap[tag]) tagMap[tag] = { count: 0, reactions: 0, comments: 0 };
                     tagMap[tag].count++;
@@ -784,175 +556,143 @@
                     tagMap[tag].comments += p.comments;
                 });
             });
-
             const sortedTags = Object.keys(tagMap).map(tag => ({
                 name: tag,
                 count: tagMap[tag].count,
                 avgReactions: Math.round(tagMap[tag].reactions / tagMap[tag].count),
                 totalReactions: tagMap[tag].reactions
-            })).sort((a, b) => b.avgReactions - a.avgReactions).slice(0, 5);
+            })).sort((a,b)=>b.avgReactions - a.avgReactions).slice(0,5);
 
+            // KPIs: median reactions, top quartile average, median words, avg reading time, posts/week
+            const reactionsArr = posts.map(p=>p.reactions);
+            const medianReacts = median(reactionsArr);
+            const sortedReactsDesc = reactionsArr.slice().sort((a,b)=>b-a);
+            const topQuartile = sortedReactsDesc.slice(0, Math.max(1, Math.floor(sortedReactsDesc.length*0.25)));
+            const topQuartAvg = Math.round(topQuartile.reduce((a,b)=>a+b,0)/topQuartile.length) || 0;
+            const medianWords = median(posts.map(p=>p.words));
+            const avgReadingMins = Math.round((posts.reduce((s,p)=>s+p.words,0)/posts.length)/200) || 0;
+
+            // Recent momentum: compare last 5 posts avg reactions to previous 5
+            const last5 = posts.slice(0,5);
+            const prev5 = posts.slice(5,10);
+            const last5Avg = last5.length ? Math.round(last5.reduce((a,b)=>a+b.reactions,0)/last5.length) : 0;
+            const prev5Avg = prev5.length ? Math.round(prev5.reduce((a,b)=>a+b.reactions,0)/prev5.length) : 0;
+            const momentumPct = prev5Avg > 0 ? Math.round(((last5Avg - prev5Avg) / prev5Avg) * 100) : (last5Avg > 0 ? 100 : 0);
+
+            // growth insights HTML
             const growthInsightsHtml = `
-                <div class="glass-card text-slate-900 dark:text-white rounded-3xl p-6 sm:p-8 premium-shadow border border-slate-200/80 dark:border-slate-800 space-y-6">
-                    <div class="flex items-center gap-3.5 border-b border-slate-200/80 dark:border-slate-800 pb-5">
-                        <div class="p-3 bg-gradient-to-br from-brand-500/25 to-amber-500/20 text-brand-600 dark:text-brand-400 rounded-2xl border border-brand-500/30 shadow-inner">
-                            <i data-lucide="sparkles" class="w-6 h-6 animate-pulse"></i>
+                <div class="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-3xl p-4 sm:p-6 shadow-md border border-slate-200 dark:border-slate-800 space-y-4 transition-colors duration-200">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2.5 bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 rounded-xl border border-orange-200 dark:border-orange-500/30">
+                            <i data-lucide="sparkles" class="w-5 h-5"></i>
                         </div>
                         <div>
-                            <h3 class="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">Growth Insights</h3>
-                            <p class="text-slate-500 dark:text-slate-400 text-sm">Automated performance highlights and patterns from recent publication activity</p>
+                            <h3 class="text-lg font-bold tracking-tight text-slate-900 dark:text-white">Growth Insights</h3>
+                            <p class="text-slate-500 dark:text-slate-400 text-sm">Quick automated highlights from recent posts</p>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <div class="bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-6 flex flex-col justify-between hover:border-brand-500/30 transition-all duration-300 group">
-                            <div>
-                                <div class="text-xs font-bold text-brand-600 dark:text-brand-400 uppercase tracking-wider mb-2.5 flex items-center gap-2">
-                                    <i data-lucide="trophy" class="w-4 h-4"></i> Best Performing Article
-                                </div>
-                                <h4 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-4 line-clamp-2 leading-snug">
-                                    "<a href="${bestPost.url}" target="_blank" class="hover:text-brand-500 transition-colors">${bestPost.title}</a>"
-                                </h4>
-                            </div>
-                            <div class="space-y-2.5 text-sm text-slate-700 dark:text-slate-300 pt-2 border-t border-slate-200/60 dark:border-slate-800/60">
-                                <div class="flex items-center justify-between">
-                                    <span class="text-slate-500 dark:text-slate-400">Reactivity scale</span>
-                                    <span class="font-bold text-brand-600 dark:text-brand-400 bg-brand-500/10 px-2 py-0.5 rounded-md">${reactionsMultiplier}x average</span>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <span class="text-slate-500 dark:text-slate-400">Comments uplift</span>
-                                    <span class="font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md">${commentsDiffPct >= 0 ? '+' + commentsDiffPct : commentsDiffPct}%</span>
-                                </div>
-                                <div class="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500 pt-1">
-                                    <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
-                                    ${publishedOnStrongestDay ? `Published on optimal day (${bestDayName})` : `Published on ${bestPostDayName}`}
-                                </div>
-                            </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                            <div class="text-xs text-slate-500 uppercase">Best Performing Article</div>
+                            <div class="mt-2 font-semibold"><a href="${bestPost.url}" target="_blank" class="text-orange-600 dark:text-orange-300">${bestPost.title}</a></div>
+                            <div class="text-xs text-slate-500 mt-1">${formatDate(bestPost.date)} • ${formatNum(bestPost.reactions)} reactions</div>
                         </div>
 
-                        <div class="bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-6 flex flex-col justify-between hover:border-blue-500/30 transition-all duration-300 group">
-                            <div>
-                                <div class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-2.5 flex items-center gap-2">
-                                    <i data-lucide="calendar-check" class="w-4 h-4"></i> Best Publishing Day
-                                </div>
-                                <h4 class="text-2xl font-extrabold text-slate-900 dark:text-white mb-1">
-                                    ${bestDayName}
-                                </h4>
-                                <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Highest average reaction yield per article.</p>
-                            </div>
-                            <div class="bg-slate-100/80 dark:bg-slate-950/80 p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800 flex items-center justify-between">
-                                <span class="text-xs font-medium text-slate-600 dark:text-slate-400">Engagement delta:</span>
-                                <span class="font-bold text-emerald-600 dark:text-emerald-400 text-sm">${dayDiffFormatted} vs avg</span>
-                            </div>
+                        <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                            <div class="text-xs text-slate-500 uppercase">Best Publishing Day</div>
+                            <div class="mt-2 font-semibold">${bestDayName}</div>
+                            <div class="text-xs text-slate-500 mt-1">Average reactions on ${bestDayName}: ${Math.round(maxDayAvg||0)}</div>
                         </div>
 
-                        <div class="bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-6 flex flex-col justify-between hover:border-purple-500/30 transition-all duration-300 group md:col-span-2 lg:col-span-1">
-                            <div>
-                                <div class="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider mb-2.5 flex items-center gap-2">
-                                    <i data-lucide="pen-tool" class="w-4 h-4"></i> Content Pattern
-                                </div>
-                                <h4 class="text-lg font-bold text-slate-900 dark:text-white mb-1">
-                                    ${isLongerBetter ? 'Long-form yields high traction' : 'Concise deep-dives preferred'}
-                                </h4>
-                                <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Word length impact correlation analysis.</p>
-                            </div>
-                            <div class="grid grid-cols-2 gap-3 text-center">
-                                <div class="bg-slate-100/80 dark:bg-slate-950/80 p-3 rounded-xl border border-slate-200/80 dark:border-slate-800">
-                                    <div class="text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase">Top Posts</div>
-                                    <div class="text-base font-extrabold text-purple-600 dark:text-purple-400 mt-0.5">${topAvgWords.toLocaleString()} w</div>
-                                </div>
-                                <div class="bg-slate-100/80 dark:bg-slate-950/80 p-3 rounded-xl border border-slate-200/80 dark:border-slate-800">
-                                    <div class="text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase">Overall Avg</div>
-                                    <div class="text-base font-extrabold text-slate-800 dark:text-slate-200 mt-0.5">${avgWords.toLocaleString()} w</div>
-                                </div>
-                            </div>
+                        <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                            <div class="text-xs text-slate-500 uppercase">Content Pattern</div>
+                            <div class="mt-2 font-semibold">${(topQuartAvg >= avgReactions) ? 'Longer / Engaging posts perform well' : 'Concise posts do better'}</div>
+                            <div class="text-xs text-slate-500 mt-1">Top quartile avg: ${topQuartAvg} reactions</div>
                         </div>
                     </div>
 
-                    <div class="pt-4 border-t border-slate-200/80 dark:border-slate-800">
-                        <div class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                            <i data-lucide="tag" class="w-4 h-4 text-brand-500"></i> Top Performing Topics / Tags
-                        </div>
+                    <div class="pt-3 border-t border-slate-100 dark:border-slate-800">
+                        <div class="text-xs text-slate-500 uppercase mb-2">Top Tags</div>
                         <div class="flex flex-wrap gap-2">
-                            ${sortedTags.map(tag => `
-                                <div class="bg-slate-100/80 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 rounded-xl px-3.5 py-2 flex items-center gap-2.5 text-xs font-medium transition-all shadow-sm">
-                                    <span class="text-slate-800 dark:text-slate-200 font-semibold">#${tag.name}</span>
-                                    <span class="bg-brand-500/10 text-brand-600 dark:text-brand-400 px-2 py-0.5 rounded-lg font-bold border border-brand-500/20">
-                                        avg ${tag.avgReactions} ❤️
-                                    </span>
-                                </div>
-                            `).join('')}
+                            ${sortedTags.map(t => `<span class="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-sm text-slate-800 dark:text-slate-200">${t.name} • avg ${t.avgReactions} ❤️</span>`).join('')}
                         </div>
                     </div>
                 </div>
             `;
-
             document.getElementById('growth-insights-container').innerHTML = growthInsightsHtml;
 
+            // best post card
             const bestPostHtml = bestPost ? `
-                <div class="relative overflow-hidden bg-gradient-to-r from-brand-600 via-brand-500 to-amber-500 rounded-3xl p-6 sm:p-8 text-white shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6 group">
-                    <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
-                    <div class="relative z-10 max-w-2xl">
-                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/20 backdrop-blur-md text-orange-100 text-xs font-bold uppercase tracking-wider mb-3 border border-white/10">
-                            <i data-lucide="award" class="w-3.5 h-3.5"></i> Featured Highlight Article
-                        </div>
-                        <h3 class="text-2xl sm:text-3xl font-extrabold mb-2 leading-tight">
-                            <a href="${bestPost.url}" target="_blank" class="hover:underline">${bestPost.title}</a>
-                        </h3>
-                        <p class="text-orange-100/90 text-sm font-medium flex items-center gap-2">
-                            <span>${formatDate(bestPost.date)}</span>
-                            <span>•</span>
-                            <span class="px-2 py-0.5 rounded bg-black/20 text-xs">${bestPost.audience}</span>
-                        </p>
+                <div class="bg-gradient-to-r from-orange-600 to-amber-500 rounded-2xl p-4 md:p-6 text-white shadow-lg flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div class="min-w-0">
+                        <div class="text-orange-100 text-sm font-semibold uppercase tracking-wider mb-1">Highlight Article</div>
+                        <h3 class="text-lg font-bold mb-1 truncate"><a href="${bestPost.url}" target="_blank" class="hover:underline">${bestPost.title}</a></h3>
+                        <p class="text-orange-100 text-xs">${formatDate(bestPost.date)} • ${bestPost.audience}</p>
                     </div>
-                    <div class="relative z-10 flex gap-6 sm:gap-8 bg-black/15 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/10 self-stretch md:self-auto justify-around">
-                        <div class="text-center">
-                            <div class="text-3xl font-black tracking-tight">${formatNum(bestPost.reactions)}</div>
-                            <div class="text-orange-200 text-[11px] font-bold uppercase tracking-wider mt-0.5">Reactions</div>
-                        </div>
-                        <div class="w-px bg-white/20"></div>
-                        <div class="text-center">
-                            <div class="text-3xl font-black tracking-tight">${formatNum(bestPost.comments)}</div>
-                            <div class="text-orange-200 text-[11px] font-bold uppercase tracking-wider mt-0.5">Comments</div>
-                        </div>
+
+                    <div class="flex gap-6">
+                        <div class="text-center"><div class="text-2xl font-bold">${formatNum(bestPost.reactions)}</div><div class="text-orange-200 text-xs uppercase">Reactions</div></div>
+                        <div class="text-center"><div class="text-2xl font-bold">${formatNum(bestPost.comments)}</div><div class="text-orange-200 text-xs uppercase">Comments</div></div>
                     </div>
                 </div>
             ` : '';
             document.getElementById('best-post-container').innerHTML = bestPostHtml;
 
+            // KPIs
             const kpiData = [
-                { title: "Health Index Score", val: `${finalRating10} / 10`, icon: "shield-check", color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-500/10 border-amber-500/20" },
-                { title: "Total Posts Analyzed", val: posts.length, icon: "file-text", color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-500/10 border-blue-500/20" },
-                { title: "Total Reactions", val: formatNum(totalReactions), icon: "activity", color: "text-brand-600 dark:text-brand-400", bg: "bg-brand-500/10 border-brand-500/20" },
-                { title: "Total Comments", val: formatNum(totalComments), icon: "message-circle", color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20" },
-                { title: "Total Word Volume", val: formatNum(totalWords), icon: "hash", color: "text-purple-600 dark:text-purple-400", bg: "bg-purple-500/10 border-purple-500/20" },
-                { title: "Avg Reactions / Post", val: formatNum(avgReactions), icon: "trending-up", color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-500/10 border-amber-500/20" },
-                { title: "Avg Comments / Post", val: formatNum(avgComments), icon: "message-square", color: "text-teal-600 dark:text-teal-400", bg: "bg-teal-500/10 border-teal-500/20" },
-                { title: "Avg Word Count / Post", val: formatNum(avgWords), icon: "align-left", color: "text-indigo-600 dark:text-indigo-400", bg: "bg-indigo-500/10 border-indigo-500/20" },
-                { title: "Engagement Ratio", val: `${engagementRate}%`, icon: "pie-chart", color: "text-rose-600 dark:text-rose-400", bg: "bg-rose-500/10 border-rose-500/20" },
-                { title: "Free Posts Ratio", val: `${freeRatioPct}%`, icon: "globe", color: "text-sky-600 dark:text-sky-400", bg: "bg-sky-500/10 border-sky-500/20" },
-                { title: "Paid Posts Ratio", val: `${paidRatioPct}%`, icon: "lock", color: "text-yellow-600 dark:text-yellow-400", bg: "bg-yellow-500/10 border-yellow-500/20" }
+                { title: "Total Posts", val: posts.length, icon: "file-text" },
+                { title: "Total Reactions", val: formatNum(totalReactions), icon: "activity" },
+                { title: "Total Comments", val: formatNum(totalComments), icon: "message-circle" },
+                { title: "Total Words", val: formatNum(totalWords), icon: "hash" },
+                { title: "Avg Reactions / Post", val: formatNum(avgReactions), icon: "trending-up" },
+                { title: "Median Reactions", val: formatNum(medianReacts), icon: "bar-chart-2" },
+                { title: "Top Quartile Avg", val: formatNum(topQuartAvg), icon: "star" },
+                { title: "Avg Words / Post", val: formatNum(avgWords), icon: "align-left" },
+                { title: "Median Words", val: formatNum(medianWords), icon: "layers" },
+                { title: "Avg Read (min)", val: `${avgReadingMins}m`, icon: "clock" },
+                { title: "Posts / Week", val: postsPerWeek, icon: "calendar" },
+                { title: "Recent Momentum", val: momentumPct >= 0 ? `+${momentumPct}%` : `${momentumPct}%`, icon: "trending-up" }
             ];
 
             document.getElementById('kpi-grid').innerHTML = kpiData.map(kpi => `
-                <div class="glass-card border border-slate-200/80 dark:border-slate-800 p-5 rounded-3xl premium-shadow transition-all duration-300 hover:scale-[1.02] group">
-                    <div class="flex justify-between items-start mb-3">
-                        <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">${kpi.title}</span>
-                        <div class="p-2.5 rounded-2xl border ${kpi.bg} ${kpi.color} shadow-inner"><i data-lucide="${kpi.icon}" class="w-4 h-4"></i></div>
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm transition-colors duration-200">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">${kpi.title}</span>
+                        <div class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"><i data-lucide="${kpi.icon}" class="w-4 h-4"></i></div>
                     </div>
-                    <div class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">${kpi.val}</div>
+                    <div class="text-xl font-bold text-slate-900 dark:text-white">${kpi.val}</div>
                 </div>
             `).join('');
 
+            // Overall rating card
+            const rating = computeOverallRating(posts);
+            const stars = Math.round(rating.score / 20); // 0..5 stars
+            const starHtml = Array.from({length:5}).map((_,i)=>`<i data-lucide="${i<stars?'star':'star' }" class="${i<stars ? 'text-yellow-400' : 'text-slate-300 dark:text-slate-700'} w-5 h-5 inline-block"></i>`).join('');
+            document.getElementById('rating-card').innerHTML = `
+                <div>
+                    <div class="flex items-center gap-2">${starHtml}</div>
+                    <div class="mt-2 text-2xl font-bold">${rating.score} <span class="text-sm font-medium text-slate-500 dark:text-slate-400">(${rating.grade})</span></div>
+                    <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">${rating.description}</div>
+                </div>
+            `;
+
+            // momentum
+            document.getElementById('momentum-card').innerHTML = `
+                <div class="text-sm font-semibold">${last5Avg} avg reactions (last 5)</div>
+                <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">Compared to ${prev5Avg} (previous 5)&nbsp;•&nbsp;${momentumPct >= 0 ? '+'+momentumPct+'%' : momentumPct+'%'}</div>
+            `;
+
+            // Charts
             const colors = getChartColors();
             Chart.defaults.color = colors.text;
             Chart.defaults.borderColor = colors.grid;
-            Chart.defaults.font.family = 'Plus Jakarta Sans';
+            Chart.defaults.font.family = 'Inter';
 
             const commonOptions = {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { 
+                plugins: {
                     legend: { display: false },
                     tooltip: {
                         backgroundColor: colors.tooltipBg,
@@ -960,9 +700,8 @@
                         bodyColor: colors.tooltipText,
                         borderColor: colors.tooltipBorder,
                         borderWidth: 1,
-                        padding: 12,
-                        cornerRadius: 12,
-                        boxPadding: 6
+                        padding: 8,
+                        cornerRadius: 6
                     }
                 }
             };
@@ -979,17 +718,14 @@
                 data: {
                     labels: dates,
                     datasets: [
-                        { label: 'Free (Words)', data: freeData, backgroundColor: '#10b981', borderRadius: 4, stacked: true },
-                        { label: 'Paid (Words)', data: paidData, backgroundColor: '#f59e0b', borderRadius: 4, stacked: true }
+                        { label: 'Free (Words)', data: freeData, backgroundColor: '#10b981', borderRadius: 4, stack: 'a' },
+                        { label: 'Paid (Words)', data: paidData, backgroundColor: '#f59e0b', borderRadius: 4, stack: 'a' }
                     ]
                 },
                 options: {
                     ...commonOptions,
-                    plugins: { ...commonOptions.plugins, legend: { display: true, position: 'top', align: 'end', labels: { boxWidth: 10, usePointStyle: true, font: { weight: 600 } } } },
-                    scales: {
-                        x: { display: false, stacked: true }, 
-                        y: { beginAtZero: true, stacked: true, grid: { color: colors.grid } }
-                    }
+                    plugins: { ...commonOptions.plugins, legend: { display: true, position: 'top', align: 'end', labels: { boxWidth: 12 } } },
+                    scales: { x: { display: false, stacked: true }, y: { beginAtZero: true, stacked: true, grid: { color: colors.grid } } }
                 }
             });
 
@@ -1003,22 +739,20 @@
                 data: {
                     labels: dates,
                     datasets: [
-                        { label: 'Reactions', data: reactionData, borderColor: '#ff6700', backgroundColor: 'rgba(255, 103, 0, 0.08)', fill: true, tension: 0.4, borderWidth: 2.5 },
-                        { label: 'Comments', data: commentData, borderColor: '#3b82f6', backgroundColor: 'transparent', tension: 0.4, borderWidth: 2.5 }
+                        { label: 'Reactions', data: reactionData, borderColor: '#ea580c', backgroundColor: 'rgba(234,88,12,0.08)', fill: true, tension: 0.3, borderWidth: 2 },
+                        { label: 'Comments', data: commentData, borderColor: '#3b82f6', backgroundColor: 'transparent', tension: 0.3, borderWidth: 2 }
                     ]
                 },
                 options: {
                     ...commonOptions,
-                    plugins: { ...commonOptions.plugins, legend: { display: true, position: 'top', align: 'end', labels: { boxWidth: 10, usePointStyle: true, font: { weight: 600 } } } },
-                    scales: {
-                        x: { display: false },
-                        y: { beginAtZero: true, grid: { color: colors.grid } }
-                    },
-                    elements: { point: { radius: 0, hitRadius: 10, hoverRadius: 5 } },
+                    plugins: { ...commonOptions.plugins, legend: { display: true, position: 'top', align: 'end' } },
+                    scales: { x: { display: false }, y: { beginAtZero: true, grid: { color: colors.grid } } },
+                    elements: { point: { radius: 0, hitRadius: 8, hoverRadius: 4 } },
                     interaction: { mode: 'index', intersect: false }
                 }
             });
 
+            // word buckets
             const buckets = { '< 500': 0, '500-1K': 0, '1K-2K': 0, '2K-3.5K': 0, '> 3.5K': 0 };
             posts.forEach(p => {
                 if (p.words <= 500) buckets['< 500']++;
@@ -1032,28 +766,14 @@
             const ctx3 = document.getElementById('wordCountChart').getContext('2d');
             chartWordCount = new Chart(ctx3, {
                 type: 'bar',
-                data: {
-                    labels: Object.keys(buckets),
-                    datasets: [{
-                        label: 'Number of Posts',
-                        data: Object.values(buckets),
-                        backgroundColor: '#8b5cf6',
-                        borderRadius: 6
-                    }]
-                },
-                options: {
-                    ...commonOptions,
-                    scales: {
-                        x: { grid: { display: false } },
-                        y: { beginAtZero: true, grid: { color: colors.grid } }
-                    }
-                }
+                data: { labels: Object.keys(buckets), datasets: [{ label: 'Number of Posts', data: Object.values(buckets), backgroundColor: '#6366f1', borderRadius: 4 }] },
+                options: { ...commonOptions, scales: { x: { grid: { display: false } }, y: { beginAtZero: true, grid: { color: colors.grid } } } }
             });
 
-            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-            const dayCounts = [0, 0, 0, 0, 0, 0, 0];
+            const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+            const dayCounts = [0,0,0,0,0,0,0];
             posts.forEach(p => dayCounts[p.date.getDay()]++);
-            
+
             const shiftedCounts = [...dayCounts.slice(1), dayCounts[0]];
             const shiftedDays = [...days.slice(1), days[0]];
 
@@ -1061,25 +781,31 @@
             const ctx4 = document.getElementById('dayOfWeekChart').getContext('2d');
             chartDayOfWeek = new Chart(ctx4, {
                 type: 'bar',
-                data: {
-                    labels: shiftedDays,
-                    datasets: [{
-                        label: 'Published Posts',
-                        data: shiftedCounts,
-                        backgroundColor: '#14b8a6',
-                        borderRadius: 6
-                    }]
-                },
-                options: {
-                    ...commonOptions,
-                    scales: {
-                        x: { grid: { display: false } },
-                        y: { beginAtZero: true, grid: { color: colors.grid }, ticks: { stepSize: 1 } }
-                    }
-                }
+                data: { labels: shiftedDays, datasets: [{ label: 'Published Posts', data: shiftedCounts, backgroundColor: '#14b8a6', borderRadius: 4 }] },
+                options: { ...commonOptions, scales: { x: { grid: { display: false } }, y: { beginAtZero: true, grid: { color: colors.grid }, ticks: { stepSize: 1 } } } }
             });
 
+            // Table
             renderTable();
+
+            // Fill modal content KPIs and highlights
+            document.getElementById('modal-kpis').innerHTML = [
+                {t:'Total Posts', v:posts.length},
+                {t:'Avg Reactions', v:avgReactions},
+                {t:'Median Reactions', v:medianReacts},
+                {t:'Top Quartile Avg', v:topQuartAvg},
+                {t:'Avg Read (min)', v: avgReadingMins + 'm'},
+                {t:'Posts / Week', v: postsPerWeek}
+            ].map(k => `<div class="p-2 bg-slate-50 dark:bg-slate-800 rounded-md border border-slate-100 dark:border-slate-700"><div class="text-xs text-slate-500">${k.t}</div><div class="font-semibold mt-1">${k.v}</div></div>`).join('');
+
+            document.getElementById('modal-highlights').innerHTML = `
+                <div class="bg-slate-50 dark:bg-slate-800 p-3 rounded-md border border-slate-100 dark:border-slate-700">
+                    <div class="text-xs text-slate-500">Top Article</div>
+                    <div class="font-semibold mt-1"><a href="${bestPost.url}" target="_blank" class="text-orange-600 dark:text-orange-300">${bestPost.title}</a></div>
+                    <div class="text-xs text-slate-500 mt-1">${formatDate(bestPost.date)} • ${formatNum(bestPost.reactions)} reactions</div>
+                </div>
+            `;
+
             lucide.createIcons();
         }
 
@@ -1087,32 +813,27 @@
             if (!currentPostsData.length) return;
 
             const tbody = document.getElementById('posts-table-body');
-            
-            const sortedData = [...currentPostsData].sort((a, b) => {
+
+            const sortedData = [...currentPostsData].sort((a,b) => {
                 let valA = a[currentSort.key];
                 let valB = b[currentSort.key];
-                
-                if (currentSort.key === 'date') {
-                    valA = a.date.getTime();
-                    valB = b.date.getTime();
-                }
-
+                if (currentSort.key === 'date') { valA = a.date.getTime(); valB = b.date.getTime(); }
                 if (valA < valB) return currentSort.dir === 'asc' ? -1 : 1;
                 if (valA > valB) return currentSort.dir === 'asc' ? 1 : -1;
                 return 0;
             }).slice(0, 50);
 
             tbody.innerHTML = sortedData.map((p, i) => `
-                <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
-                    <td class="px-6 py-4 text-slate-400 font-semibold">#${i + 1}</td>
-                    <td class="px-6 py-4 font-semibold text-slate-900 dark:text-slate-100 whitespace-normal min-w-[280px]">
-                        <a href="${p.url}" target="_blank" class="hover:text-brand-500 transition-colors line-clamp-1">${p.title}</a>
-                        <div class="text-[11px] font-medium text-slate-400 dark:text-slate-500 mt-0.5">${p.audience} Publication</div>
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <td class="px-6 py-4 text-slate-500">#${i + 1}</td>
+                    <td class="px-6 py-4 font-medium text-slate-900 dark:text-slate-100 whitespace-normal min-w-[200px]">
+                        <a href="${p.url}" target="_blank" class="hover:text-orange-500 transition-colors">${p.title}</a>
+                        <div class="text-xs text-slate-500 mt-1">${p.audience}</div>
                     </td>
-                    <td class="px-6 py-4 text-slate-500 dark:text-slate-400 font-medium">${formatDate(p.date)}</td>
-                    <td class="px-6 py-4 font-bold text-brand-600 dark:text-brand-400">${formatNum(p.reactions)}</td>
-                    <td class="px-6 py-4 font-bold text-blue-600 dark:text-blue-400">${formatNum(p.comments)}</td>
-                    <td class="px-6 py-4 text-slate-500 dark:text-slate-400 font-medium">${formatNum(p.words)}</td>
+                    <td class="px-6 py-4 text-slate-500">${formatDate(p.date)}</td>
+                    <td class="px-6 py-4 font-medium text-orange-600 dark:text-orange-400">${formatNum(p.reactions)}</td>
+                    <td class="px-6 py-4 font-medium text-blue-600 dark:text-blue-400">${formatNum(p.comments)}</td>
+                    <td class="px-6 py-4 text-slate-500">${formatNum(p.words)}</td>
                 </tr>
             `).join('');
 
@@ -1136,6 +857,44 @@
                 renderTable();
             });
         });
+
+        // Summary modal open/close/download
+        const openSummaryBtn = document.getElementById('open-summary');
+        const summaryModal = document.getElementById('summary-modal');
+        const modalBackdrop = document.getElementById('modal-backdrop');
+        const closeSummaryBtn = document.getElementById('close-summary');
+        const downloadSummaryBtn = document.getElementById('download-summary');
+
+        openSummaryBtn.addEventListener('click', () => {
+            // fill a header/title if needed
+            document.getElementById('modal-title').textContent = `Lettermetrics — ${document.getElementById('handle-input').value || 'Summary'}`;
+            summaryModal.classList.remove('hidden');
+            lucide.createIcons();
+        });
+
+        [closeSummaryBtn, modalBackdrop].forEach(el => el && el.addEventListener('click', () => {
+            summaryModal.classList.add('hidden');
+        }));
+
+        downloadSummaryBtn.addEventListener('click', async () => {
+            const node = document.getElementById('summary-modal-content');
+            try {
+                // ensure charts/icons render in canvas: temporarily remove heavy shadows
+                const canvas = await html2canvas(node, { scale: 2, useCORS: true, backgroundColor: null });
+                const dataUrl = canvas.toDataURL('image/png');
+                const a = document.createElement('a');
+                a.href = dataUrl;
+                a.download = `lettermetrics-summary-${(new Date()).toISOString().slice(0,10)}.png`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+            } catch (e) {
+                alert('Export failed: ' + (e && e.message ? e.message : e));
+            }
+        });
+
+        // initial icon rendering
+        lucide.createIcons();
     </script>
 </body>
 </html>
