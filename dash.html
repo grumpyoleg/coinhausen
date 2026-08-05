@@ -81,8 +81,8 @@
       max-width: 1400px;
       height: 60px;
       margin: 0 auto;
-      padding-left: max(5px, env(safe-area-inset-left));
-      padding-right: max(5px, env(safe-area-inset-right));
+      padding-left: max(10px, env(safe-area-inset-left));
+      padding-right: max(10px, env(safe-area-inset-right));
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -183,7 +183,6 @@
     }
     .profile div { min-width: 0; }
     .profile h2 { margin: 0; font-size: 17px; letter-spacing: -.04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    /* Improved profile subtitle layout to ensure date range is clearly visible and wraps nicely if needed */
     .profile p { 
       margin: 2px 0 0; 
       color: var(--muted); 
@@ -316,8 +315,8 @@
     @media (min-width: 640px) {
       .shell { width: min(1400px, calc(100% - 10px)); padding: 0 5px; }
       .topbar-inner { padding: 0 5px; height: 66px; }
-      .brand-mark { width: 38px; height: 38px; border-radius: 12px; }
-      .brand h1 { font-size: 16px; }
+      .brand-mark { width: 50px; height: 45px; border-radius: 12px; margin-top: 0.4rem; margin-left: -.3rem;}
+      .brand h1 { font-size: 26px; }
       .brand p { font-size: 11px; }
 
       .summary-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
@@ -371,7 +370,7 @@
     <div class="topbar-inner">
       <div class="brand">
         <div class="brand-mark"><i data-lucide="chart-no-axes-combined"></i></div>
-        <div><h1>Lettermetrics</h1><p>Premium Substack intelligence</p></div>
+        <div><h1>Lettermetrics</h1><p>Premium Substack Analytics</p></div>
       </div>
       <div class="toolbar">
         <div id="status-badge" class="status"><span class="dot"></span><span>Ready</span></div>
@@ -1210,6 +1209,43 @@
 
         const normalized=normalizeHandle(rawInput);
         if(!normalized){ showError("Invalid input. Enter a valid Substack handle or URL."); return; }
+
+        // --- SEARCH LIMIT PER IP START ---
+        const SEARCH_LIMIT = 5;
+        const TIME_WINDOW_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+        try {
+          const ipRes = await fetch('https://api.ipify.org?format=json');
+          const ipData = await ipRes.json();
+          const userIP = ipData.ip;
+          const limitKey = `search_limit_${userIP}`;
+          const now = Date.now();
+          
+          let history = [];
+          try {
+            history = JSON.parse(localStorage.getItem(limitKey) || "[]");
+          } catch {
+            history = [];
+          }
+          
+          // Keep only timestamps within the last 24 hours
+          history = history.filter(timestamp => (now - timestamp) < TIME_WINDOW_MS);
+          
+          if (history.length >= SEARCH_LIMIT) {
+             const oldestSearch = history[0];
+             const resetTime = oldestSearch + TIME_WINDOW_MS;
+             const hoursLeft = Math.ceil((resetTime - now) / (1000 * 60 * 60));
+             showError(`Rate limit reached: Maximum ${SEARCH_LIMIT} searches per 24 hours. Please try again in ~${hoursLeft} hour(s).`);
+             return;
+          }
+          
+          // Record current search timestamp
+          history.push(now);
+          localStorage.setItem(limitKey, JSON.stringify(history));
+        } catch (limitErr) {
+          console.warn("Could not check IP for rate limiting.", limitErr);
+        }
+        // --- SEARCH LIMIT PER IP END ---
 
         activeHandle=normalized.includes(".") ? normalized.split(".")[0] : normalized;
 
